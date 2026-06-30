@@ -3,3 +3,28 @@ node_modules/
 *.log
 .env
 .env.*
+
+# Capacitor native (regenerate via cap add)
+ios/
+android/
+
+# Generated web bundle (regenerate via npm run build)
+www/index.html
+www/assets/
+
+# Xcode / Android build artifacts
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+.idea/
+*.iml
+local.properties
+.gradle/
+build/
+captures/
+
+# Generated icon scratch (keep resources/icon.png in repo)
+resources/icon-source.png
+resources/splash.png
+
+# Local simulator captures
+simulator-screenshot*.png

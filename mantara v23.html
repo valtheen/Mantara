@@ -521,7 +521,7 @@
 
   <!-- AGE BUTTON (only on Hidup) -->
   <div class="agewrap hidden" id="agewrap">
-    <button class="btn-age" id="btnAge" onclick="ageUp()">Tambah Usia ▸</button>
+    <button class="btn-age" id="btnAge" onclick="advanceYear()">Lanjut Tahun ▸</button>
   </div>
 
   <!-- TABBAR -->
@@ -738,92 +738,6 @@ function addRel(role,opts={}){
 }
 
 // ============================================================
-//  LOCATIONS — tiap tempat punya aktivitas UNIK
-// ============================================================
-// uniqueActs: aktivitas yang HANYA bisa di lokasi ini
-const LOCATIONS=[
-  {id:"desa",ico:"🏡",name:"Desa Eldmerry",purpose:"Kampung halaman. Tenang, murah, cocok memulai.",
-    explore:[
-      {t:"Petani tua berbagi kebijaksanaan.",fn:()=>applyStats({mind:+3,happy:+3})},
-      {t:"Panen raya! Desa berpesta.",fn:()=>applyStats({happy:+6})},
-      {t:"Kau berkenalan dengan pemuda desa.",fn:()=>{const r=addRel("teman",{bond:ri(40,60)});C._lastMeet=r.name;}},
-    ],
-    uniqueActs:[
-      {id:"farm_help",ico:"🌾",label:"Bantu di ladang",hint:"Koin + Nyawa +",run:()=>{const g=ri(5,15);C.coin+=g;applyStats({health:+2});return `Kau membantu panen, dapat ${g} keping & badan bugar.`;}},
-      {id:"village_dance",ico:"💐",label:"Ikut pesta desa",hint:"Mungkin ketemu calon pasangan",run:()=>{applyStats({happy:+6,charm:+2});if(chance(0.5)){const r=addRel("teman",{bond:ri(45,65)});return `Di pesta kau memikat ${r.name}. Bisa jadi cinta?`;}return "Kau berdansa riang di alun-alun desa.";}},
-    ]},
-  {id:"kota",ico:"🏙️",name:"Kota Argenholt",purpose:"Pusat dagang & karir. Banyak peluang & bahaya.",
-    explore:[
-      {t:"Pasar ramai — kau menawar barang langka.",fn:()=>{if(chance(0.5))C.coin+=ri(10,30);else C.coin-=ri(5,15);}},
-      {t:"Pengumuman kerajaan menarik perhatian.",fn:()=>applyStats({mind:+2})},
-      {t:"Pencopet mengincar kantongmu.",fn:()=>{if(chance(0.5))C.coin-=ri(10,25);}},
-    ],
-    uniqueActs:[
-      {id:"market_trade",ico:"⚖️",label:"Spekulasi di bursa",hint:"Untung/rugi besar",run:()=>{if(chance(0.55)){const g=ri(20,80);C.coin+=g;return `Spekulasimu untung ${g} keping!`;}const l=ri(15,50);C.coin=Math.max(0,C.coin-l);return `Pasar anjlok, kau rugi ${l} keping.`;}},
-      {id:"guild_hall",ico:"🏛️",label:"Ke Aula Sayembara",hint:"Rekrut pengikut / cari rekan",run:()=>{
-        if(C.coin>=50&&chance(0.6)){C.coin-=50;const r=addRel("pengikut",{loyalty:ri(50,70)});return `Kau merekrut ${r.name} sebagai pengikut (bayar 50 keping).`;}
-        const r=addRel("rekan",{bond:ri(40,60)});return `Kau berkenalan dengan ${r.name}, seorang petualang.`;}},
-      {id:"tavern",ico:"🍺",label:"Nongkrong di tavern",hint:"Ketemu orang dari segala penjuru",run:()=>{applyStats({happy:+5});C.coin-=ri(3,10);const roll=Math.random();
-        if(roll<0.4){const r=addRel("teman",{bond:ri(40,60)});return `Kau berteman dengan ${r.name} di tavern.`;}
-        if(roll<0.65){const r=addRel("teman",{bond:ri(50,70),female:!C.female});return `Seseorang menarik, ${r.name}, mengobrol denganmu sepanjang malam...`;}
-        return "Malam riuh penuh tawa di tavern.";}},
-    ]},
-  {id:"hutan",ico:"🌲",name:"Hutan Whisperwood",purpose:"Berburu, herbal, makhluk buas. Untuk yang berani.",unlock:c=>c.stats.might>=30,
-    explore:[
-      {t:"Kau menemukan herbal langka.",fn:()=>{C.coin+=ri(15,40);applyStats({mind:+1});}},
-      {t:"Serigala bayangan menyergap!",fn:()=>{if(C.stats.might>50)applyStats({might:+3});else applyStats({health:-ri(10,25)});}},
-      {t:"Mata air tersembunyi memulihkanmu.",fn:()=>applyStats({health:+8,mana:+4})},
-    ],
-    uniqueActs:[
-      {id:"hunt",ico:"🏹",label:"Berburu buruan",hint:"Koin + Kekuatan +",run:()=>{const g=ri(12,35);C.coin+=g;applyStats({might:+2,health:-2});return `Hasil buruan terjual ${g} keping.`;}},
-      {id:"forage",ico:"🍄",label:"Kumpulkan herbal",hint:"Bahan untuk dijual/obat",run:()=>{const g=ri(8,25);C.coin+=g;C.flags.herbs=(C.flags.herbs||0)+1;return `Kau mengumpulkan herbal (+${g} keping).`;}},
-      {id:"tame",ico:"🐺",label:"Jinakkan makhluk buas",hint:"Risiko, tapi dapat companion",run:()=>{if(C.stats.might>55&&chance(0.5)){const r=addRel("pengikut",{loyalty:ri(60,80),name:rand(["Serigala Bayangan","Griffon Muda","Rubah Arcane"]),ico:"🐾"});return `Kau menjinakkan ${r.name} sebagai companion setia!`;}applyStats({health:-ri(15,30)});return "Makhluk itu melukaimu dan kabur.";}},
-    ]},
-  {id:"menara",ico:"🗼",name:"Menara Arcanum",purpose:"Pusat sihir. Hanya penyihir berbakat diterima.",unlock:c=>c.isMage,arcane:true,
-    explore:[
-      {t:"Kau mempelajari segel arcane kuno.",fn:()=>applyStats({mana:+6,mind:+3})},
-      {t:"Eksperimen sihir nyaris meledak!",fn:()=>{if(C.stats.mana>60)applyStats({mana:+5});else applyStats({health:-15,mana:+2});}},
-      {t:"Archmage memberi petuah rahasia.",fn:()=>applyStats({mana:+4,mind:+4})},
-    ],
-    uniqueActs:[
-      {id:"enchant",ico:"✨",label:"Enchant barang",hint:"Koin besar (butuh mana)",run:()=>{if(C.stats.mana>50){const g=ri(30,90);C.coin+=g;applyStats({mana:-5});return `Jasa enchant-mu dibayar ${g} keping.`;}return "Mana-mu belum cukup untuk enchant.";}},
-      {id:"summon",ico:"🜂",label:"Panggil familiar",hint:"Companion arcane",run:()=>{if(C.stats.mana>60&&!C.relations.some(r=>r.ico==="🦉")){const r=addRel("pengikut",{name:"Familiar Bayangan",ico:"🦉",loyalty:ri(70,90)});applyStats({mana:-10});return `Kau memanggil ${r.name} sebagai familiar setia!`;}return "Ritual gagal — mana kurang atau kau sudah punya familiar.";}},
-      {id:"research",ico:"📜",label:"Riset mantra",hint:"Mana ++ Akal ++",run:()=>{applyStats({mana:+ri(4,9),mind:+ri(3,6)});return "Kau meneliti gulungan arcane berjam-jam.";}},
-    ]},
-  {id:"istana",ico:"🏰",name:"Istana Aurelia",purpose:"Pusat kekuasaan. Intrik politik & gelar bangsawan.",unlock:c=>c.reputation>=25||c.stats.charm>=70,
-    explore:[
-      {t:"Kau berbasa-basi dengan bangsawan.",fn:()=>applyStats({charm:+4})},
-      {t:"Intrik istana — kau dijebak rumor.",fn:()=>{if(C.stats.mind>60)C.reputation+=5;else{C.reputation-=5;applyStats({happy:-5});}}},
-      {t:"Raja memberi hadiah atas pengabdian.",fn:()=>{C.coin+=ri(50,150);C.reputation+=8;}},
-    ],
-    uniqueActs:[
-      {id:"court",ico:"🎭",label:"Main politik istana",hint:"Reputasi naik (butuh akal/pesona)",run:()=>{if(C.stats.mind>55||C.stats.charm>60){C.reputation+=ri(5,12);return "Kau memenangkan simpati bangsawan berpengaruh.";}C.reputation-=ri(2,6);return "Manuvermu gagal, kau dipermalukan di hadapan istana.";}},
-      {id:"noble_match",ico:"👑",label:"Cari jodoh bangsawan",hint:"Pasangan berharta",run:()=>{if(C.reputation>=30||C.stats.charm>=65){const r=addRel("teman",{bond:ri(55,75),female:!C.female,ico:"🤴"});return `Seorang bangsawan, ${r.name}, tertarik padamu. Jalin hubungan di tab Relasi!`;}return "Para bangsawan memandangmu sebelah mata.";}},
-      {id:"petition",ico:"📯",label:"Ajukan petisi ke Raja",hint:"Untung besar atau dihukum",run:()=>{if(chance(0.5)){C.coin+=ri(80,200);C.reputation+=10;return "Raja mengabulkan petisimu dengan murah hati!";}C.reputation-=8;return "Petisimu ditolak mentah-mentah.";}},
-    ]},
-  {id:"reruntuhan",ico:"🏚️",name:"Reruntuhan Kuno",purpose:"Dungeon berbahaya. Harta karun & kematian.",unlock:c=>c.stats.might>=50||c.stats.mana>=55,
-    explore:[
-      {t:"Kau menemukan peti harta kuno!",fn:()=>C.coin+=ri(60,180)},
-      {t:"Jebakan maut terpicu!",fn:()=>applyStats({health:-ri(20,45)})},
-      {t:"Artefak arcane bersinar memanggil.",fn:()=>{if(C.isMage)applyStats({mana:+12});else applyStats({mind:+5});}},
-    ],
-    uniqueActs:[
-      {id:"delve",ico:"⚱️",label:"Selami dungeon",hint:"Harta besar / luka parah",run:()=>{if(C.stats.might>50||C.stats.mana>55){if(chance(0.6)){const g=ri(80,250);C.coin+=g;applyStats({might:+3});return `Kau menaklukkan dungeon, membawa ${g} keping!`;}applyStats({health:-ri(25,50)});return "Penjaga dungeon nyaris membunuhmu.";}applyStats({health:-ri(30,55)});return "Kau terlalu lemah — dungeon nyaris menelanmu.";}},
-      {id:"relic",ico:"🗿",label:"Cari relik legendaris",hint:"Item langka",run:()=>{if(chance(0.3)){const items=["Mahkota Raja Lama","Bilah Naga","Tomus Arcanum"];const it=rand(items);C.flags.relic=it;C.reputation+=15;return `Kau menemukan relik legendaris: ${it}! Reputasi melonjak.`;}return "Hanya debu & tulang yang kau temukan.";}},
-    ]},
-  {id:"hospice",ico:"⛪",name:"Hospice St. Move",purpose:"Tempat berobat, menyembuhkan luka & penyakit.",
-    explore:[
-      {t:"Para tabib menyambutmu dengan ramah.",fn:()=>applyStats({happy:+2})},
-      {t:"Kau melihat penderitaan orang sakit.",fn:()=>applyStats({happy:-3,mind:+2})},
-    ],
-    uniqueActs:[
-      {id:"heal_minor",ico:"🩹",label:"Berobat ringan",hint:"Nyawa +15 (30 keping)",run:()=>{if(C.coin<30)return "Koin tidak cukup (butuh 30).";C.coin-=30;applyStats({health:+15});return "Tabib merawat lukamu. Nyawa pulih +15.";}},
-      {id:"heal_major",ico:"💊",label:"Pengobatan penuh",hint:"Nyawa penuh (100 keping)",run:()=>{if(C.coin<100)return "Koin tidak cukup (butuh 100).";C.coin-=100;C.stats.health=100;return "Pengobatan menyeluruh! Nyawa pulih total.";}},
-      {id:"cure",ico:"🧪",label:"Tebus ramuan arcane",hint:"Sembuhkan penyakit kronis (150)",run:()=>{if(C.coin<150)return "Koin tidak cukup (butuh 150).";C.coin-=150;C.flags.plagueImmune=1;applyStats({health:+25,mana:+5});return "Ramuan arcane menyembuhkanmu & memberi kekebalan wabah.";}},
-      {id:"learn_medic",ico:"⚕️",label:"Magang jadi tabib",hint:"Akal + (gratis)",run:()=>{applyStats({mind:+ri(3,6)});return "Kau belajar ilmu pengobatan dari para tabib.";}},
-    ]},
-];
-// ============================================================
 //  TAKDIR v3 — Engine (bagian 2: karir, bisnis, aset, relasi)
 // ============================================================
 const MIN_WORK_AGE=15;
@@ -871,26 +785,6 @@ const BUSINESS_TYPES=[
   {id:"caravan",ico:"🐫",name:"Kafilah Dagang",buy:600,income:[90,190,380],
     tiers:["Satu Pedati","Kafilah","Armada Dagang"],upgrade:[0,1000,2400],
     risk:"Bisa dirampok di jalan."},
-];
-
-// ---------- ASSETS (beli langsung) ----------
-const ASSET_TYPES=[
-  {id:"home",ico:"🏠",name:"Tempat Tinggal",
-    tiers:["Gubuk Reyot","Rumah Kayu","Rumah Batu","Vila Mewah","Kastil Pribadi"],
-    cost:[0,80,250,700,2200],
-    perk:["","Bahagia +2/th","Bahagia +4/th","Bahagia +6/th, Nyawa +2/th","Bahagia +10/th, Reputasi +"]},
-  {id:"weapon",ico:"⚔️",name:"Senjata",
-    tiers:["Tangan Kosong","Pisau Karat","Pedang Baja","Pedang Sihir","Bilah Naga"],
-    cost:[0,40,150,500,1500],
-    perk:["","Kekuatan +1/th","Kekuatan +3/th","Kekuatan +5/th","Kekuatan +8/th"]},
-  {id:"mount",ico:"🐴",name:"Tunggangan",
-    tiers:["Jalan Kaki","Keledai","Kuda","Kuda Perang","Griffon"],
-    cost:[0,60,180,550,1800],
-    perk:["","Pesona +1/th","Pesona +2/th, Bahagia+","Kekuatan +3/th","Reputasi +, Kekuatan +4/th"]},
-  {id:"tome",ico:"📕",name:"Grimoire",arcane:true,
-    tiers:["Tanpa Buku","Catatan Lusuh","Kitab Mantra","Tomus Arcanum","Codex Abadi"],
-    cost:[0,60,200,650,1800],
-    perk:["","Mana +1/th","Mana +3/th","Mana +5/th","Mana +9/th"]},
 ];
 
 const SKILL_TYPES=[
@@ -985,17 +879,6 @@ function updateTitle(){
   else C.title="Bocah";
 }
 
-function applyAssetPerks(){
-  C.assets.forEach(a=>{
-    const def=ASSET_TYPES.find(t=>t.id===a.id);if(!def)return;const lvl=a.level;
-    if(def.id==="home"){if(lvl>=1)applyStats({happy:+lvl*2});if(lvl>=3)applyStats({health:+2});if(lvl>=4)C.reputation+=1;}
-    if(def.id==="weapon"&&lvl>=1)applyStats({might:+[0,1,3,5,8][lvl]});
-    if(def.id==="tome"&&lvl>=1)applyStats({mana:+[0,1,3,5,9][lvl]});
-    if(def.id==="mount"&&lvl>=1){applyStats({charm:+[0,1,2,2,3][lvl]});if(lvl>=3)applyStats({might:+[0,0,0,3,4][lvl]});if(lvl>=4)C.reputation+=1;}
-  });
-  C.skills.forEach(sk=>{const def=SKILL_TYPES.find(t=>t.id===sk.id);if(def)applyStats({[def.stat]:+sk.level});});
-}
-
 function processBusinesses(){
   C.businesses.forEach(b=>{
     const def=BUSINESS_TYPES.find(x=>x.id===b.id);if(!def)return;
@@ -1015,50 +898,6 @@ function processCareer(){
     C.careerLevel++;C.careerYears=0;
     log(C.age,`Kau dipromosikan jadi ${car.ranks[C.careerLevel]}!`,"e-epic");
   }
-}
-
-// ---------- AGE UP ----------
-function ageUp(){
-  if(!C.alive)return;
-  C.age++;
-  C.actionsLeft=2; C._bizRisk=null;
-
-  applyAssetPerks();
-  processCareer();
-  processBusinesses();
-  if(C._bizRisk)log(C.age,C._bizRisk,"e-bad");
-
-  if(C.age>50)applyStats({health:-ri(1,3)});
-  if(C.age>65)applyStats({health:-ri(3,6)});
-
-  if(C.stats.health<=0)return die("Tubuhmu menyerah pada luka & penyakit.");
-  if(C.age>60&&chance((C.age-60)*0.015)&&C.stats.health<35)
-    return die("Usia tua menjemputmu dengan tenang.");
-
-  C.relations.forEach(r=>{
-    if(r.role==="pasangan"||r.role==="bestie")r.bond=clamp(r.bond-ri(0,2));
-    if(r.role==="pengikut")r.loyalty=clamp(r.loyalty-ri(0,3));
-  });
-
-  const pool=EVENTS.filter(e=>C.age>=e.minAge&&C.age<=e.maxAge&&(!e.cond||e.cond(C)));
-  if(pool.length&&chance(0.72)){
-    const tot=pool.reduce((s,e)=>s+(e.w||1),0);let r=Math.random()*tot,ev;
-    for(const e of pool){r-=(e.w||1);if(r<=0){ev=e;break;}}
-    ev=ev||pool[0];
-    if(ev.choice){showModal(ev.choice());updateTitle();render();return;}
-    const res=ev.auto();log(C.age,res.t,res.cls);
-  }else{
-    log(C.age,rand(["Tahun tenang berlalu.","Musim berganti damai.","Hanya rutinitas sehari-hari.","Hidup berjalan tanpa kejutan."]),"");
-  }
-
-  if(C.stats.health<=0)return die("Lukamu terlalu parah untuk bertahan.");
-  checkMissions();updateTitle();render();
-}
-
-// ---------- jatah aksi manual ----------
-function spendAction(){
-  if(C.actionsLeft<=0){toast("Jatah aksi tahun ini habis. Tambah Usia dulu.");return false;}
-  C.actionsLeft--;return true;
 }
 
 // ---------- EVENTS ----------
@@ -1108,6 +947,69 @@ const EVENTS=[
     return{t:`Penyakit menyerang di musim dingin. Nyawa -${d}. (berobat di Hospice)`,cls:"e-bad"};}},
   {id:"injury",minAge:10,maxAge:70,w:1,auto:()=>{const d=ri(8,20);applyStats({health:-d});
     return{t:`Kau cedera dalam kecelakaan. Nyawa -${d}.`,cls:"e-bad"};}},
+  // ---- pertengahan hidup & keluarga (30-60) ----
+  {id:"midlife_doubt",minAge:30,maxAge:58,w:2,choice:()=>({ico:"🌓",
+    prompt:"Di pertengahan hidup, kau mempertanyakan jalan yang kau tempuh.",
+    choices:[
+      {label:"Ubah hidup — cari makna baru",hint:"Bahagia +",run:()=>{applyStats({happy:+ri(6,12),mind:+4});if(chance(0.4))C.reputation-=5;return{t:"Kau mengubah arah hidup. Jiwa lebih ringan.",cls:"e-good"};}},
+      {label:"Gali lebih dalam karirmu",hint:"stat karir +",run:()=>{const car=C.career?CAREERS.find(x=>x.id===C.career):null;if(car&&car.statGain)applyStats(car.statGain);else applyStats({mind:+5});return{t:"Kau memperdalam keahlian. Fokus membawa hasil.",cls:"e-good"};}},
+      {label:"Abaikan — lanjutkan rutinitas",hint:"aman",run:()=>{applyStats({happy:-4});return{t:"Keraguan itu kau kubur dalam rutinitas.",cls:""};}},
+    ]})},
+  {id:"child_pride",minAge:25,maxAge:65,w:2,cond:c=>c.relations.some(r=>r.isChild),auto:()=>{const ch=rand(C.relations.filter(r=>r.isChild));ch.bond=clamp(ch.bond+ri(5,12));applyStats({happy:+8});return{t:`${ch.name} membuatmu bangga tahun ini. Ikatan keluarga menguat.`,cls:"e-good"};}},
+  {id:"marriage_strain",minAge:20,maxAge:70,w:2,cond:c=>c.married,choice:()=>{const p=C.relations.find(r=>r.role==="pasangan");return {ico:"💔",
+    prompt:`Hubungan dengan ${p?p.name:"pasanganmu"} sedang renggang.`,
+    choices:[
+      {label:"Ajak bicara jujur",hint:"ikatan +",run:()=>{if(p)p.bond=clamp(p.bond+ri(6,14));applyStats({happy:+5});return{t:"Percakapan panjang memulihkan kepercayaan.",cls:"e-good"};}},
+      {label:"Beri hadiah & hadirkan diri",hint:"koin -, ikatan +",run:()=>{const cost=ri(15,40);if(C.coin<cost)return{t:"Kau tak punya cukup koin untuk hadiah.",cls:"e-bad"};C.coin-=cost;if(p)p.bond=clamp(p.bond+ri(8,16));applyStats({happy:+6});return{t:`Hadiah menyelamatkan suasana. (-${cost} keping)`,cls:"e-good"};}},
+      {label:"Abaikan — fokus diri sendiri",hint:"ikatan -",run:()=>{if(p)p.bond=clamp(p.bond-ri(10,20));applyStats({happy:-6});return{t:"Diam bukan solusi. Pasanganmu makin jauh.",cls:"e-bad"};}},
+    ]};}},
+  {id:"promotion_chance",minAge:18,maxAge:60,w:2,cond:c=>{if(!c.career)return false;const car=CAREERS.find(x=>x.id===c.career);return car&&c.careerLevel<car.ranks.length-1;},choice:()=>{const car=CAREERS.find(x=>x.id===C.career);return {ico:"📈",
+    prompt:`Atasan menawarkan promosi jadi ${car.ranks[car.careerLevel+1]}.`,
+    choices:[
+      {label:"Terima tantangan",hint:"promosi jika berhasil",run:()=>{if(C.stats.mind>45||C.stats.charm>45||chance(0.55)){C.careerLevel++;C.careerYears=0;C.reputation+=5;return{t:`Kau dipromosikan jadi ${car.ranks[C.careerLevel]}!`,cls:"e-epic"};}C.reputation-=3;return{t:"Usahamu gagal. Promosi ditunda.",cls:"e-bad"};}},
+      {label:"Tolak — belum siap",hint:"aman",run:()=>{applyStats({happy:+2});return{t:"Kau menolak halus. Kesempatan itu berlalu.",cls:""};}},
+    ]};}},
+  {id:"biz_boom",minAge:20,maxAge:70,w:1,cond:c=>c.businesses.length>0,auto:()=>{const b=rand(C.businesses);const def=BUSINESS_TYPES.find(x=>x.id===b.id);const bonus=Math.round(def.income[b.level]*0.5);C.coin+=bonus;applyStats({happy:+4});return{t:`${def.name} untung besar! +${bonus} keping ekstra.`,cls:"e-good"};}},
+  {id:"royal_decree",minAge:25,maxAge:75,w:1,cond:c=>c.reputation>=35,choice:()=>({ico:"📜",
+    prompt:"Raja mengeluarkan dekrit. Bangsawan setia bisa menikmati hadiah.",
+    choices:[
+      {label:"Hadiri upacara istana",hint:"reputasi +, koin +",run:()=>{C.reputation+=ri(5,12);C.coin+=ri(30,80);applyStats({charm:+3});return{t:"Kau dihormati di hadapan istana.",cls:"e-epic"};}},
+      {label:"Kirim utusan saja",hint:"lebih murah",run:()=>{C.coin-=ri(10,25);C.reputation+=ri(2,6);return{t:"Utusanmu mewakili namamu dengan cukup baik.",cls:"e-good"};}},
+      {label:"Abaikan",hint:"reputasi -",run:()=>{C.reputation-=ri(5,10);return{t:"Mengabaikan dekrit dicatat sebagai ketidakhormatan.",cls:"e-bad"};}},
+    ]})},
+  {id:"mage_council",minAge:20,maxAge:75,w:1,cond:c=>c.isMage&&c.stats.mana>=50,choice:()=>({ico:"🔮",
+    prompt:"Majelis Arcane mengundangmu. Ujian ini bisa mengangkat atau merendahkan namamu.",
+    choices:[
+      {label:"Tampilkan kekuatan",hint:"mana +, reputasi +",run:()=>{if(C.stats.mana>65||chance(0.5)){applyStats({mana:+ri(5,10)});C.reputation+=10;return{t:"Para penyihir tercengang. Namamu disebut di majelis.",cls:"e-arcane"};}applyStats({happy:-5});C.reputation-=5;return{t:"Ritualmu gagal di depan umum. Malu.",cls:"e-bad"};}},
+      {label:"Menolak undangan",hint:"aman",run:()=>({t:"Kau menghindari sorotan majelis.",cls:""})},
+    ]})},
+  {id:"bandit_raid",minAge:14,maxAge:70,w:2,auto:()=>{if(C.stats.might>55&&chance(0.6)){C.reputation+=5;applyStats({might:+2});return{t:"Bandit menyerang, tetapi kau mengusir mereka!",cls:"e-good"};}const loss=Math.min(C.coin,ri(20,60));C.coin-=loss;applyStats({health:-ri(5,15),happy:-4});return{t:`Bandit merampokmu! -${loss} keping & luka.`,cls:"e-bad"};}},
+  {id:"good_harvest",minAge:16,maxAge:75,w:2,cond:c=>c.career==="farmer"||c.businesses.some(b=>b.id==="farm"||b.id==="cattle"),auto:()=>{const g=ri(25,70);C.coin+=g;applyStats({happy:+5});return{t:`Musim panen melimpah! +${g} keping.`,cls:"e-good"};}},
+  {id:"bad_season",minAge:16,maxAge:75,w:1,cond:c=>c.career==="farmer"||c.businesses.some(b=>b.id==="farm"||b.id==="cattle"),auto:()=>{const loss=Math.min(C.coin,ri(15,45));C.coin-=loss;applyStats({happy:-6});return{t:`Musim buruk! Kerugian ${loss} keping.`,cls:"e-bad"};}},
+  {id:"destitute",minAge:16,maxAge:75,w:2,cond:c=>c.age>=16&&c.coin<=8,choice:()=>({ico:"🍞",
+    prompt:"Kantongmu hampir kosong. Keputusan sulit menanti.",
+    choices:[
+      {label:"Minta sedekah di pasar",hint:"malu tapi bertahan",run:()=>{const g=ri(8,25);C.coin+=g;C.reputation-=ri(2,6);applyStats({happy:-5});return{t:`Kau mendapat ${g} keping, tapi harga diri terluka.`,cls:"e-bad"};}},
+      {label:"Kerja keras serabutan",hint:"koin +, nyawa -",run:()=>{const g=ri(15,40);C.coin+=g;applyStats({health:-ri(4,10),might:+2});return{t:`Kau bertahan dengan kerja berat. +${g} keping.`,cls:""};}},
+      {label:"Mencuri diam-diam",hint:"risiko",run:()=>{if(chance(0.55)){const g=ri(20,50);C.coin+=g;return{t:`Kau mencuri ${g} keping tanpa ketahuan.`,cls:""};}C.reputation-=8;applyStats({happy:-8});return{t:"Ketangkap! Namamu ternoda.",cls:"e-bad"};}},
+    ]})},
+  {id:"wise_elder",minAge:18,maxAge:70,w:2,auto:()=>{applyStats({mind:+ri(4,8),happy:+3});return{t:"Tetua berbagi kebijaksanaan. Akal bertambah.",cls:"e-good"};}},
+  {id:"gossip",minAge:14,maxAge:75,w:2,auto:()=>{if(chance(0.5)){applyStats({charm:+3,happy:+2});return{t:"Gosip hangat membuatmu dikenal lebih ramah.",cls:"e-good"};}C.reputation-=ri(3,8);applyStats({happy:-4});return{t:"Gosip jahat menyebar tentangmu. Reputasi turun.",cls:"e-bad"};}},
+  {id:"pilgrimage",minAge:18,maxAge:80,w:1,choice:()=>({ico:"🕯️",
+    prompt:"Kafilah ziarah melewati kotamu. Ikut perjalanan spiritual?",
+    choices:[
+      {label:"Ikut (biaya sedikit)",hint:"happy +, nyawa +",run:()=>{const cost=ri(10,30);if(C.coin<cost){applyStats({happy:+3});return{t:"Kau ikut sebentar tanpa donasi besar. Hati tenang.",cls:"e-good"};}C.coin-=cost;applyStats({happy:+ri(6,12),health:+ri(3,8)});return{t:"Perjalanan ziarah memurnikan jiwamu.",cls:"e-good"};}},
+      {label:"Tidak ikut",hint:"—",run:()=>({t:"Kau memilih tinggal. Hari berlalu biasa saja.",cls:""})},
+    ]})},
+  {id:"apprentice_offer",minAge:16,maxAge:45,w:1,cond:c=>!c.career&&c.age>=MIN_WORK_AGE,choice:()=>({ico:"🛠️",
+    prompt:"Seorang master mengajakmu menjadi murid. Mau belajar profesi baru?",
+    choices:[
+      {label:"Murid pandai besi",hint:"karir blacksmith",run:()=>{const car=CAREERS.find(x=>x.id==="blacksmith");if(car&&car.req(C)){applyCareer("blacksmith");return{t:"Kau mulai magang di tempa besi!",cls:"e-good"};}applyStats({might:+4});return{t:"Magang singkat mengasah kekuatanmu.",cls:"e-good"};}},
+      {label:"Murid tabib",hint:"karir healer",run:()=>{const car=CAREERS.find(x=>x.id==="healer");if(car&&car.req(C)){applyCareer("healer");return{t:"Kau mulai belajar ilmu pengobatan!",cls:"e-good"};}applyStats({mind:+4});return{t:"Kau belajar dasar-dasar pengobatan.",cls:"e-good"};}},
+      {label:"Tolak",hint:"—",run:()=>({t:"Kau menolak. Jalan lain menantimu.",cls:""})},
+    ]})},
+  {id:"mentor_visit",minAge:22,maxAge:55,w:1,cond:c=>c.relations.some(r=>r.role==="keluarga"&&!r.isChild),auto:()=>{const fam=rand(C.relations.filter(r=>r.role==="keluarga"&&!r.isChild));fam.bond=clamp(fam.bond+ri(5,10));applyStats({mind:+3,happy:+4});return{t:`${fam.name} mengunjungimu & memberi nasihat berharga.`,cls:"e-good"};}},
+  {id:"fire_disaster",minAge:12,maxAge:80,w:1,auto:()=>{if(C.properties.length&&chance(0.4)){const lost=C.properties.pop();const def=PROPERTY_CATALOG.find(x=>x.key===lost.key);applyStats({happy:-10});return{t:`Kebakaran menghanguskan ${def?def.name:"propertimu"}!`,cls:"e-bad"};}const loss=Math.min(C.coin,ri(10,35));C.coin-=loss;applyStats({happy:-5});return{t:`Kebakaran kecil merugikanmu ${loss} keping.`,cls:"e-bad"};}},
 ];
 
 // ---------- MISSIONS ----------
@@ -1115,10 +1017,10 @@ const MISSION_POOL=[
   {id:"rich",title:"Sang Hartawan",desc:"Kumpulkan 1000 keping emas.",check:c=>c.coin>=1000,reward:()=>{C.reputation+=15;return "Reputasi +15";}},
   {id:"married",title:"Ikatan Suci",desc:"Menikahlah dengan seseorang.",check:c=>c.married,reward:()=>{applyStats({happy:+15});return "Bahagia +15";}},
   {id:"knight",title:"Jalan Ksatria",desc:"Capai Kekuatan 80.",check:c=>c.stats.might>=80,reward:()=>{C.coin+=200;return "+200 keping";}},
-  {id:"castle",title:"Tuan Tanah",desc:"Miliki Kastil Pribadi.",check:c=>c.assets.some(a=>a.id==="home"&&a.level>=4),reward:()=>{C.reputation+=25;return "Reputasi +25";}},
+  {id:"castle",title:"Tuan Tanah",desc:"Miliki Kastil Pribadi.",check:c=>c.properties&&c.properties.some(p=>p.key==="castle"),reward:()=>{C.reputation+=25;return "Reputasi +25";}},
   {id:"social",title:"Pusat Perhatian",desc:"Punya 5 relasi sekaligus.",check:c=>c.relations.length>=5,reward:()=>{applyStats({charm:+10});return "Pesona +10";}},
   {id:"tycoon",title:"Sang Taipan",desc:"Miliki 3 bisnis.",check:c=>c.businesses.length>=3,reward:()=>{C.coin+=300;return "+300 keping";}},
-  {id:"explorer",title:"Penjelajah",desc:"Buka semua lokasi peta.",check:c=>LOCATIONS.every(l=>!l.unlock||l.unlock(c)),reward:()=>{C.reputation+=20;return "Reputasi +20";}},
+  {id:"explorer",title:"Penjelajah",desc:"Kunjungi semua 4 kota.",check:c=>{const seen=new Set([...(c._visited||[]),c.cityId,c.homeCityId].filter(Boolean));return typeof CITIES!=="undefined"&&CITIES.every(ct=>seen.has(ct.id));},reward:()=>{C.reputation+=20;return "Reputasi +20";}},
 ];
 function initMissions(){C.missions=MISSION_POOL.map(m=>({id:m.id,done:false}));}
 function checkMissions(){
@@ -1129,22 +1031,6 @@ function checkMissions(){
   });
 }
 
-var die=function(reason){
-  C.alive=false;updateTitle();log(C.age,reason,"e-death");
-  setTimeout(()=>{
-    document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));
-    document.getElementById("agewrap").classList.add("hidden");
-    document.getElementById("tabbar").classList.add("hidden");
-    document.getElementById("overScreen").classList.remove("hidden");
-    const fam=C.relations.filter(r=>r.isChild).length;
-    const legacy=C.reputation>40?"Namamu dikenang dalam balada para penyair.":
-      fam>0?`${fam} keturunan melanjutkan garis darahmu.`:"Kau berlalu nyaris tanpa jejak.";
-    document.getElementById("epitaph").innerHTML=
-      `<b>${C.name}</b><br>${C.title} · wafat usia ${C.age}<br><br>
-       Harta: ${C.coin} keping · Reputasi: ${C.reputation}<br>
-       Relasi: ${C.relations.length} · Aset: ${C.assets.length} · Bisnis: ${C.businesses.length}<br>${legacy}`;
-  },1400);
-}
 // ============================================================
 //  TAKDIR v3 — UI / RENDER
 // ============================================================
@@ -1154,103 +1040,13 @@ function toast(msg){
 }
 function log(yr,t,cls){if(!C._log)C._log=[];C._log.unshift({yr,t,cls});if(C._log.length>40)C._log.pop();}
 function logHTML(){return C._log.map(e=>`<div class="entry"><span class="yr">${e.yr}th</span><span class="${e.cls||''}">${e.t}</span></div>`).join("");}
-function portraitEmoji(){const a=C.age;if(!C.alive)return "💀";
-  if(C.isMage&&a>=16)return C.female?"🧙‍♀️":"🧙‍♂️";
-  if(a<3)return "👶";if(a<13)return "🧒";if(a<18)return C.female?"👧":"👦";
-  if(a<55)return C.female?"👩":"👨";return C.female?"👵":"👴";}
-
-// ---------- HIDUP ----------
-function renderHidup(){
-  const loc=LOCATIONS.find(l=>l.id===C.location);
-  const statsHTML=STAT_ORDER.map(k=>{
-    if(k==="mana"&&!C.isMage&&C.stats.mana<5)return "";
-    const v=Math.round(C.stats[k]),m=STAT_META[k];
-    return `<div><div class="statrow"><span class="statname">${m.name}</span><span class="statval">${v}</span></div>
-      <div class="bar"><div class="fill ${m.cls}" style="width:${v}%"></div></div></div>`;}).join("");
-  document.getElementById("viewHidup").innerHTML=`
-    <div class="charcard">
-      <div class="chartop">
-        <div class="portrait ${C.isMage&&C.age>=16?'mage':''}">${portraitEmoji()}</div>
-        <div class="cinfo">
-          <div class="cname">${C.name}</div>
-          <div class="ctitle">${C.title}</div>
-          <div class="cage">Usia ${C.age} · ${C.female?"Perempuan":"Lelaki"}${C.married?" · Menikah":""} · 📍${loc.name}</div>
-          <div class="coin">💰 ${C.coin} · ⭐ Rep ${C.reputation} · ⚡ Aksi ${C.actionsLeft}/2</div>
-        </div>
-      </div>
-      <div class="stats">${statsHTML}</div>
-    </div>
-    <div class="logbox">${logHTML()}</div>`;
-}
-
-// ---------- AKTIVITAS ----------
-function renderAktivitas(){
-  const loc=LOCATIONS.find(l=>l.id===C.location);
-  let html="";
-  // lokasi sekarang + aktivitas unik
-  html+=`<div class="sechead">📍 ${loc.name} — Khas Lokasi</div><div class="tiles">`;
-  (loc.uniqueActs||[]).forEach(a=>{
-    html+=`<div class="tile" onclick="doUnique('${loc.id}','${a.id}')">
-      <span class="ti">${a.ico}</span><span class="tn">${a.label}</span>
-      <span class="td">${a.hint}</span></div>`;
-  });
-  html+=`</div>`;
-
-  // karir
-  html+=`<div class="sechead">Pekerjaan & Karir</div>`;
-  if(C.age<MIN_WORK_AGE){
-    html+=`<p style="font-size:11.5px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 8px;">Kau masih terlalu muda untuk bekerja (minimal usia ${MIN_WORK_AGE}).</p>`;
-  }else if(C.career){
-    const car=CAREERS.find(x=>x.id===C.career);
-    html+=`<div class="tiles"><div class="tile fullrow" onclick="quitCareer()">
-      <span class="ti">${car.ico}</span><span class="tn">${car.ranks[C.careerLevel]}</span>
-      <span class="td">${car.name}. Gaji otomatis tiap tahun. Ketuk untuk berhenti.</span></div></div>`;
-  }else{
-    html+=`<div class="tiles">`;
-    CAREERS.filter(c=>!c.arcane||C.isMage).forEach(c=>{
-      const ok=c.req(C);
-      html+=`<div class="tile ${ok?'':'locked'} ${c.arcane?'arcane':''}" ${ok?`onclick="applyCareer('${c.id}')"`:''}>
-        <span class="ti">${c.ico}</span><span class="tn">${c.name}${c.shady?' 🕶️':''}</span>
-        <span class="td">${ok?'Gaji '+c.basepay+'/th':'🔒 Syarat kurang'}</span></div>`;});
-    html+=`</div>`;
-  }
-
-  // aktivitas umum
-  html+=`<div class="sechead">Aktivitas Umum</div><div class="tiles">`;
-  ACTIVITIES.filter(a=>!a.cond||a.cond(C)).forEach(a=>{
-    html+=`<div class="tile ${a.arcane?'arcane':''}" onclick="openSubs('${a.id}')">
-      <span class="ti">${a.ico}</span><span class="tn">${a.name}</span>
-      <span class="td">${a.desc}</span></div>`;});
-  html+=`</div>`;
-
-  // misi
-  html+=`<div class="sechead">Misi & Tujuan</div>`;
-  C.missions.forEach(ms=>{const def=MISSION_POOL.find(m=>m.id===ms.id);
-    html+=`<div class="mission" style="${ms.done?'opacity:.55':''}">
-      <div class="mtitle">${ms.done?'✅ ':''}${def.title}</div>
-      <div class="mdesc">${def.desc}</div></div>`;});
-  document.getElementById("viewAktivitas").innerHTML=html;
-}
-function doUnique(locId,actId){
-  if(!spendAction()){renderHidup();return;}
-  const loc=LOCATIONS.find(l=>l.id===locId);
-  const a=(loc.uniqueActs||[]).find(x=>x.id===actId);if(!a)return;
-  const msg=a.run();log(C.age,`[${loc.name}] ${msg}`,"e-good");toast(msg);
-  if(C.stats.health<=0){die("Aktivitasmu berakhir fatal.");return;}
-  updateTitle();renderAll();
-}
-function openSubs(actId){
-  const a=ACTIVITIES.find(x=>x.id===actId);if(!a)return;
-  showModal({ico:a.ico,prompt:a.name,_isActivity:true,
-    choices:a.subs.map(s=>({label:s.label,hint:s.hint,run:()=>({t:s.run(),cls:"e-good"})}))},true);
-}
 
 // ---------- RELASI ----------
 function renderRelasi(){
   C.pendingDot=false;document.getElementById("dotRelasi").classList.remove("on");
   if(!C.relations.length){
     document.getElementById("viewRelasi").innerHTML=
-      `<div class="sechead">Relasi</div><p style="font-size:13px;color:var(--ink-soft);filter:brightness(1.6);text-align:center;padding:30px 10px;line-height:1.6;">Belum ada relasi. Temui orang lewat aktivitas khas lokasi (tavern, aula sayembara, pesta desa) atau seiring waktu.</p>`;
+      `<div class="sechead">Relasi</div><p style="font-size:13px;color:var(--ink-soft);filter:brightness(1.6);text-align:center;padding:30px 10px;line-height:1.6;">Belum ada relasi. Temui orang lewat aktivitas atau seiring waktu.</p>`;
     return;}
   const roleOrder={pasangan:0,bestie:1,teman:2,rekan:3,keluarga:4,pengikut:5,musuh:6};
   const sorted=[...C.relations].sort((a,b)=>(roleOrder[a.role]??9)-(roleOrder[b.role]??9));
@@ -1285,112 +1081,11 @@ function doRelAction(relId,actIdx){
   checkMissions();updateTitle();renderAll();
 }
 
-// ---------- PETA ----------
-function renderPeta(){
-  let html=`<div class="sechead">Peta Aetheria</div>
-    <p style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 12px;line-height:1.5;">Tiap lokasi punya aktivitas khas (cek tab Aktivitas setelah pindah). Pindah itu gratis, tapi tiap aktivitas pakai jatah aksi.</p>
-    <div class="tiles">`;
-  LOCATIONS.forEach(l=>{
-    const unlocked=!l.unlock||l.unlock(C)||l.id===C.location||l.id==="desa"||l.id==="hospice"||l.id==="kota";
-    const here=l.id===C.location;
-    html+=`<div class="tile ${unlocked?'':'locked'} ${l.arcane?'arcane':''}" ${unlocked?`onclick="goLocation('${l.id}')"`:''}>
-      ${here?'<span class="badge">DI SINI</span>':''}
-      <span class="ti">${l.ico}</span><span class="tn">${l.name}</span>
-      <span class="td">${unlocked?l.purpose:'🔒 Belum terbuka'}</span></div>`;});
-  html+=`</div>`;
-  const loc=LOCATIONS.find(l=>l.id===C.location);
-  html+=`<div class="sechead">Di ${loc.name}</div>
-    <div class="tiles"><div class="tile fullrow" onclick="exploreLocation()">
-      <span class="ti">🧭</span><span class="tn">Jelajahi (pakai 1 aksi)</span>
-      <span class="td">Picu peristiwa acak khas lokasi ini.</span></div></div>`;
-  document.getElementById("viewPeta").innerHTML=html;
-}
-function goLocation(id){
-  const l=LOCATIONS.find(x=>x.id===id);if(!l)return;
-  const unlocked=!l.unlock||l.unlock(C)||id==="desa"||id==="hospice"||id==="kota";
-  if(!unlocked){toast("Lokasi belum terbuka.");return;}
-  C.location=id;toast(`Kau pindah ke ${l.name}. Cek aktivitas khasnya!`);
-  renderPeta();renderHidup();
-}
-function exploreLocation(){
-  if(!spendAction()){renderHidup();return;}
-  const l=LOCATIONS.find(x=>x.id===C.location);const ev=rand(l.explore);ev.fn();
-  log(C.age,`[${l.name}] ${ev.t}`,"e-good");toast(ev.t);
-  if(C.stats.health<=0){die("Penjelajahanmu berakhir fatal.");return;}
-  checkMissions();updateTitle();renderAll();
-}
-
-// ---------- ASET ----------
-function renderAset(){
-  let html=`<div class="sechead">Properti, Senjata & Tunggangan</div>`;
-  ASSET_TYPES.filter(t=>!t.arcane||C.isMage).forEach(def=>{
-    const owned=C.assets.find(a=>a.id===def.id);const lvl=owned?owned.level:0;const next=lvl+1;
-    const canUp=next<def.tiers.length;const cost=canUp?def.cost[next]:0;const afford=C.coin>=cost;
-    html+=`<div class="asset"><span class="assetico">${def.ico}</span>
-      <div class="assetinfo"><div class="assetname">${def.tiers[lvl]}</div>
-        <div class="assetlvl">${def.name} · Tingkat ${lvl}/${def.tiers.length-1}</div>
-        <div class="assetdesc">${def.perk[lvl]||'Belum ada efek'}</div></div>
-      ${canUp?`<button class="upbtn" ${afford?`onclick="upgradeAsset('${def.id}')"`:'disabled'}>${lvl===0?'Beli':'Upgrade'}<br>💰${cost}</button>`:`<span style="font-size:10px;color:var(--gold)">MAX</span>`}
-    </div>`;});
-
-  // BISNIS
-  html+=`<div class="sechead">Bisnis (Income Pasif/Tahun)</div>`;
-  BUSINESS_TYPES.forEach(def=>{
-    const owned=C.businesses.find(b=>b.id===def.id);
-    if(owned){
-      const next=owned.level+1;const canUp=next<def.tiers.length;
-      const cost=canUp?def.upgrade[next]:0;const afford=C.coin>=cost;
-      html+=`<div class="asset"><span class="assetico">${def.ico}</span>
-        <div class="assetinfo"><div class="assetname">${def.tiers[owned.level]}</div>
-          <div class="assetlvl">${def.name} · +${def.income[owned.level]}/th</div>
-          <div class="assetdesc">${def.risk}</div></div>
-        ${canUp?`<button class="upbtn" ${afford?`onclick="upgradeBiz('${def.id}')"`:'disabled'}>Perluas<br>💰${cost}</button>`:`<span style="font-size:10px;color:var(--gold)">MAX</span>`}
-      </div>`;
-    }else{
-      const afford=C.coin>=def.buy;
-      html+=`<div class="asset"><span class="assetico">${def.ico}</span>
-        <div class="assetinfo"><div class="assetname">${def.name}</div>
-          <div class="assetlvl">Income +${def.income[0]}/th</div>
-          <div class="assetdesc">${def.risk}</div></div>
-        <button class="upbtn" ${afford?`onclick="buyBiz('${def.id}')"`:'disabled'}>Beli<br>💰${def.buy}</button>
-      </div>`;
-    }
-  });
-
-  // SKILL
-  html+=`<div class="sechead">Keahlian</div>`;
-  SKILL_TYPES.filter(t=>!t.arcane||C.isMage).forEach(def=>{
-    const owned=C.skills.find(s=>s.id===def.id);const lvl=owned?owned.level:0;
-    const canUp=lvl<5;const cost=(lvl+1)*60;const afford=C.coin>=cost;
-    html+=`<div class="asset"><span class="assetico">${def.ico}</span>
-      <div class="assetinfo"><div class="assetname">${def.name}</div>
-        <div class="assetlvl">Tingkat ${lvl}/5</div>
-        <div class="assetdesc">${STAT_META[def.stat].name} +${lvl}/tahun pasif</div></div>
-      ${canUp?`<button class="upbtn" ${afford?`onclick="upgradeSkill('${def.id}')"`:'disabled'}>Latih<br>💰${cost}</button>`:`<span style="font-size:10px;color:var(--gold)">MAX</span>`}
-    </div>`;});
-  document.getElementById("viewAset").innerHTML=html;
-}
-function upgradeAsset(id){
-  const def=ASSET_TYPES.find(t=>t.id===id);let owned=C.assets.find(a=>a.id===id);
-  const lvl=owned?owned.level:0,next=lvl+1;if(next>=def.tiers.length)return;
-  const cost=def.cost[next];if(C.coin<cost){toast("Koin tidak cukup.");return;}
-  C.coin-=cost;if(owned)owned.level=next;else C.assets.push({id,level:next});
-  log(C.age,`Kau memperoleh ${def.tiers[next]}!`,"e-epic");toast(`${def.tiers[next]} diperoleh!`);
-  checkMissions();updateTitle();renderAset();renderHidup();
-}
 function buyBiz(id){
   const def=BUSINESS_TYPES.find(b=>b.id===id);if(C.coin<def.buy){toast("Koin tidak cukup.");return;}
   C.coin-=def.buy;C.businesses.push({id,level:0});
   log(C.age,`Kau membuka ${def.name}! Income +${def.income[0]}/tahun.`,"e-epic");toast(`${def.name} dibuka!`);
   checkMissions();updateTitle();renderAset();renderHidup();
-}
-function upgradeBiz(id){
-  const def=BUSINESS_TYPES.find(b=>b.id===id);const owned=C.businesses.find(b=>b.id===id);
-  const next=owned.level+1;if(next>=def.tiers.length)return;
-  const cost=def.upgrade[next];if(C.coin<cost){toast("Koin tidak cukup.");return;}
-  C.coin-=cost;owned.level=next;
-  log(C.age,`${def.name} diperluas jadi ${def.tiers[next]}! Income +${def.income[next]}/th.`,"e-epic");
-  toast(`${def.tiers[next]}!`);renderAset();renderHidup();
 }
 function upgradeSkill(id){
   const def=SKILL_TYPES.find(t=>t.id===id);let owned=C.skills.find(s=>s.id===id);
@@ -1413,43 +1108,7 @@ function quitCareer(){
   updateTitle();renderAktivitas();renderHidup();
 }
 
-// ---------- MODAL ----------
-function showModal(data){
-  pendingChoice={data};
-  setModalIco(document.getElementById("mico"),data.ico||"❓");
-  document.getElementById("mprompt").textContent=data.prompt;
-  document.getElementById("mchoices").innerHTML=data.choices.map((ch,i)=>
-    `<button class="mchoice" onclick="resolveChoice(${i})">${ch.label}${ch.hint?`<span class="hint">${ch.hint}</span>`:''}</button>`).join("");
-  document.getElementById("modal").classList.add("show");
-  document.getElementById("btnAge").disabled=true;
-}
-function resolveChoice(i){
-  const {data}=pendingChoice;
-  // aktivitas pakai jatah aksi; event takdir tidak
-  if(data._isActivity&&!spendAction()){closeModal();return;}
-  const res=data.choices[i].run();
-  if(res&&res.t)log(C.age,res.t,res.cls);
-  if(res&&res.t)toast(res.t);
-  closeModal();
-  if(C.stats.health<=0){die("Pilihanmu membawamu pada ajal.");return;}
-  checkMissions();updateTitle();renderAll();
-  if(C.pendingDot&&currentTab!=="Relasi")document.getElementById("dotRelasi").classList.add("on");
-}
-function closeModal(){
-  document.getElementById("modal").classList.remove("show");
-  document.getElementById("btnAge").disabled=false;pendingChoice=null;
-}
-
-// ---------- NAV ----------
-function switchTab(name){
-  currentTab=name;
-  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.view===name));
-  ["Hidup","Aktivitas","Relasi","Peta","Aset"].forEach(v=>
-    document.getElementById("view"+v).classList.toggle("hidden",v!==name));
-  document.getElementById("agewrap").classList.toggle("hidden",name!=="Hidup");
-  if(name==="Hidup")renderHidup();if(name==="Aktivitas")renderAktivitas();
-  if(name==="Relasi")renderRelasi();if(name==="Peta")renderPeta();if(name==="Aset")renderAset();
-}
+// ---------- NAV (legacy switchTab di-override v5+) ----------
 function renderAll(){renderHidup();
   if(currentTab==="Aktivitas")renderAktivitas();if(currentTab==="Relasi")renderRelasi();
   if(currentTab==="Peta")renderPeta();if(currentTab==="Aset")renderAset();}
@@ -1467,19 +1126,6 @@ function initOrigins(){
 }
 function selOrigin(id){chosenOrigin=id;
   document.querySelectorAll(".origin").forEach(e=>e.classList.toggle("sel",e.dataset.id===id));}
-function beginLife(){
-  C=newChar(chosenOrigin);initMissions();
-  const o=ORIGINS.find(x=>x.id===chosenOrigin);
-  log(0,`${C.name} lahir sebagai ${o.name}. ${o.desc}`,"e-epic");
-  const mom=makeRel("keluarga",{female:true,bond:ri(60,80)});mom.name="Ibu "+C.name.split(" ")[1];
-  const dad=makeRel("keluarga",{female:false,bond:ri(55,75)});dad.name="Ayah "+C.name.split(" ")[1];
-  C.relations.push(mom,dad);
-  document.getElementById("startScreen").classList.add("hidden");
-  document.getElementById("overScreen").classList.add("hidden");
-  document.getElementById("tabbar").classList.remove("hidden");
-  document.getElementById("agewrap").classList.remove("hidden");
-  switchTab("Hidup");
-}
 function restart(){
   document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));
   document.getElementById("tabbar").classList.add("hidden");
@@ -1516,6 +1162,16 @@ function openChoice(data){
     + (data.cancel!==false?`<button class="mchoice mc-cancel" onclick="closeModal()">↩ Batal</button>`:'');
   document.getElementById("modal").classList.add("show");
   document.getElementById("btnAge").disabled=true;
+}
+function showModal(data){openChoice(data);}
+function openSubs(actId){
+  const a=ACTIVITIES.find(x=>x.id===actId);if(!a)return;
+  openChoice({ico:a.ico,prompt:a.name,_isActivity:true,
+    choices:a.subs.map(s=>({label:s.label,hint:s.hint,run:()=>({t:s.run(),cls:"e-good"})}))});
+}
+function closeModal(){
+  document.getElementById("modal").classList.remove("show");
+  document.getElementById("btnAge").disabled=false;pendingChoice=null;
 }
 
 // ---------- PROPERTY CATALOG (multi-unit, tiap varian beda harga & sifat) ----------
@@ -1599,7 +1255,6 @@ function processActiveRentals(){
   return offers; // diproses lewat popup berantai di UI
 }
 
-console.log("v4 asset module loaded");
 // ============================================================
 //  TAKDIR v4 — Patch (state, loop, render aset baru)
 // ============================================================
@@ -1612,67 +1267,6 @@ newChar=function(originId){
   c.gear={mount:"none",weapon:"none",tome:"none"}; // single slot
   delete c.assets;          // ganti sistem lama
   return c;
-};
-
-// ---------- override ageUp: pakai perks v4 + antrian sewa aktif ----------
-ageUp=function(){
-  if(!C.alive)return;
-  C.age++; C.actionsLeft=2; C._bizRisk=null;
-
-  applyAssetPerksV4();
-  processCareer();
-  processBusinesses();
-  if(C._bizRisk)log(C.age,C._bizRisk,"e-bad");
-
-  if(C.age>50)applyStats({health:-ri(1,3)});
-  if(C.age>65)applyStats({health:-ri(3,6)});
-
-  if(C.stats.health<=0)return die("Tubuhmu menyerah pada luka & penyakit.");
-  if(C.age>60&&chance((C.age-60)*0.015)&&C.stats.health<35)
-    return die("Usia tua menjemputmu dengan tenang.");
-
-  C.relations.forEach(r=>{
-    if(r.role==="pasangan"||r.role==="bestie")r.bond=clamp(r.bond-ri(0,2));
-    if(r.role==="pengikut")r.loyalty=clamp(r.loyalty-ri(0,3));
-  });
-
-  // antrian sewa aktif (trader nego) -> tampilkan sbg popup berantai SETELAH event
-  C._rentQueue=processActiveRentals();
-
-  // event tahunan
-  const pool=EVENTS.filter(e=>C.age>=e.minAge&&C.age<=e.maxAge&&(!e.cond||e.cond(C)));
-  if(pool.length&&chance(0.72)){
-    const tot=pool.reduce((s,e)=>s+(e.w||1),0);let r=Math.random()*tot,ev;
-    for(const e of pool){r-=(e.w||1);if(r<=0){ev=e;break;}}
-    ev=ev||pool[0];
-    if(ev.choice){showModal(ev.choice());updateTitle();render();return;}
-    const res=ev.auto();log(C.age,res.t,res.cls);
-  }else{
-    log(C.age,rand(["Tahun tenang berlalu.","Musim berganti damai.","Hanya rutinitas sehari-hari.","Hidup berjalan tanpa kejutan."]),"");
-  }
-
-  if(C.stats.health<=0)return die("Lukamu terlalu parah untuk bertahan.");
-  checkMissions();updateTitle();render();
-  // setelah render, munculkan tawaran sewa kalau ada
-  flushRentQueue();
-};
-
-// ---------- override die(): pakai properties bukan assets lama ----------
-die=function(reason){
-  C.alive=false;updateTitle();log(C.age,reason,"e-death");
-  setTimeout(()=>{
-    document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));
-    document.getElementById("agewrap").classList.add("hidden");
-    document.getElementById("tabbar").classList.add("hidden");
-    document.getElementById("overScreen").classList.remove("hidden");
-    const fam=C.relations.filter(r=>r.isChild).length;
-    const legacy=C.reputation>40?"Namamu dikenang dalam balada para penyair.":
-      fam>0?`${fam} keturunan melanjutkan garis darahmu.`:"Kau berlalu nyaris tanpa jejak.";
-    document.getElementById("epitaph").innerHTML=
-      `<b>${C.name}</b><br>${C.title} · wafat usia ${C.age}<br><br>
-       Harta: ${C.coin} keping · Reputasi: ${C.reputation}<br>
-       Relasi: ${C.relations.length} · Properti: ${C.properties.length} · Bisnis: ${C.businesses.length}<br>${legacy}`;
-  },1400);
 };
 
 // ---------- proses antrian tawaran sewa (popup berantai) ----------
@@ -1842,24 +1436,6 @@ resolveChoice=function(i){
   if(then)setTimeout(then,180); // lanjut popup berantai (sewa)
 };
 
-console.log("v4 patch loaded");
-// ============================================================
-//  TAKDIR v4 — Patch misi (sesuaikan dgn sistem properti baru)
-// ============================================================
-// timpa MISSION_POOL entri lama yg pakai c.assets
-(function(){
-  const castle=MISSION_POOL.find(m=>m.id==="castle");
-  if(castle)castle.check=c=>c.properties.some(p=>p.key==="castle");
-
-  // tambah misi baru kalau belum ada
-  if(!MISSION_POOL.find(m=>m.id==="landlord"))
-    MISSION_POOL.push({id:"landlord",title:"Tuan Tanah Sejati",desc:"Sewakan 2 properti sekaligus.",
-      check:c=>c.properties.filter(p=>p.rented).length>=2,reward:()=>{C.reputation+=15;return "Reputasi +15";}});
-  if(!MISSION_POOL.find(m=>m.id==="collector"))
-    MISSION_POOL.push({id:"collector",title:"Kolektor Properti",desc:"Miliki 4 properti.",
-      check:c=>c.properties.length>=4,reward:()=>{C.coin+=400;return "+400 keping";}});
-})();
-console.log("v4 mission patch loaded");
 // ============================================================
 //  TAKDIR v5 — Kustomisasi, Appearance, Net Worth, Inventory
 // ============================================================
@@ -1961,7 +1537,6 @@ function useItem(key){
   updateTitle();renderAll();
 }
 
-console.log("v5 customization module loaded");
 // ============================================================
 //  TAKDIR v5 — Patch (kustomisasi, bayi-mulai-0, net worth, inventory)
 // ============================================================
@@ -1994,57 +1569,8 @@ function createFromDraft(){
   C.relations.push(mom,dad);
 }
 
-// ---------- override ageUp untuk "uang saku" saat cukup umur ----------
-const _v4AgeUp=ageUp;
-ageUp=function(){
-  const wasChild = C.age<13;
-  _v4AgeUp.call(this);
-  if(!C||!C.alive)return;
-  // saat menginjak 13: dapat akses sebagian harta keluarga (uang saku awal)
-  if(wasChild && C.age>=13 && !C.allowance){
-    C.allowance=true;
-    const give=Math.round(C.familyWealth*0.3);
-    if(give>0){C.coin+=give;log(C.age,`Kau cukup dewasa untuk mengelola uang. Keluarga memberimu ${give} keping sebagai bekal.`,"e-good");}
-  }
-};
-
 // ---------- override buildAvatar usage di render ----------
 function portraitEmoji(){return buildAvatar(C.appearance,C.age,C.isMage,C.alive);}
-
-// ============================================================
-//  RENDER HIDUP (dengan Net Worth + ringkasan aset)
-// ============================================================
-function renderHidup(){
-  const loc=LOCATIONS.find(l=>l.id===C.location);
-  const statsHTML=STAT_ORDER.map(k=>{
-    if(k==="mana"&&!C.isMage&&C.stats.mana<5)return "";
-    const v=Math.round(C.stats[k]),m=STAT_META[k];
-    return `<div><div class="statrow"><span class="statname">${m.name}</span><span class="statval">${v}</span></div>
-      <div class="bar"><div class="fill ${m.cls}" style="width:${v}%"></div></div></div>`;}).join("");
-  const nw=netWorth();
-  const childMoney = C.age<13 ? `<span style="color:var(--ink-soft);filter:brightness(1.5)">Masih anak-anak (belum punya uang)</span>` :
-    `💰 ${C.coin} keping`;
-  document.getElementById("viewHidup").innerHTML=`
-    <div class="charcard">
-      <div class="chartop">
-        <div class="portrait ${C.isMage&&C.age>=16?'mage':''}">${portraitEmoji()}</div>
-        <div class="cinfo">
-          <div class="cname">${C.name}</div>
-          <div class="ctitle">${C.title}</div>
-          <div class="cage">Usia ${C.age} · ${C.female?"Perempuan":"Lelaki"}${C.married?" · Menikah":""} · 📍${loc.name}</div>
-          <div class="coin">${childMoney} · ⚡ Aksi ${C.actionsLeft}/2</div>
-        </div>
-      </div>
-      <div class="networth">
-        <div class="nw-item"><span class="nw-lbl">Kekayaan Bersih</span><span class="nw-val">💎 ${nw}</span></div>
-        <div class="nw-item"><span class="nw-lbl">Reputasi</span><span class="nw-val">⭐ ${C.reputation}</span></div>
-        <div class="nw-item"><span class="nw-lbl">Properti</span><span class="nw-val">🏠 ${C.properties.length}</span></div>
-        <div class="nw-item"><span class="nw-lbl">Bisnis</span><span class="nw-val">🏪 ${C.businesses.length}</span></div>
-      </div>
-      <div class="stats">${statsHTML}</div>
-    </div>
-    <div class="logbox">${logHTML()}</div>`;
-}
 
 // ============================================================
 //  TAB INVENTORY (barang dipakai ulang)
@@ -2181,11 +1707,9 @@ renderAll=function(){renderHidup();
   if(currentTab==="Peta")renderPeta();if(currentTab==="Aset")renderAset();
   if(currentTab==="Inventory")renderInventory();};
 
-console.log("v5 patch loaded");
 // ============================================================
 //  TAKDIR v6 — FONDASI: Waktu Bulanan + Peta 4 Kota
 // ============================================================
-const MONTHS=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Ags","Sep","Okt","Nov","Des"];
 const ACTIONS_PER_YEAR=50;
 const ACTION_BONUS_CAP=6;   // bonus aksi maksimal per tahun dari aktivitas
 
@@ -2253,7 +1777,7 @@ const CITY_DISTANCE={
 };
 
 // ---------- HELPER WAKTU ----------
-function timeLabel(){return `${MONTHS[C.month]} thn ${C.age}`;}
+function timeLabel(){return `Tahun ke-${C.age}`;}
 function cityOf(id){return CITIES.find(c=>c.id===id);}
 function currentCity(){return cityOf(C.cityId);}
 
@@ -2264,7 +1788,6 @@ function envDamping(){
   return tough>=70?0.2 : tough>=50?0.5 : tough>=30?0.8 : 1.0;
 }
 
-console.log("v6 foundation data loaded:",CITIES.length,"cities");
 // ============================================================
 //  TAKDIR v6 — Engine waktu bulanan, travel, keluarga
 // ============================================================
@@ -2290,6 +1813,7 @@ createFromDraft=function(){
   C.homeCityId=C.cityId;
   C.location=C.cityId;
   C.subloc=null;
+  C._visited=[C.cityId];
 };
 
 // ---------- KUOTA AKSI ----------
@@ -2304,9 +1828,27 @@ function grantActionBonus(n){
 }
 
 // ---------- ADVANCE YEAR (mengganti ageUp & advanceMonth) ----------
+function teenAllowanceAmount(){
+  const base=Math.round((C.familyWealth||0)*0.3);
+  const mins={orphan:25,peasant:15};
+  return Math.max(mins[C.origin]||20,base);
+}
+function maybeGrantTeenAllowance(wasChild){
+  if(wasChild&&C.age>=13&&!C.allowance){
+    C.allowance=true;
+    const give=teenAllowanceAmount();
+    if(give>0){
+      C.coin+=give;
+      log(C.age,`Kau cukup dewasa untuk mengelola uang. Keluarga memberimu ${give} keping sebagai bekal.`,"e-good");
+    }
+  }
+}
+
 function advanceYear(){
   if(!C.alive)return;
+  const wasChild=C.age<13;
   C.age++;
+  maybeGrantTeenAllowance(wasChild);
 
   // reset kuota aksi tahunan
   C.actionsLeft=ACTIONS_PER_YEAR;
@@ -2349,7 +1891,7 @@ function advanceYear(){
       const tot=pool.reduce((s,e)=>s+(e.w||1),0);let r=Math.random()*tot,ev;
       for(const e of pool){r-=(e.w||1);if(r<=0){ev=e;break;}}
       ev=ev||pool[0];
-      if(ev.choice){showModal(ev.choice());updateTitle();render();return;}
+      if(ev.choice){openChoice(ev.choice());updateTitle();render();return;}
       const res=ev.auto();log(C.age,res.t,res.cls);
     }
   }else{
@@ -2377,7 +1919,7 @@ function processYearly(){
 function travelTo(cityId){
   if(cityId===C.cityId){toast("Kau sudah di kota ini.");return;}
   const dist=CITY_DISTANCE[C.cityId][cityId];
-  if(C.actionsLeft<dist){toast(`Butuh ${dist} aksi untuk ke sana (sisa ${C.actionsLeft}). Lanjut bulan dulu.`);return;}
+  if(C.actionsLeft<dist){toast(`Butuh ${dist} aksi untuk ke sana (sisa ${C.actionsLeft}). Lanjut tahun dulu.`);return;}
   // popup konfirmasi + opsi ajak keluarga
   const fam=C.relations.filter(r=>r.role==="keluarga"||r.role==="pasangan");
   const target=cityOf(cityId);
@@ -2404,7 +1946,6 @@ function doTravel(cityId,cost,withFamily){
   closeModal();updateTitle();renderAll();
 }
 
-console.log("v6 engine loaded");
 // ============================================================
 //  TAKDIR v6 — UI: pilih kota, peta interaktif, header bulanan
 // ============================================================
@@ -2587,10 +2128,6 @@ renderAktivitas=function(){
   document.getElementById("viewAktivitas").innerHTML=html;
 };
 
-// fix misi explorer: pakai CITIES (kunjungi semua kota)
-(function(){const ex=MISSION_POOL.find(m=>m.id==="explorer");
-  if(ex){ex.desc="Kunjungi semua 4 kota.";ex.check=c=>c._visited&&c._visited.length>=CITIES.length;}})();
-
 // catat kota dikunjungi saat travel
 const _v6DoTravel=doTravel;
 doTravel=function(cityId,cost,withFamily){
@@ -2600,7 +2137,6 @@ doTravel=function(cityId,cost,withFamily){
   checkMissions();
 };
 
-console.log("v6 UI loaded");
 // ============================================================
 //  TAKDIR — PRIORITAS 2: Minigame, Turnamen, Gambling, Animasi
 // ============================================================
@@ -2782,7 +2318,6 @@ function cardGame(){
   });
 }
 
-console.log("priority 2 module loaded: tournaments, gambling, anim");
 // ============================================================
 //  PRIORITAS 2 — Aktivitas khas Sub-Lokasi (sambung minigame)
 // ============================================================
@@ -2904,7 +2439,6 @@ function runSublocAct(sublocId,idx){
   a.run();
 }
 
-console.log("priority 2 subloc activities loaded");
 // ============================================================
 //  REVISI — Batas Umur Aktivitas (logika dunia nyata)
 // ============================================================
@@ -3024,7 +2558,6 @@ sublocActsHTML=function(){
   return html;
 };
 
-console.log("age-gating revision loaded");
 // ============================================================
 //  TAKDIR — PRIORITAS 3: Wardrobe, Gift, Haggle, Lelang
 // ============================================================
@@ -3198,7 +2731,6 @@ function itemActionPopup(itemKey){
   openChoice({ico:it.ico,prompt:`<b>${it.name}</b> ×${C.inventory[itemKey]}:`,choices});
 }
 
-console.log("priority 3 module loaded: wardrobe, gift, haggle, auction");
 // ============================================================
 //  PRIORITAS 3 — Patch integrasi
 // ============================================================
@@ -3297,7 +2829,6 @@ function giftToSpecific(relId){
       }};})});
 }
 
-console.log("priority 3 patch loaded");
 // ============================================================
 //  TAKDIR — PRIORITAS 4: Sekolah Berjenjang + Kuis + Kekayaan Ortu
 // ============================================================
@@ -3469,7 +3000,6 @@ function processSchool(){
   }
 }
 
-console.log("priority 4 module loaded: schools, quiz");
 // ============================================================
 //  PRIORITAS 4 — Patch integrasi (sekolah, kekayaan ortu)
 // ============================================================
@@ -3566,7 +3096,6 @@ function openLicensePopup(){
     })});
 }
 
-console.log("priority 4 patch loaded");
 
 // ---------- tombol Lisensi Dagang di tab Aset ----------
 const _p4RenderAset=renderAset;
@@ -3640,7 +3169,6 @@ function repeatLastActivity(){
   }
 }
 
-console.log("popup foundation loaded");
 // ============================================================
 //  PATCH — Integrasi Popup Konsisten + Back
 // ============================================================
@@ -3708,7 +3236,6 @@ openChoice=function(data){
   _bk_openChoice(data);
 };
 
-console.log("popup integration patch loaded");
 // ============================================================
 //  TAKDIR — AGING EVENTS (event tak terduga tiap tambah umur)
 // ============================================================
@@ -3837,7 +3364,6 @@ function rollAgingEvent(){
   return true;
 }
 
-console.log("aging events loaded:",AGING_EVENTS.length);
 // ============================================================
 //  PATCH — Integrasi Aging Events
 // ============================================================
@@ -3890,7 +3416,6 @@ if(typeof gradeQuiz==="function"){
   };
 }
 
-console.log("aging patch loaded");
 // ============================================================
 //  TAKDIR — CONVERSATION + PROFIL KARAKTER DETAIL
 // ============================================================
@@ -3973,7 +3498,6 @@ function openProfile(relId){
     ]});
 }
 
-console.log("conversation + profile loaded");
 // ============================================================
 //  TAKDIR — STORE BERKATEGORI DI PETA
 // ============================================================
@@ -4135,7 +3659,6 @@ function storeDistrictHTML(){
   return html;
 }
 
-console.log("stores loaded:",STORES.length);
 // ============================================================
 //  TAKDIR — KARIR BARU & LUAS + EVENT KHUSUS KARIR
 // ============================================================
@@ -4231,7 +3754,6 @@ const CAREER_EVENTS={
     ]}),
 };
 
-console.log("new careers loaded:",NEW_CAREERS.length);
 // ============================================================
 //  PATCH — Career Events + Encounter System
 // ============================================================
@@ -4367,7 +3889,6 @@ openSubs=function(actId){
   _enc_prevOpenSubs(actId);
 };
 
-console.log("career events + encounter loaded");
 // ============================================================
 //  TAKDIR — KETURUNAN & PEWARISAN HARTA
 // ============================================================
@@ -4474,6 +3995,7 @@ function buildHeirCharacter(heir){
   C._lineage=(heir._lineage||1)+1;  // generasi ke-berapa
   C._ancestorName=oldName;
   C._ancestorTitle=oldTitle;
+  C._visited=[C.cityId];
   log(C.age,`🩸 Kau adalah ${heir.name}, pewaris ${oldName}. Warisan: ${inheritCoin} keping, ${inheritProps.length} properti, ${inheritBiz.length} bisnis.`,"e-epic");
   updateTitle();
   // tampilkan UI bermain lagi
@@ -4486,12 +4008,10 @@ function buildHeirCharacter(heir){
   renderAll&&renderAll();
 }
 
-console.log("inheritance system loaded");
 // ============================================================
 //  PATCH — Kematian & Pewarisan (UI game over + pilihan ahli waris)
 // ============================================================
 
-const _heir_prevDie=die;
 die=function(reason){
   C.alive=false;updateTitle();log(C.age,reason,"e-death");
   setTimeout(()=>{
@@ -4526,7 +4046,8 @@ die=function(reason){
     }
 
     document.getElementById("epitaph").innerHTML=
-      `<b>${C.name}</b><br>${C.title} · wafat usia ${C.age}${C._lineage?` · generasi ke-${C._lineage}`:''}<br><br>
+      `<b>${C.name}</b><br>${C.title} · wafat usia ${C.age}${C._lineage?` · generasi ke-${C._lineage}`:''}<br>
+       📍 ${typeof currentCity==="function"?currentCity().name:(C.cityId||"Aetheria")}<br><br>
        Harta: ${C.coin} keping · Reputasi: ${C.reputation}<br>
        Relasi: ${C.relations.length} · Properti: ${C.properties.length} · Bisnis: ${C.businesses.length}<br>
        <i>${legacy}</i>${inheritBlock}`;
@@ -4542,7 +4063,6 @@ function chooseHeir(idx){
   buildHeirCharacter(chosen);
 }
 
-console.log("death/inheritance patch loaded");
 // ============================================================
 //  TAKDIR — PETA DUNIA VISUAL (SVG + animasi kecil)
 // ============================================================
@@ -4663,7 +4183,6 @@ function worldMapSVG(){
   </svg>`;
 }
 
-console.log("world map SVG loaded");
 
 // ============================================================
 //  ANIMASI PERJALANAN — traveler menyusuri jalur antar kota
@@ -4716,7 +4235,6 @@ function playTravelAnim(fromId,toId,onArrive){
   },dur*1000+250);
 }
 
-console.log("travel animation loaded");
 
 // ---------- bungkus doTravel: mainkan animasi perjalanan dulu ----------
 if(typeof doTravel==="function"){
@@ -4852,7 +4370,6 @@ function openRelActionMenu(relId,actIdx){
   _origDoRelAction(relId,actIdx);
 }
 
-console.log("overview + submenu actions loaded");
 
 // simpan aksi asli & ganti doRelAction global -> pakai submenu
 var _origDoRelAction=(typeof doRelAction!=="undefined")?doRelAction:function(){};
@@ -4939,7 +4456,6 @@ function _reducedMotion(){
 // ---------- 5) OPTIMASI: (throttle renderAll dihapus — berisiko UI tak update) ----------
 // renderAll dibiarkan sinkron; game logic mengandalkan render yang pasti jalan.
 
-console.log("optimization + animation module loaded");
 // ============================================================
 //  TAKDIR — SAVE SYSTEM (localStorage, robust)
 // ============================================================
@@ -4948,7 +4464,6 @@ console.log("optimization + animation module loaded");
 // Saat di-deploy ke Safari/WKWebView (App Store), save berfungsi penuh.
 
 const SAVE_KEY="takdir_save_v1";
-const SAVE_VERSION=1;
 let _storageOK=null;
 
 function storageAvailable(){
@@ -4960,73 +4475,6 @@ function storageAvailable(){
     _storageOK=true;
   }catch(e){_storageOK=false;}
   return _storageOK;
-}
-
-// ---------- SIMPAN ----------
-function saveGame(silent){
-  if(!storageAvailable())return false;
-  if(typeof C==="undefined"||!C)return false;
-  try{
-    const payload={
-      v:SAVE_VERSION,
-      ts:Date.now(),
-      char:C,
-      meta:{
-        name:C.name,age:C.age,title:C.title,alive:C.alive,
-        coin:C.coin,lineage:C._lineage||1,origin:C.origin,
-      },
-    };
-    window.localStorage.setItem(SAVE_KEY,JSON.stringify(payload));
-    if(!silent&&typeof toast==="function")toast("💾 Tersimpan");
-    return true;
-  }catch(e){return false;}
-}
-
-// ---------- CEK ADA SAVE ----------
-function hasSave(){
-  if(!storageAvailable())return false;
-  try{
-    const raw=window.localStorage.getItem(SAVE_KEY);
-    if(!raw)return false;
-    const p=JSON.parse(raw);
-    return p&&p.char&&typeof p.char.age==="number";
-  }catch(e){return false;}
-}
-function savedMeta(){
-  try{return JSON.parse(window.localStorage.getItem(SAVE_KEY)).meta;}catch(e){return null;}
-}
-
-// ---------- MUAT ----------
-function loadGame(){
-  if(!hasSave()){toast&&toast("Tidak ada simpanan.");return false;}
-  try{
-    const p=JSON.parse(window.localStorage.getItem(SAVE_KEY));
-    if(p.v!==SAVE_VERSION){toast&&toast("Versi simpanan berbeda, mungkin tak kompatibel.");}
-    C=p.char;
-    // pulihkan ke layar bermain
-    if(typeof currentTab==="undefined")currentTab="Hidup";
-    document.getElementById("startScreen")&&document.getElementById("startScreen").classList.add("hidden");
-    document.getElementById("customScreen")&&document.getElementById("customScreen").classList.add("hidden");
-    document.getElementById("overScreen")&&document.getElementById("overScreen").classList.add("hidden");
-    document.querySelectorAll(".view").forEach(v=>{
-      if(["viewHidup","viewAktivitas","viewRelasi","viewPeta","viewAset","viewInventory"].includes(v.id))
-        v.classList.remove("hidden");
-    });
-    const agewrap=document.getElementById("agewrap");if(agewrap)agewrap.classList.remove("hidden");
-    const tabbar=document.getElementById("tabbar");if(tabbar)tabbar.classList.remove("hidden");
-    if(typeof setupMonthlyButton==="function")setupMonthlyButton();
-    if(typeof updateTitle==="function")updateTitle();
-    if(typeof switchTab==="function")switchTab("Hidup");
-    else if(typeof renderAll==="function")renderAll();
-    toast&&toast("Permainan dilanjutkan.");
-    return true;
-  }catch(e){toast&&toast("Gagal memuat simpanan.");return false;}
-}
-
-// ---------- HAPUS SAVE ----------
-function deleteSave(){
-  if(!storageAvailable())return;
-  try{window.localStorage.removeItem(SAVE_KEY);}catch(e){}
 }
 
 // ---------- AUTO-SAVE: hook ke advanceYear & momen penting ----------
@@ -5047,39 +4495,6 @@ function installAutoSave(){
     document.addEventListener&&document.addEventListener("visibilitychange",()=>{
       if(document.hidden&&C&&C.alive)saveGame(true);});
   }catch(e){}
-}
-
-// ---------- tombol "Lanjutkan" di start screen ----------
-function setupContinueButton(){
-  const host=document.getElementById("startScreen");
-  if(!host)return;
-  if(hasSave()){
-    const m=savedMeta();
-    const btn=document.getElementById("continueBtn");
-    if(btn){
-      btn.classList.remove("hidden");
-      const label=m?`▸ Lanjutkan: ${m.name} (usia ${m.age}${m.alive?'':' †'})`:"▸ Lanjutkan";
-      btn.textContent=label;
-    }
-  }
-}
-
-console.log("save system loaded");
-
-// ---------- konfirmasi mulai baru jika ada save (cegah ketimpa) ----------
-function confirmNewGame(){
-  if(hasSave()){
-    const m=savedMeta();
-    if(typeof openChoice==="function"){
-      openChoice({ico:"⚠️",prompt:`Sudah ada simpanan: <b>${m?m.name:'?'}</b> (usia ${m?m.age:'?'}). Mulai baru akan menimpa & menghapusnya.`,
-        choices:[
-          {label:"Lanjutkan simpanan",cls:"love",run:()=>{closeModal();setTimeout(loadGame,120);return null;}},
-          {label:"Mulai baru (hapus simpanan)",run:()=>{deleteSave();closeModal();setTimeout(()=>beginLife(),120);return null;}},
-        ]});
-      return;
-    }
-  }
-  beginLife();
 }
 
 // ---------- inisialisasi save system saat boot ----------
@@ -5167,10 +4582,25 @@ function confirmDeleteSave(){
       if(C.stats.health<25)p+=0.10;    // sakit mempercepat
       if(chance(Math.min(p,0.6))){die("Usia tua menjemputmu dengan tenang.");return;}
     }
+
+    // (e) KEMISKINAN BERTAHUN: tanpa uang, hidup makin berat
+    if(C.age>=16){
+      if(C.coin<=5){
+        C._brokeYears=(C._brokeYears||0)+1;
+        if(C._brokeYears===2)log(C.age,"Hidup serba kekurangan. Kebahagiaan terkikis.","e-bad");
+        if(C._brokeYears>=2)applyStats({happy:-ri(2,5)});
+        if(C._brokeYears>=3)applyStats({health:-ri(2,4)});
+        if(C._brokeYears>=4&&chance(0.35)){
+          C.reputation=Math.max(0,C.reputation-5);
+          log(C.age,"Kemiskinan merusak namamu di mata orang.","e-bad");
+        }
+      }else if(C.coin>=25){
+        C._brokeYears=0;
+      }
+    }
   };
 })();
 
-console.log("balance module loaded");
 // ============================================================
 //  MANTARA — SEKOLAH KOTA-SPESIALIS (jurusan + interaksi belajar)
 // ============================================================
@@ -5431,7 +4861,6 @@ function majorBoostsCareer(careerId){
   };
 })();
 
-console.log("city-specialist schools loaded");
 
 // ---------- LINK: jurusan cocok -> longgarkan syarat karir terkait ----------
 // jika pemain lulusan jurusan yg membuka karir X, beri keringanan req X.
@@ -5854,6 +5283,8 @@ function loadSlot(slot){
     if(!raw){toast&&toast("Slot kosong.");return false;}
     const p=JSON.parse(raw);
     C=p.char;
+    if(!C._visited)C._visited=C.cityId?[C.cityId]:[];
+    else if(C.cityId&&!C._visited.includes(C.cityId))C._visited.push(C.cityId);
     setActiveSlot(slot);
     // tampilkan layar bermain
     ["startScreen","customizeScreen","overScreen"].forEach(id=>{
@@ -5975,8 +5406,10 @@ confirmNewGame=function(){
   startNewCharacter();
 };
 
+// boot: tampilkan daftar slot di layar awal
+if(typeof setupContinueButton==="function")setupContinueButton();
+
 // auto-save saat advanceYear/die sudah di-hook installAutoSave (memanggil saveGame -> multi).
-console.log("multi-slot save loaded");
 // ============================================================
 //  MANTARA — PASANG ASET KUSTOM (ganti emoji -> gambar)
 // ============================================================
@@ -6069,7 +5502,6 @@ console.log("multi-slot save loaded");
   }
 })();
 
-console.log("custom assets applied");
 // ============================================================
 //  MANTARA — SAFE WRAPPER untuk entry-point (anti-crash UI)
 // ============================================================
@@ -6266,7 +5698,6 @@ if(typeof setupContinueButton==="function") setupContinueButton = _guard("setupC
   }
 })();
 
-console.log("nav 3-tab loaded");
 
 </script>
 </body>
