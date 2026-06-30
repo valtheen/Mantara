@@ -1,0 +1,13 @@
+{
+  "name": "mantara",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mantara — Hikayat Dunia Sihir (local dev server)",
+  "scripts": {
+    "start": "serve . -l 3000 --no-clipboard",
+    "dev": "npm start"
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}
