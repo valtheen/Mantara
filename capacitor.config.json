@@ -1,0 +1,33 @@
+{
+  "appId": "com.mantara.game",
+  "appName": "Mantara",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#171019",
+    "allowsLinkPreview": false
+  },
+  "android": {
+    "backgroundColor": "#171019",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1800,
+      "launchAutoHide": true,
+      "backgroundColor": "#171019",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#171019"
+    },
+    "Keyboard": {
+      "resize": "native"
+    }
+  }
+}
