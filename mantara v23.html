@@ -940,7 +940,7 @@ const MIN_WORK_AGE=15;
 
 // ---------- CAREERS (banyak variasi, ada syarat umur) ----------
 const CAREERS=[
-  {id:"farmer",ico:"🧑‍🌾",name:"Petani",req:c=>c.age>=MIN_WORK_AGE,basepay:18,
+  {id:"farmer",ico:"🧑‍🌾",name:"Petani",req:c=>c.age>=MIN_WORK_AGE,basepay:24,
     ranks:["Buruh Tani","Petani","Tuan Tanah","Juragan Panen"],statGain:{health:+1,might:+1}},
   {id:"guard",ico:"🛡️",name:"Penjaga Kota",req:c=>c.age>=MIN_WORK_AGE&&c.stats.might>=45,basepay:30,
     ranks:["Rekrut","Penjaga","Sersan","Kapten Penjaga"],statGain:{might:+3,health:-1}},
@@ -966,20 +966,20 @@ const CAREERS=[
 
 // ---------- BUSINESSES (pasif income tahunan) ----------
 const BUSINESS_TYPES=[
-  {id:"cattle",ico:"🐄",name:"Peternakan",buy:150,income:[25,55,110],
-    tiers:["Kandang Kecil","Peternakan","Ranch Besar"],upgrade:[0,300,800],
+  {id:"cattle",ico:"🐄",name:"Peternakan",buy:130,income:[32,72,132],
+    tiers:["Kandang Kecil","Peternakan","Ranch Besar"],upgrade:[0,220,700],
     risk:"Wabah ternak bisa kurangi income setahun."},
-  {id:"farm",ico:"🥕",name:"Kebun Sayur",buy:100,income:[18,42,90],
-    tiers:["Petak Kebun","Ladang","Perkebunan"],upgrade:[0,220,650],
+  {id:"farm",ico:"🥕",name:"Kebun Sayur",buy:80,income:[24,54,108],
+    tiers:["Petak Kebun","Ladang","Perkebunan"],upgrade:[0,160,560],
     risk:"Gagal panen jika musim buruk."},
-  {id:"shop",ico:"🏪",name:"Toko Dagang",buy:250,income:[40,85,170],
-    tiers:["Lapak","Toko","Rumah Dagang"],upgrade:[0,450,1100],
+  {id:"shop",ico:"🏪",name:"Toko Dagang",buy:220,income:[52,108,204],
+    tiers:["Lapak","Toko","Rumah Dagang"],upgrade:[0,340,950],
     risk:"Persaingan pasar bisa tekan untung."},
-  {id:"tavern",ico:"🍻",name:"Kedai/Tavern",buy:400,income:[60,130,260],
-    tiers:["Warung","Kedai","Tavern Megah"],upgrade:[0,700,1600],
+  {id:"tavern",ico:"🍻",name:"Kedai/Tavern",buy:360,income:[76,164,312],
+    tiers:["Warung","Kedai","Tavern Megah"],upgrade:[0,540,1400],
     risk:"Keributan bisa rusak reputasi."},
-  {id:"caravan",ico:"🐫",name:"Kafilah Dagang",buy:600,income:[90,190,380],
-    tiers:["Satu Pedati","Kafilah","Armada Dagang"],upgrade:[0,1000,2400],
+  {id:"caravan",ico:"🐫",name:"Kafilah Dagang",buy:560,income:[112,232,456],
+    tiers:["Satu Pedati","Kafilah","Armada Dagang"],upgrade:[0,800,2100],
     risk:"Bisa dirampok di jalan."},
 ];
 
@@ -1088,7 +1088,7 @@ function processBusinesses(){
 function processCareer(){
   if(!C.career)return;
   const car=CAREERS.find(x=>x.id===C.career);if(!car)return;
-  const pay=Math.round(car.basepay+C.careerLevel*car.basepay*0.6);
+  const pay=Math.round(car.basepay+C.careerLevel*car.basepay*0.8);
   C.coin+=pay;applyStats(car.statGain);C.careerYears++;
   if(C.careerYears>=3&&C.careerLevel<car.ranks.length-1&&chance(0.5)){
     C.careerLevel++;C.careerYears=0;
@@ -8072,7 +8072,7 @@ function renderKarir(){
     if(car){
       ensureJobState();
       const d=jobDevOf(C.career);
-      const basePay=Math.round(car.basepay+C.careerLevel*car.basepay*0.6);
+      const basePay=Math.round(car.basepay+C.careerLevel*car.basepay*0.8);
       const bonus=C.jobDev.level?Math.round(car.basepay*0.1*C.jobDev.level):0;
       html+=`<div class="sechead">💼 Pekerjaanmu</div>
       <div class="charcard" style="margin-bottom:10px">
@@ -10148,7 +10148,7 @@ window.startOrdoTrial=function(type){
       ranks:["Juru Sketsa","Kartografer","Penjelajah","Master Atlas"],statGain:{mind:+3}},
     {id:"executioner",ico:"🪓",name:"Algojo Kota",shady:true,req:c=>c.age>=18&&c.stats.might>=50,basepay:48,
       ranks:["Asisten Algojo","Algojo","Algojo Agung"],statGain:{might:+2,happy:-1}},
-    {id:"fisher",ico:"🎣",name:"Nelayan",req:c=>c.age>=15,basepay:20,
+    {id:"fisher",ico:"🎣",name:"Nelayan",req:c=>c.age>=15,basepay:26,
       ranks:["Nelayan Pantai","Nelayan Laut","Nakhoda Kecil","Raja Ikan"],statGain:{health:+2}},
     {id:"miner",ico:"⛏️",name:"Penambang",req:c=>c.age>=16&&c.stats.might>=40,basepay:35,
       ranks:["Kuli Tambang","Penambang","Mandor","Baron Tambang"],statGain:{might:+2,health:-1}},
@@ -10776,6 +10776,1120 @@ function boot(){
 }
 if(document.readyState!=="loading")setTimeout(boot,250);
 else document.addEventListener("DOMContentLoaded",function(){setTimeout(boot,250);});
+})();
+
+
+/* ==================================================================
+   MANTARA — HIDUP LEBIH HIDUP
+   1) Aksi bebas (buang kuota aksi)
+   2) Aset hidup (kondisi, penuaan, perawatan)
+   3) Peliharaan fantasi (adopsi, rawat, latih, bonus pasif)
+   4) Guild Petualang (papan bounty berjenjang)
+   Modul mandiri. Memakai ulang util global & gaya .exp-* .
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function _ri(a,b){ return (typeof ri==="function")?ri(a,b):Math.floor(Math.random()*(b-a+1))+a; }
+  function _ch(p){ return (typeof chance==="function")?chance(p):Math.random()<p; }
+  function _cl(v){ return (typeof clamp==="function")?clamp(v):Math.max(0,Math.min(100,v)); }
+  function _rand(a){ return (typeof rand==="function")?rand(a):a[Math.floor(Math.random()*a.length)]; }
+  function _log(t,cls){ try{ if(typeof log==="function") log(C.age,t,cls||""); }catch(e){} }
+  function _toast(t){ try{ if(typeof toast==="function") toast(t); }catch(e){} }
+  function _sfx(n){ try{ if(typeof playSFX==="function") playSFX(n); }catch(e){} }
+  function _esc(s){ try{ return (typeof esc==="function")?esc(s):String(s); }catch(e){ return String(s); } }
+  function _renderAll(){ try{ if(typeof renderAll==="function") renderAll(); }catch(e){} }
+  function _reflow(){ _renderAll(); gldRender(); }
+
+  /* ============================================================
+     1) AKSI BEBAS — buang kuota aksi
+     ============================================================ */
+  try{ if(typeof spendAction==="function") spendAction=function(){ return true; }; }catch(e){}
+  try{ if(typeof grantActionBonus==="function") grantActionBonus=function(){}; }catch(e){}
+
+  function doTravelFree(cityId,withFamily){
+    C.cityId=cityId; C.location=cityId; C.subloc=null;
+    if(withFamily){
+      C.relations.filter(function(r){return r.role==="keluarga"||r.role==="pasangan";})
+        .forEach(function(r){ r.bond=_cl(r.bond+_ri(1,3)); });
+      C.yearsAwayFromHome=0; C.homeCityId=cityId;
+    }
+    var city=(typeof cityOf==="function")?cityOf(cityId):{name:cityId,tag:""};
+    _log("Kau tiba di "+city.name+". "+(city.tag||"")+".","e-good");
+    _toast("Tiba di "+city.name+"!");
+    try{ if(typeof closeModal==="function") closeModal(); }catch(e){}
+    try{ if(typeof updateTitle==="function") updateTitle(); }catch(e){}
+    _renderAll();
+  }
+  try{
+    if(typeof travelTo==="function"){
+      travelTo=function(cityId){
+        if(!hasC()) return;
+        if(cityId===C.cityId){ _toast("Kau sudah di kota ini."); return; }
+        var target=(typeof cityOf==="function")?cityOf(cityId):{name:cityId,tag:"",ico:"🧭",pros:[""],cons:[""]};
+        var fam=C.relations.filter(function(r){return r.role==="keluarga"||r.role==="pasangan";});
+        var choices=[{label:"Berangkat",sub:"perjalanan bebas",run:function(){ doTravelFree(cityId,false); return null; }}];
+        if(fam.length) choices.unshift({label:"Ajak keluarga ("+fam.length+")",sub:"relasi tetap hangat",cls:"love",
+          run:function(){ doTravelFree(cityId,true); return null; }});
+        var sub=(target.pros&&target.cons)?("<br><span style='font-size:11px;color:var(--ink-soft);filter:brightness(1.6)'>"+target.pros[0]+" · tapi "+String(target.cons[0]).toLowerCase()+"</span>"):"";
+        if(typeof openChoice==="function")
+          openChoice({ico:target.ico||"🧭",prompt:"Bepergian ke <b>"+target.name+"</b> ("+target.tag+")?"+sub,choices:choices});
+      };
+    }
+  }catch(e){}
+
+  // sembunyikan penghitung "Aksi X/Y" di header Hidup
+  try{
+    if(typeof renderHidup==="function"){
+      var _prevRH=renderHidup;
+      renderHidup=function(){
+        var r=_prevRH.apply(this,arguments);
+        try{
+          var el=document.querySelector("#viewHidup .coin");
+          if(el && el.innerHTML.indexOf("⚡")>=0){
+            el.innerHTML=el.innerHTML.replace(/\s*·\s*⚡[^<]*/,"");
+          }
+        }catch(e2){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  /* ============================================================
+     2) ASET HIDUP — kondisi, penuaan, perawatan
+     ============================================================ */
+  function ensureLiving(){
+    if(typeof C==="undefined"||!C) return;
+    if(!Array.isArray(C.pets)) C.pets=[];
+    if(!C._guild) C._guild={xp:0,rank:0,done:0,fail:0};
+    if(!C.gearCond) C.gearCond={};
+    if(Array.isArray(C.properties)) C.properties.forEach(function(p){ if(p && p.cond==null) p.cond=100; });
+    if(Array.isArray(C.businesses)) C.businesses.forEach(function(b){ if(b && b.cond==null) b.cond=100; });
+    if(C.gear){ for(var cat in C.gear){ if(C.gearCond[cat]==null) C.gearCond[cat]=100; } }
+  }
+
+  function gearBaseKey(cat){
+    try{
+      var g=GEAR_CATALOG[cat];
+      var free=g.variants.find(function(v){return (v.price||0)===0;});
+      return free?free.key:g.variants[0].key;
+    }catch(e){ return null; }
+  }
+
+  function degradeAssets(){
+    if(!hasC()) return;
+    ensureLiving();
+    C.properties.forEach(function(p){
+      p.cond=_cl(p.cond-_ri(2,5));
+      if(p.rented && p.cond<30 && _ch(0.4)){
+        p.rented=false;
+        var def=(typeof PROPERTY_CATALOG!=="undefined")?PROPERTY_CATALOG.find(function(x){return x.key===p.key;}):null;
+        _log("Penyewa "+(def?def.name:"propertimu")+" pergi — bangunan kurang terawat.","e-bad");
+      }
+    });
+    C.businesses.forEach(function(b){ b.cond=_cl(b.cond-_ri(2,4)); });
+    if(C.gear){
+      for(var cat in C.gear){
+        if(C.gearCond[cat]==null) C.gearCond[cat]=100;
+        C.gearCond[cat]=_cl(C.gearCond[cat]-_ri(3,6));
+        if(C.gearCond[cat]<=0){
+          var base=gearBaseKey(cat);
+          try{
+            var g=GEAR_CATALOG[cat];
+            var cur=g.variants.find(function(v){return v.key===C.gear[cat];});
+            if(base && C.gear[cat]!==base){
+              C.gear[cat]=base; C.gearCond[cat]=40;
+              _log((cur?cur.name:g.name)+" rusak parah dan tak terpakai lagi. Kau kembali ke perlengkapan dasar.","e-bad");
+            }else{ C.gearCond[cat]=15; }
+          }catch(e){ C.gearCond[cat]=15; }
+        }
+      }
+    }
+  }
+
+  function bizConditionPenalty(){
+    if(!hasC()||!Array.isArray(C.businesses)) return;
+    C.businesses.forEach(function(b){
+      if(b.cond!=null && b.cond<45){
+        var def=(typeof BUSINESS_TYPES!=="undefined")?BUSINESS_TYPES.find(function(x){return x.id===b.id;}):null;
+        if(!def) return;
+        var base=def.income[b.level]||0;
+        var pen=Math.round(base*(b.cond<20?0.5:0.25));
+        if(pen>0){ C.coin=Math.max(0,C.coin-pen); _log(def.name+" kurang terawat — untung berkurang "+pen+" keping.","e-bad"); }
+      }
+    });
+  }
+
+  function propRepairCost(p){
+    var def=PROPERTY_CATALOG.find(function(x){return x.key===p.key;});
+    var basePrice=def?def.price:100;
+    return Math.max(4, Math.round((100-p.cond)*basePrice*0.004));
+  }
+  function bizRepairCost(b){
+    var def=BUSINESS_TYPES.find(function(x){return x.id===b.id;});
+    var basePrice=def?def.buy:150;
+    return Math.max(4, Math.round((100-b.cond)*basePrice*0.004));
+  }
+  function gearRepairCost(cat){
+    var g=GEAR_CATALOG[cat]; var cur=g.variants.find(function(v){return v.key===C.gear[cat];});
+    var price=(cur&&cur.price)?cur.price:40;
+    return Math.max(3, Math.round((100-(C.gearCond[cat]||100))*price*0.006));
+  }
+
+  window.mtRepairProp=function(idx){
+    if(!hasC())return; ensureLiving();
+    var p=C.properties[idx]; if(!p) return;
+    if(p.cond>=100){ _toast("Kondisi sudah prima."); return; }
+    var cost=propRepairCost(p);
+    if(C.coin<cost){ _toast("Butuh "+cost+" keping untuk merawat."); return; }
+    C.coin-=cost; p.cond=100; _sfx("coin");
+    var def=PROPERTY_CATALOG.find(function(x){return x.key===p.key;});
+    _log("Kau merawat "+(def?def.name:"properti")+" (-"+cost+" keping). Kondisi prima kembali.","e-good");
+    _toast("Properti dirawat!"); _reflow();
+  };
+  window.mtRepairBiz=function(id){
+    if(!hasC())return; ensureLiving();
+    var b=C.businesses.find(function(x){return x.id===id;}); if(!b) return;
+    if(b.cond>=100){ _toast("Kondisi sudah prima."); return; }
+    var cost=bizRepairCost(b);
+    if(C.coin<cost){ _toast("Butuh "+cost+" keping untuk merawat."); return; }
+    C.coin-=cost; b.cond=100; _sfx("coin");
+    var def=BUSINESS_TYPES.find(function(x){return x.id===b.id;});
+    _log("Kau membenahi "+(def?def.name:"bisnis")+" (-"+cost+" keping).","e-good");
+    _toast("Bisnis dibenahi!"); _reflow();
+  };
+  window.mtRepairGear=function(cat){
+    if(!hasC())return; ensureLiving();
+    if((C.gearCond[cat]||100)>=100){ _toast("Kondisi sudah prima."); return; }
+    var cost=gearRepairCost(cat);
+    if(C.coin<cost){ _toast("Butuh "+cost+" keping untuk memperbaiki."); return; }
+    C.coin-=cost; C.gearCond[cat]=100; _sfx("coin");
+    var g=GEAR_CATALOG[cat]; var cur=g.variants.find(function(v){return v.key===C.gear[cat];});
+    _log("Kau memperbaiki "+(cur?cur.name:g.name)+" (-"+cost+" keping).","e-good");
+    _toast("Perlengkapan diperbaiki!"); _reflow();
+  };
+  window.mtRepairAll=function(){
+    if(!hasC())return; ensureLiving();
+    var total=0;
+    C.properties.forEach(function(p){ if(p.cond<100) total+=propRepairCost(p); });
+    C.businesses.forEach(function(b){ if(b.cond<100) total+=bizRepairCost(b); });
+    for(var cat in (C.gear||{})){ if((C.gearCond[cat]||100)<100) total+=gearRepairCost(cat); }
+    if(total<=0){ _toast("Semua aset sudah prima."); return; }
+    if(C.coin<total){ _toast("Butuh "+total+" keping untuk merawat semuanya."); return; }
+    C.coin-=total;
+    C.properties.forEach(function(p){ p.cond=100; });
+    C.businesses.forEach(function(b){ b.cond=100; });
+    for(var c2 in (C.gear||{})){ C.gearCond[c2]=100; }
+    _sfx("coin"); _log("Kau merawat seluruh aset (-"+total+" keping).","e-epic");
+    _toast("Semua aset dirawat!"); _reflow();
+  };
+
+  function condBar(v){
+    v=Math.round(v||0);
+    var col=v>=60?"#6a8a3a":(v>=30?"#b8860b":"#8b2635");
+    return "<div class='exp-pbar' style='margin-top:6px'><div class='exp-pfill' style='width:"+v+"%;background:"+col+"'></div></div>"
+      +"<div style='font-size:9px;color:var(--ink-soft);filter:brightness(1.7);margin-top:2px'>Kondisi "+v+"%</div>";
+  }
+
+  function maintenanceHTML(){
+    if(!hasC()) return "";
+    ensureLiving();
+    var rows=[];
+    C.properties.forEach(function(p,idx){
+      var def=PROPERTY_CATALOG.find(function(x){return x.key===p.key;}); if(!def)return;
+      rows.push("<div class='asset'><span class='assetico'>"+def.ico+"</span>"
+        +"<div class='assetinfo'><div class='assetname'>"+def.name+"</div>"+condBar(p.cond)+"</div>"
+        +(p.cond<100?"<button class='upbtn' onclick='mtRepairProp("+idx+")'>🔧 "+propRepairCost(p)+"💰</button>":"<span style='font-size:10px;color:var(--good)'>PRIMA</span>")+"</div>");
+    });
+    C.businesses.forEach(function(b){
+      var def=BUSINESS_TYPES.find(function(x){return x.id===b.id;}); if(!def)return;
+      rows.push("<div class='asset'><span class='assetico'>"+def.ico+"</span>"
+        +"<div class='assetinfo'><div class='assetname'>"+def.name+"</div>"+condBar(b.cond)+"</div>"
+        +(b.cond<100?"<button class='upbtn' onclick=\"mtRepairBiz('"+b.id+"')\">🔧 "+bizRepairCost(b)+"💰</button>":"<span style='font-size:10px;color:var(--good)'>PRIMA</span>")+"</div>");
+    });
+    for(var cat in (C.gear||{})){
+      var g=GEAR_CATALOG[cat]; if(!g)continue; if(g.arcane&&!C.isMage)continue;
+      var cur=g.variants.find(function(v){return v.key===C.gear[cat];}); if(!cur)continue;
+      if((cur.price||0)===0 && (C.gearCond[cat]||100)>=100) continue;
+      (function(cat,cur){
+        rows.push("<div class='asset'><span class='assetico'>"+g.ico+"</span>"
+          +"<div class='assetinfo'><div class='assetname'>"+cur.name+"</div>"+condBar(C.gearCond[cat])+"</div>"
+          +((C.gearCond[cat]||100)<100?"<button class='upbtn' onclick=\"mtRepairGear('"+cat+"')\">🛠️ "+gearRepairCost(cat)+"💰</button>":"<span style='font-size:10px;color:var(--good)'>PRIMA</span>")+"</div>");
+      })(cat,cur);
+    }
+    if(!rows.length) return "";
+    return "<div class='sechead'>🔧 Perawatan Aset</div>"
+      +"<p style='font-size:10.5px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 8px;line-height:1.5;'>Semua aset menua tiap tahun. Rawat agar income & bonus tetap penuh — kondisi rendah menurunkan hasil, gear bisa rusak.</p>"
+      +rows.join("")
+      +"<div class='tiles' style='margin-top:2px'><div class='tile fullrow' onclick='mtRepairAll()'><span class='ti'>✨</span><span class='tn'>Rawat Semua Aset</span><span class='td'>Bayar sekali, semua kembali prima.</span></div></div>";
+  }
+
+  try{
+    if(typeof renderAset==="function"){
+      var _prevRA=renderAset;
+      renderAset=function(){
+        var r=_prevRA.apply(this,arguments);
+        try{
+          var host=document.getElementById("viewAset");
+          if(host){
+            var mh=maintenanceHTML();
+            var ph=petsSectionHTML();
+            if(mh) host.innerHTML+=mh;
+            if(ph) host.innerHTML+=ph;
+          }
+        }catch(e2){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  /* ============================================================
+     3) PELIHARAAN FANTASI
+     ============================================================ */
+  var PET_SPECIES=[
+    {key:"moon_cat",ico:"🐈",name:"Kucing Bulan",cost:30,upkeep:4,bonus:{happy:2},arcane:false,desc:"Teman tenang yang menenangkan jiwa."},
+    {key:"dire_wolf",ico:"🐺",name:"Serigala Dire",cost:70,upkeep:8,bonus:{might:2,health:1},arcane:false,desc:"Pemburu setia, memperkuat nyali bertarung."},
+    {key:"war_hawk",ico:"🦅",name:"Elang Perang",cost:90,upkeep:8,bonus:{mind:1,charm:1},arcane:false,desc:"Mata dari langit, tajam membaca medan."},
+    {key:"war_boar",ico:"🐗",name:"Babi Hutan Baja",cost:120,upkeep:10,bonus:{might:3},arcane:false,desc:"Tunggangan brutal untuk penyerbu garis depan."},
+    {key:"unicorn",ico:"🦄",name:"Unicorn",cost:340,upkeep:22,bonus:{charm:3,mana:1},arcane:false,desc:"Makhluk suci, memancarkan pesona & berkah."},
+    {key:"gryphon",ico:"🦁",name:"Gryphon",cost:420,upkeep:26,bonus:{might:2,mana:1,mind:1},arcane:false,desc:"Raja langit bersayap, kebanggaan para ksatria."},
+    {key:"drakeling",ico:"🐉",name:"Naga Kecil",cost:260,upkeep:20,bonus:{might:3,mana:2},arcane:true,desc:"Anak naga — tumbuh menakutkan seiring waktu."},
+    {key:"phoenix",ico:"🔥",name:"Anak Phoenix",cost:520,upkeep:30,bonus:{mana:3,health:2},arcane:true,desc:"Terlahir dari bara, memberi vitalitas abadi."},
+    {key:"spirit_owl",ico:"🦉",name:"Burung Hantu Arwah",cost:200,upkeep:16,bonus:{mind:3,mana:1},arcane:true,desc:"Penjaga rahasia arcane & pengetahuan kuno."},
+    {key:"slime",ico:"🟢",name:"Slime Peliharaan",cost:25,upkeep:3,bonus:{happy:1,mind:1},arcane:false,desc:"Menggemaskan, mudah dirawat, selalu ceria."}
+  ];
+  function petDef(key){ return PET_SPECIES.find(function(s){return s.key===key;}); }
+  function petMax(){ return 4; }
+
+  function petPower(p){
+    var def=petDef(p.key); if(!def) return 0;
+    var b=def.bonus, sum=0; for(var k in b) sum+=b[k];
+    return Math.round(sum*(1+(p.level-1)*0.5)*(0.5+ (p.bond/100)*0.5) * (0.6+ (p.cond/100)*0.4));
+  }
+  function petsTotalCombat(){
+    if(!hasC()||!Array.isArray(C.pets)) return 0;
+    var t=0; C.pets.forEach(function(p){ t+=petPower(p); }); return t;
+  }
+
+  function processPetsYear(){
+    if(!hasC()||!Array.isArray(C.pets)||!C.pets.length) return;
+    var totalUpkeep=0;
+    var survivors=[];
+    C.pets.forEach(function(p){
+      var def=petDef(p.key); if(!def){ return; }
+      p.age=(p.age||0)+1;
+      if(C.coin>=def.upkeep){ C.coin-=def.upkeep; totalUpkeep+=def.upkeep; p.cond=_cl((p.cond||100)+ _ri(2,6)); }
+      else { p.cond=_cl((p.cond||100)- _ri(12,22)); p.bond=_cl((p.bond||60)- _ri(3,8)); }
+      p.cond=_cl(p.cond-_ri(6,12));
+      if(p.bond>=40){
+        var scale=(p.level)*(0.4+(p.bond/100)*0.6);
+        var gained={};
+        for(var k in def.bonus){ var g=Math.round(def.bonus[k]*scale*0.5); if(g>0) gained[k]=(gained[k]||0)+g; }
+        if(Object.keys(gained).length && typeof applyStats==="function") applyStats(gained);
+      }
+      if((def.key==="drakeling"||def.key==="phoenix"||def.key==="gryphon") && p.level<5 && p.age>0 && p.age%3===0 && p.bond>=55){
+        p.level++; _log(p.name+" tumbuh makin perkasa! (Tingkat "+p.level+")","e-epic");
+      }
+      if(p.cond<=0 && p.bond<25 && _ch(0.5)){
+        _log(p.name+" pergi meninggalkanmu karena terlantar.","e-bad");
+      }else{
+        survivors.push(p);
+      }
+    });
+    C.pets=survivors;
+    if(totalUpkeep>0) _log("Biaya merawat peliharaan tahun ini: "+totalUpkeep+" keping.","");
+  }
+
+  function petName(def){
+    var pool=["Auron","Vayra","Kael","Nix","Ember","Sable","Luna","Fenrir","Zephyr","Onyx","Aria","Draco","Selka","Rune","Coral"];
+    return _rand(pool);
+  }
+  window.petAdopt=function(key){
+    if(!hasC())return; ensureLiving();
+    var def=petDef(key); if(!def) return;
+    if(def.arcane && !C.isMage){ _toast("Hanya penyihir yang bisa mengikat makhluk arcane."); return; }
+    if(C.pets.length>=petMax()){ _toast("Kandangmu penuh (maks "+petMax()+")."); return; }
+    if(C.coin<def.cost){ _toast("Butuh "+def.cost+" keping."); return; }
+    C.coin-=def.cost; _sfx("coin");
+    var nm=petName(def);
+    C.pets.push({key:key,name:nm,level:1,bond:60,cond:100,age:0});
+    _log("Kau mengangkat "+def.ico+" "+nm+" ("+def.name+") sebagai peliharaan!","e-epic");
+    _toast(nm+" bergabung!"); _reflow();
+  };
+  window.petFeed=function(idx){
+    if(!hasC())return; var p=C.pets[idx]; if(!p)return;
+    var def=petDef(p.key); var cost=Math.max(3,Math.round((def?def.upkeep:6)*1.5));
+    if(C.coin<cost){ _toast("Butuh "+cost+" keping."); return; }
+    C.coin-=cost; p.cond=_cl(p.cond+_ri(15,28)); p.bond=_cl(p.bond+_ri(2,5)); _sfx("coin");
+    _toast(p.name+" kenyang & senang."); _reflow();
+  };
+  window.petTrain=function(idx){
+    if(!hasC())return; var p=C.pets[idx]; if(!p)return;
+    if(p.cond<20){ _toast(p.name+" terlalu lemah untuk berlatih. Beri makan dulu."); return; }
+    p.cond=_cl(p.cond-_ri(6,12)); p.bond=_cl(p.bond+_ri(6,12));
+    var def=petDef(p.key);
+    if(def && typeof applyStats==="function"){ var g={}; for(var k in def.bonus){ g[k]=1; break; } applyStats(g); }
+    if(p.level<5 && p.bond>=70 && _ch(0.35)){ p.level++; _log(p.name+" naik ke Tingkat "+p.level+"!","e-epic"); _toast(p.name+" makin kuat!"); }
+    else _toast(p.name+" berlatih bersamamu.");
+    _reflow();
+  };
+  window.petPlay=function(idx){
+    if(!hasC())return; var p=C.pets[idx]; if(!p)return;
+    p.bond=_cl(p.bond+_ri(5,10)); if(typeof applyStats==="function") applyStats({happy:+_ri(2,5)});
+    _toast("Kau bermain dengan "+p.name+". Ikatan menguat."); _reflow();
+  };
+  window.petRelease=function(idx){
+    if(!hasC())return; var p=C.pets[idx]; if(!p)return;
+    if(typeof openChoice==="function"){
+      openChoice({ico:"💔",prompt:"Lepaskan <b>"+_esc(p.name)+"</b> ke alam liar?",choices:[
+        {label:"Ya, lepaskan",cls:"danger",run:function(){ C.pets.splice(idx,1); _log("Kau melepas "+p.name+" ke kebebasan.",""); return {t:p.name+" kini bebas.",cls:""}; }},
+        {label:"Batal",run:function(){ return null; }}
+      ]});
+    }
+  };
+  window.petManage=function(idx){
+    if(!hasC())return; var p=C.pets[idx]; var def=petDef(p.key); if(!p||!def)return;
+    if(typeof openChoice==="function"){
+      openChoice({ico:def.ico,prompt:"<b>"+_esc(p.name)+"</b> · "+def.name+" · Tingkat "+p.level+"<br><span style='font-size:11px;color:var(--ink-soft);filter:brightness(1.6)'>Ikatan "+Math.round(p.bond)+"% · Kondisi "+Math.round(p.cond)+"%</span>",
+        choices:[
+          {label:"🍖 Beri makan",sub:"kondisi & ikatan naik",run:function(){ window.petFeed(idx); return null; }},
+          {label:"⚔️ Latih",sub:"ikatan & kekuatan naik",run:function(){ window.petTrain(idx); return null; }},
+          {label:"🎾 Bermain",sub:"ikatan & bahagia",run:function(){ window.petPlay(idx); return null; }},
+          {label:"💔 Lepaskan",cls:"danger",run:function(){ window.petRelease(idx); return null; }}
+        ]});
+    }
+  };
+
+  function petsSectionHTML(){
+    if(!hasC()) return "";
+    ensureLiving();
+    if(!C.pets.length) return "";
+    var rows=C.pets.map(function(p,idx){
+      var def=petDef(p.key); if(!def) return "";
+      var pw=petPower(p);
+      return "<div class='asset'><span class='assetico'>"+def.ico+"</span>"
+        +"<div class='assetinfo'><div class='assetname'>"+_esc(p.name)+" <span style='font-size:9px;color:var(--gold)'>Tk."+p.level+"</span></div>"
+        +"<div class='assetlvl'>"+def.name+" · ⚔️ +"+pw+" tempur</div>"
+        +condBar(p.cond)
+        +"<div style='font-size:9px;color:var(--arcane-glow);margin-top:1px'>Ikatan "+Math.round(p.bond)+"%</div></div>"
+        +"<button class='upbtn' onclick='petManage("+idx+")'>Rawat</button></div>";
+    }).join("");
+    return "<div class='sechead'>🐾 Peliharaan ("+C.pets.length+"/"+petMax()+")</div>"
+      +"<p style='font-size:10.5px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 8px;line-height:1.5;'>Beri makan & latih untuk menaikkan ikatan, kekuatan, dan bonus stat pasif. Adopsi makhluk baru di <b>Guild 🛡️ → Kandang</b>.</p>"
+      +rows;
+  }
+
+  /* ============================================================
+     4) GUILD PETUALANG — papan bounty berjenjang
+     ============================================================ */
+  var GUILD_RANKS=["Perekrut","Petualang","Pemburu","Ksatria Guild","Pahlawan","Legenda"];
+  function guildRank(){ return (hasC()&&C._guild)?Math.min(GUILD_RANKS.length-1,C._guild.rank):0; }
+  function guildPower(){
+    if(!hasC()) return 0;
+    var s=C.stats||{};
+    var p=(s.might||0) + (C.isMage?(s.mana||0)*0.9:0) + (s.mind||0)*0.25 + (C.reputation||0)*0.2;
+    try{
+      for(var cat in (C.gear||{})){
+        var g=GEAR_CATALOG[cat]; if(!g)continue;
+        var v=g.variants.find(function(x){return x.key===C.gear[cat];});
+        if(v&&v.perk){ p+=(v.perk.might||0)+(v.perk.mana||0); }
+      }
+    }catch(e){}
+    p+=petsTotalCombat();
+    p+=guildRank()*6;
+    return Math.round(p);
+  }
+
+  var BOUNTIES=[
+    {tier:0,ico:"👺",name:"Basmi Kawanan Goblin",diff:"Mudah",req:20,coin:[30,60],rep:2,hurt:[2,8]},
+    {tier:0,ico:"🐀",name:"Bersihkan Sarang Tikus Raksasa",diff:"Mudah",req:26,coin:[40,75],rep:2,hurt:[3,9]},
+    {tier:1,ico:"🐺",name:"Buru Serigala Iblis",diff:"Sedang",req:40,coin:[70,130],rep:4,hurt:[5,14]},
+    {tier:1,ico:"🕷️",name:"Basmi Ratu Laba-laba",diff:"Sedang",req:48,coin:[90,160],rep:5,hurt:[6,16]},
+    {tier:2,ico:"🗿",name:"Hancurkan Golem Batu",diff:"Sulit",req:66,coin:[150,260],rep:7,hurt:[8,20],item:true},
+    {tier:2,ico:"🧟",name:"Halau Gerombolan Mayat Hidup",diff:"Sulit",req:74,coin:[170,300],rep:8,hurt:[9,22],item:true},
+    {tier:3,ico:"🐉",name:"Tumbangkan Naga Muda",diff:"Berbahaya",req:95,coin:[320,520],rep:12,hurt:[12,28],item:true},
+    {tier:3,ico:"👹",name:"Kalahkan Raja Ogre",diff:"Berbahaya",req:104,coin:[350,560],rep:13,hurt:[13,30],item:true},
+    {tier:4,ico:"💀",name:"Musnahkan Lich Kuno",diff:"Mematikan",req:135,coin:[600,950],rep:18,hurt:[16,34],item:true},
+    {tier:4,ico:"👁️",name:"Segel Iblis Kegelapan",diff:"Mematikan",req:150,coin:[700,1100],rep:20,hurt:[18,36],item:true},
+    {tier:5,ico:"🐲",name:"Bunuh Naga Hitam Purba",diff:"NERAKA",req:185,coin:[1400,2200],rep:30,hurt:[22,42],item:true,legend:true}
+  ];
+  function bountyPool(){
+    var rk=guildRank();
+    return BOUNTIES.filter(function(b){ return b.tier<=rk+1; });
+  }
+  function winChance(b){
+    var pw=guildPower();
+    var ratio=pw/b.req;
+    var c=0.15 + (ratio-1)*0.55 + 0.15;
+    return Math.max(0.05,Math.min(0.95,c));
+  }
+
+  window.guildAttempt=function(idx){
+    if(!hasC()){ _toast("Mulai hidup dulu."); return; }
+    if(C.age<15){ _toast("Guild menerima petualang usia 15+."); return; }
+    ensureLiving();
+    var pool=bountyPool(); var b=pool[idx]; if(!b) return;
+    var wc=winChance(b);
+    var win=_ch(wc);
+    if(win){
+      var reward=_ri(b.coin[0],b.coin[1]);
+      C.coin+=reward; C.reputation=(C.reputation||0)+b.rep;
+      C._guild.xp=(C._guild.xp||0)+ (b.tier+1)*10; C._guild.done=(C._guild.done||0)+1;
+      var hurt=_ri(Math.max(1,Math.round(b.hurt[0]*0.4)),Math.max(2,Math.round(b.hurt[1]*0.5)));
+      if(typeof applyStats==="function") applyStats({health:-hurt,might:+1,happy:+_ri(4,9)});
+      var gotItem="";
+      if(b.item && _ch(0.5) && typeof addItem==="function"){
+        var it=_rand(["lucky_coin","ancient_scroll","training_manual","charm_perfume"]);
+        addItem(it); gotItem=" Kau juga menjarah barang langka!";
+      }
+      guildCheckRank();
+      _sfx("year");
+      _log("Bounty selesai: "+b.name+"! +"+reward+" keping, +"+b.rep+" reputasi."+gotItem,"e-epic");
+      if(b.legend){ _log("Kau menumbangkan Naga Hitam Purba — namamu terukir sebagai legenda!","e-epic"); }
+      _toast("Bounty berhasil! +"+reward+" koin");
+    }else{
+      C._guild.fail=(C._guild.fail||0)+1;
+      var hurt2=_ri(b.hurt[0],b.hurt[1]);
+      if(typeof applyStats==="function") applyStats({health:-hurt2,happy:-_ri(3,7)});
+      _sfx("death");
+      _log("Bounty gagal: "+b.name+". Kau terluka (-"+hurt2+" nyawa) dan mundur.","e-bad");
+      _toast("Bounty gagal — kau terluka.");
+      if(C.stats && C.stats.health<=0 && typeof die==="function"){ die("Gugur menjalankan bounty "+b.name+"."); }
+    }
+    _reflow();
+  };
+
+  function guildCheckRank(){
+    if(!C._guild) return;
+    var need=(C._guild.rank+1)*40;
+    while(C._guild.rank<GUILD_RANKS.length-1 && C._guild.xp>=need){
+      C._guild.rank++;
+      _log("Pangkat Guild naik: "+GUILD_RANKS[C._guild.rank]+"!","e-epic");
+      _toast("Pangkat Guild: "+GUILD_RANKS[C._guild.rank]);
+      need=(C._guild.rank+1)*40;
+    }
+  }
+
+  /* ---------- overlay Guild (FAB terpisah) ---------- */
+  var gldTab="Bounty";
+  function ensureGuildUI(){
+    if(document.getElementById("gldFab")) return;
+    if(!document.getElementById("gld-style")){
+      var st=document.createElement("style"); st.id="gld-style";
+      st.textContent=".gld-fab{position:fixed;z-index:9990;top:calc(env(safe-area-inset-top,0px) + 8px);right:60px;width:42px;height:42px;border-radius:50%;"
+        +"border:1px solid var(--blood);background:radial-gradient(circle at 35% 30%,#3a1f22,#1c140d);color:#f0c040;font-size:20px;cursor:pointer;"
+        +"box-shadow:0 0 14px rgba(139,38,53,.5);display:flex;align-items:center;justify-content:center;transition:transform .12s;}"
+        +".gld-fab:active{transform:scale(.9);}";
+      document.head.appendChild(st);
+    }
+    var b=document.createElement("button");
+    b.id="gldFab"; b.className="gld-fab"; b.setAttribute("aria-label","Guild Petualang");
+    b.innerHTML="🛡️";
+    b.onclick=window.gldOpen;
+    document.body.appendChild(b);
+    var ov=document.createElement("div");
+    ov.id="gldOverlay"; ov.className="exp-ov";
+    ov.innerHTML="<div class='exp-panel'><div class='exp-head'><span class='exp-title'>🛡️ GUILD PETUALANG</span>"
+      +"<span class='exp-crystals' id='gldRankLbl'></span>"
+      +"<button class='exp-x' onclick='gldClose()'>✕</button></div>"
+      +"<div class='exp-tabs' id='gldTabs'></div><div class='exp-body' id='gldBody'></div></div>";
+    ov.addEventListener("click",function(e){ if(e.target===ov) window.gldClose(); });
+    document.body.appendChild(ov);
+  }
+  window.gldOpen=function(){ ensureGuildUI(); ensureLiving(); document.getElementById("gldOverlay").classList.add("show"); gldRenderTabs(); gldRender(); };
+  window.gldClose=function(){ var ov=document.getElementById("gldOverlay"); if(ov) ov.classList.remove("show"); };
+  window.gldTabSet=function(t){ gldTab=t; gldRenderTabs(); gldRender(); };
+  function gldRenderTabs(){
+    var host=document.getElementById("gldTabs"); if(!host) return;
+    var tabs=[["Bounty","📜"],["Peliharaan","🐾"],["Kandang","⛺"]];
+    host.innerHTML=tabs.map(function(t){
+      return "<button class='exp-tab "+(gldTab===t[0]?"on":"")+"' onclick=\"gldTabSet('"+t[0]+"')\">"+t[1]+" "+t[0]+"</button>";
+    }).join("");
+    var rl=document.getElementById("gldRankLbl");
+    if(rl) rl.textContent = hasC()? ("🎖️ "+GUILD_RANKS[guildRank()]) : "";
+  }
+  function gldRender(){
+    var body=document.getElementById("gldBody"); if(!body) return;
+    if(gldTab==="Bounty") body.innerHTML=viewBounty();
+    else if(gldTab==="Peliharaan") body.innerHTML=viewPetsTab();
+    else body.innerHTML=viewKennel();
+    var rl=document.getElementById("gldRankLbl");
+    if(rl) rl.textContent = hasC()? ("🎖️ "+GUILD_RANKS[guildRank()]) : "";
+  }
+
+  function viewBounty(){
+    if(!hasC()) return "<div class='exp-empty'>🛡️<br>Guild hanya melayani jiwa yang sedang menjalani hidup.<br>Mulai atau lanjutkan kehidupan dulu.</div>";
+    if(C.age<15) return "<div class='exp-empty'>📜<br>Guild menerima petualang berusia 15+.<br>Usiamu kini "+C.age+".</div>";
+    var pw=guildPower();
+    var html="<div class='exp-hero' style='background:linear-gradient(150deg,#2a1f22,#16110c);border-color:var(--blood)'>"
+      +"<div class='lg' style='color:#f0c040'>⚔️ "+pw+"</div><div class='lb'>Kekuatan Tempur</div>"
+      +"<div class='sub'>Pangkat "+GUILD_RANKS[guildRank()]+" · Bounty tuntas: "+(C._guild.done||0)+"</div></div>";
+    html+="<div class='exp-desc' style='margin:2px 2px 10px'>Ambil bounty untuk keping, reputasi & barang langka. Bebas diambil kapan saja — makin sulit, makin besar hadiah & risikonya. Perkuat stat, gear, dan peliharaanmu untuk menang.</div>";
+    var pool=bountyPool();
+    pool.forEach(function(b,idx){
+      var wc=Math.round(winChance(b)*100);
+      var col=wc>=60?"var(--good)":(wc>=35?"var(--gold-bright)":"var(--bad)");
+      html+="<div class='exp-card'><div class='exp-row'>"
+        +"<div class='exp-ico'>"+b.ico+"</div>"
+        +"<div style='flex:1'><div class='exp-name'>"+b.name+(b.legend?" 👑":"")+"</div>"
+        +"<div class='exp-desc'>Kesulitan: <b style='color:"+col+"'>"+b.diff+"</b> · Hadiah "+b.coin[0]+"–"+b.coin[1]+" koin · +"+b.rep+"⭐"+(b.item?" · 🎁 langka":"")+"</div>"
+        +"<div class='exp-lvl'>Peluang menang: <b style='color:"+col+"'>"+wc+"%</b> (butuh kekuatan ~"+b.req+")</div></div>"
+        +"<button class='exp-btn' onclick='guildAttempt("+idx+")'>Ambil</button></div></div>";
+    });
+    return html;
+  }
+  function viewPetsTab(){
+    if(!hasC()) return "<div class='exp-empty'>🐾<br>Peliharaan menemani jiwa yang hidup.</div>";
+    ensureLiving();
+    if(!C.pets.length) return "<div class='exp-empty'>🐾<br>Kau belum punya peliharaan.<br>Adopsi makhluk di tab <b>Kandang ⛺</b>.</div>";
+    var html="<div class='exp-desc' style='margin:2px 2px 10px'>Rawat peliharaanmu: beri makan agar tetap sehat, latih untuk naik tingkat & memperkuat bonus tempur/pasif. Ikatan tinggi = bonus lebih besar.</div>";
+    C.pets.forEach(function(p,idx){
+      var def=petDef(p.key); if(!def)return;
+      var condCol=p.cond>=60?"#6a8a3a":(p.cond>=30?"#b8860b":"#8b2635");
+      html+="<div class='exp-card'><div class='exp-row'>"
+        +"<div class='exp-ico'>"+def.ico+"</div>"
+        +"<div style='flex:1'><div class='exp-name'>"+_esc(p.name)+" <span style='font-size:9px;color:var(--gold)'>Tk."+p.level+"</span></div>"
+        +"<div class='exp-desc'>"+def.name+" · ⚔️ +"+petPower(p)+" tempur · umur "+(p.age||0)+"th</div>"
+        +"<div class='exp-pbar' style='margin-top:6px'><div class='exp-pfill' style='width:"+Math.round(p.cond)+"%;background:"+condCol+"'></div></div>"
+        +"<div class='exp-lvl'>Kondisi "+Math.round(p.cond)+"% · Ikatan "+Math.round(p.bond)+"%</div></div></div>"
+        +"<div style='display:flex;gap:6px;margin-top:9px'>"
+        +"<button class='exp-btn' style='margin:0;flex:1;font-size:10px' onclick='petFeed("+idx+")'>🍖 Makan</button>"
+        +"<button class='exp-btn' style='margin:0;flex:1;font-size:10px' onclick='petTrain("+idx+")'>⚔️ Latih</button>"
+        +"<button class='exp-btn ghost' style='margin:0;flex:1;font-size:10px' onclick='petPlay("+idx+")'>🎾 Main</button>"
+        +"<button class='exp-btn ghost' style='margin:0;font-size:10px' onclick='petRelease("+idx+")'>💔</button></div></div>";
+    });
+    return html;
+  }
+  function viewKennel(){
+    if(!hasC()) return "<div class='exp-empty'>⛺<br>Kandang terbuka untuk jiwa yang hidup.</div>";
+    ensureLiving();
+    var html="<div class='exp-hero'><div class='lg'>🐾 "+C.pets.length+"/"+petMax()+"</div><div class='lb'>Peliharaan Dimiliki</div>"
+      +"<div class='sub'>Adopsi makhluk fantasi untuk menemani & memperkuatmu.</div></div>";
+    html+="<div class='exp-desc' style='margin:2px 2px 10px'>Tiap makhluk memberi bonus stat pasif tahunan & kekuatan tempur untuk bounty. Makhluk arcane butuh darah penyihir. Ada biaya rawat tiap tahun.</div>";
+    PET_SPECIES.forEach(function(s){
+      var locked=(s.arcane && !C.isMage);
+      var full=C.pets.length>=petMax();
+      var afford=C.coin>=s.cost;
+      var bonusStr=Object.keys(s.bonus).map(function(k){ return ((typeof STAT_META!=="undefined"&&STAT_META[k])?STAT_META[k].name:k)+" +"+s.bonus[k]; }).join(", ");
+      var dis=locked||full||!afford;
+      html+="<div class='exp-card'><div class='exp-row'>"
+        +"<div class='exp-ico'>"+s.ico+"</div>"
+        +"<div style='flex:1'><div class='exp-name'>"+s.name+(s.arcane?" ✨":"")+"</div>"
+        +"<div class='exp-desc'>"+s.desc+"</div>"
+        +"<div class='exp-lvl'>💰"+s.cost+" · rawat "+s.upkeep+"/th · bonus "+bonusStr+"</div></div>"
+        +"<button class='exp-btn "+(dis?"dis":"")+"' onclick=\"petAdopt('"+s.key+"')\">"+(locked?"🔒":"Adopsi")+"</button></div></div>";
+    });
+    return html;
+  }
+
+  /* ============================================================
+     HOOKS TAHUNAN
+     ============================================================ */
+  try{
+    if(typeof processYearly==="function"){
+      var _prevPY=processYearly;
+      processYearly=function(){
+        var r=_prevPY.apply(this,arguments);
+        try{ ensureLiving(); degradeAssets(); bizConditionPenalty(); processPetsYear(); }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  try{
+    if(typeof myPower==="function"){
+      var _prevMyPower=myPower;
+      myPower=function(){
+        var base=_prevMyPower.apply(this,arguments);
+        try{ base+=petsTotalCombat()*0.6; }catch(e){}
+        return base;
+      };
+    }
+  }catch(e){}
+
+  function mountGuild(){ try{ ensureGuildUI(); }catch(e){} }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(mountGuild,120); });
+  else setTimeout(mountGuild,120);
+
+  window.__mantaraLiving={petsTotalCombat:petsTotalCombat,guildPower:guildPower,ensureLiving:ensureLiving};
+})();
+
+
+/* ==================================================================
+   MANTARA — TOKO HALAMAN + BALAI TEMPA
+   • Toko tak lagi popup: jadi halaman penuh (pushPage) di Dunia/kota.
+   • Item bukan sekadar "beli": tiap perlengkapan punya halaman detail
+     dengan Beli varian, Tempa (enhance berjenjang), Modifikasi (reforge
+     keajaiban), Perbaiki kondisi, dan Jual kembali.
+   Modul mandiri. Memakai ulang sistem halaman (pgRow/pushPage) & util.
+   ================================================================== */
+(function(){
+  "use strict";
+  var MAXPLUS=8;
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function _ri(a,b){ return (typeof ri==="function")?ri(a,b):Math.floor(Math.random()*(b-a+1))+a; }
+  function _rand(a){ return (typeof rand==="function")?rand(a):a[Math.floor(Math.random()*a.length)]; }
+  function _toast(t){ try{ if(typeof toast==="function") toast(t); }catch(e){} }
+  function _sfx(n){ try{ if(typeof playSFX==="function") playSFX(n); }catch(e){} }
+  function _log(t,cls){ try{ if(typeof log==="function") log(C.age,t,cls||""); }catch(e){} }
+  function statName(k){ try{ return (typeof STAT_META!=="undefined"&&STAT_META[k])?STAT_META[k].name:k; }catch(e){ return k; } }
+  function hud(){ try{ if(typeof updateTitle==="function")updateTitle(); if(typeof renderHidup==="function")renderHidup(); if(typeof renderAset==="function")renderAset(); }catch(e){} }
+  function refresh(){ hud(); try{ if(typeof mpRefresh==="function") mpRefresh(); }catch(e){} }
+
+  var AFFIXES=[
+    {name:"Berapi",perk:{might:2}},
+    {name:"Beku",perk:{mana:2}},
+    {name:"Tajam",perk:{might:1,mind:1}},
+    {name:"Agung",perk:{charm:2}},
+    {name:"Kokoh",perk:{health:2}},
+    {name:"Arcane",perk:{mana:1,mind:1}},
+    {name:"Bercahaya",perk:{charm:1,happy:1}},
+    {name:"Ganas",perk:{might:3}},
+    {name:"Bijak",perk:{mind:2}},
+    {name:"Lincah",perk:{might:1,charm:1}}
+  ];
+
+  function ensureGearMeta(){
+    if(!hasC()) return;
+    if(!C.gearPlus) C.gearPlus={};
+    if(!C.gearAffix) C.gearAffix={};
+    if(!C.gearCond) C.gearCond={};
+    if(C.gear){ for(var cat in C.gear){
+      if(C.gearPlus[cat]==null) C.gearPlus[cat]=0;
+      if(C.gearCond[cat]==null) C.gearCond[cat]=100;
+    } }
+  }
+
+  function variantOf(cat){ try{ var g=GEAR_CATALOG[cat]; return g.variants.find(function(v){return v.key===C.gear[cat];}); }catch(e){ return null; } }
+  function basePrice(cat){ var v=variantOf(cat); return (v&&v.price)?v.price:60; }
+
+  // ---- perk efektif (bonus di atas base variant) ----
+  function gearBonusPerk(cat){
+    if(!hasC()) return {};
+    var g=GEAR_CATALOG[cat]; if(!g) return {};
+    var v=g.variants.find(function(x){return x.key===C.gear[cat];}); if(!v) return {};
+    var out={}; var plus=(C.gearPlus&&C.gearPlus[cat])||0; var k;
+    if(v.perk){ for(k in v.perk){ var add=Math.round(v.perk[k]*0.25*plus); if(add) out[k]=(out[k]||0)+add; } }
+    var af=C.gearAffix&&C.gearAffix[cat];
+    if(af&&af.perk){ for(k in af.perk){ if(typeof af.perk[k]==="number") out[k]=(out[k]||0)+af.perk[k]; } }
+    return out;
+  }
+  function effPerk(cat){
+    var v=variantOf(cat); var out={}; var k;
+    if(v&&v.perk){ for(k in v.perk) out[k]=(out[k]||0)+v.perk[k]; }
+    var b=gearBonusPerk(cat); for(k in b) out[k]=(out[k]||0)+b[k];
+    return out;
+  }
+  function perkStr(perk){
+    var s=Object.keys(perk||{}).map(function(k){ return statName(k)+" +"+perk[k]; }).join(", ");
+    return s||"—";
+  }
+
+  // ---- biaya ----
+  function enhanceCost(cat){ var plus=(C.gearPlus[cat]||0); return Math.max(20, Math.round(basePrice(cat)*0.18*(plus+1))); }
+  function reforgeCost(cat){ return Math.max(25, Math.round(basePrice(cat)*0.22)+15); }
+  function gearRepairCostPub(cat){
+    var v=variantOf(cat); var price=(v&&v.price)?v.price:40;
+    var cond=(C.gearCond[cat]!=null)?C.gearCond[cat]:100;
+    return Math.max(3, Math.round((100-cond)*price*0.006));
+  }
+  function sellPrice(cat){
+    var v=variantOf(cat); if(!v||!v.price) return 0;
+    var cond=(C.gearCond[cat]!=null)?C.gearCond[cat]:100;
+    var plus=(C.gearPlus[cat]||0);
+    var af=C.gearAffix&&C.gearAffix[cat]?1:0;
+    return Math.round(v.price*0.5*(cond/100) + plus*v.price*0.12 + af*v.price*0.08);
+  }
+
+  // ---- aksi ----
+  function enhanceGear(cat){
+    ensureGearMeta();
+    var plus=(C.gearPlus[cat]||0);
+    if(plus>=MAXPLUS){ _toast("Sudah maksimal (+"+MAXPLUS+")."); return; }
+    var cost=enhanceCost(cat);
+    if(C.coin<cost){ _toast("Butuh "+cost+" keping untuk menempa."); return; }
+    C.coin-=cost; C.gearPlus[cat]=plus+1; _sfx("coin");
+    var v=variantOf(cat);
+    _log("Kau menempa "+(v?v.name:GEAR_CATALOG[cat].name)+" ke +"+(plus+1)+" (-"+cost+" keping). Kekuatannya meningkat!","e-epic");
+    _toast((v?v.name:"Perlengkapan")+" +"+(plus+1)+"!");
+    refresh();
+  }
+  function reforgeGear(cat){
+    ensureGearMeta();
+    var cost=reforgeCost(cat);
+    if(C.coin<cost){ _toast("Butuh "+cost+" keping untuk reforge."); return; }
+    C.coin-=cost;
+    var af=_rand(AFFIXES);
+    C.gearAffix[cat]={name:af.name,perk:af.perk}; _sfx("coin");
+    var v=variantOf(cat);
+    _log("Reforge berhasil! "+(v?v.name:"Perlengkapan")+" kini menyandang keajaiban «"+af.name+"» ("+perkStr(af.perk)+").","e-epic");
+    _toast("Keajaiban baru: «"+af.name+"»");
+    refresh();
+  }
+  function sellGear(cat){
+    ensureGearMeta();
+    var v=variantOf(cat);
+    if(!v||v.key==="none"||!v.price){ _toast("Tak ada yang bisa dijual."); return; }
+    var g=Math.max(1,sellPrice(cat));
+    var name=v.name;
+    // kembali ke varian dasar (none/gratis)
+    var baseV=GEAR_CATALOG[cat].variants.find(function(x){return (x.price||0)===0;});
+    C.gear[cat]=baseV?baseV.key:GEAR_CATALOG[cat].variants[0].key;
+    C.gearPlus[cat]=0; C.gearAffix[cat]=null; C.gearCond[cat]=100;
+    C.coin+=g; _sfx("coin");
+    _log("Kau menjual "+name+" seharga "+g+" keping.","e-good");
+    _toast("Terjual +"+g+" koin");
+    refresh();
+  }
+  function buyVariant(cat,vkey){
+    ensureGearMeta();
+    var g=GEAR_CATALOG[cat]; var v=g.variants.find(function(x){return x.key===vkey;}); if(!v) return;
+    if(C.gear[cat]===vkey){ _toast("Sudah dipakai."); return; }
+    if((v.price||0)>0 && C.coin<v.price){ _toast("Koin tak cukup ("+v.price+")."); return; }
+    if(v.price) C.coin-=v.price;
+    C.gear[cat]=vkey; C.gearPlus[cat]=0; C.gearAffix[cat]=null; C.gearCond[cat]=100; _sfx("coin");
+    _log("Kau memperoleh & memakai "+v.name+(v.price?" (-"+v.price+" keping)":"")+".","e-good");
+    _toast(v.name+" dipakai.");
+    refresh();
+  }
+  window.mtRepairGearPage=function(cat){ try{ if(typeof window.mtRepairGear==="function"){ window.mtRepairGear(cat); refresh(); } }catch(e){} };
+
+  // ---- halaman detail satu slot gear ----
+  function gearSlotHTML(cat){
+    ensureGearMeta();
+    var g=GEAR_CATALOG[cat]; if(!g) return "";
+    var v=variantOf(cat); var plus=C.gearPlus[cat]||0; var af=C.gearAffix&&C.gearAffix[cat];
+    var cond=(C.gearCond[cat]!=null)?C.gearCond[cat]:100;
+    var owned=v && v.key!=="none";
+    var html="";
+    // kartu status
+    var eff=effPerk(cat);
+    var condCol=cond>=60?"var(--good)":(cond>=30?"var(--gold)":"var(--bad)");
+    html+="<div class='pg-hero' style='text-align:center;padding:14px 12px;margin:2px 0 10px;background:linear-gradient(155deg,var(--card),var(--bg1));border:1px solid var(--line);border-radius:14px'>"
+      +"<div style='font-size:40px;line-height:1'>"+g.ico+"</div>"
+      +"<div style='font-size:16px;font-weight:700;color:var(--gold-bright);margin-top:6px'>"+(v?v.name:"—")+(plus>0?" <span style='color:var(--gold)'>+"+plus+"</span>":"")+"</div>"
+      +(af?"<div style='font-size:11px;color:var(--arcane-glow)'>«"+af.name+"»</div>":"")
+      +"<div style='font-size:11.5px;color:var(--parchment);margin-top:6px'>Stat: <b>"+perkStr(eff)+"</b>/tahun</div>"
+      +(owned?"<div style='font-size:10px;color:"+condCol+";margin-top:3px'>Kondisi "+Math.round(cond)+"%</div>":"")
+      +"</div>";
+
+    if(owned){
+      html+=pgSec("⚒️ Balai Tempa");
+      // Tempa
+      if(plus<MAXPLUS){
+        var nextPerk={}; var k; var bp=v.perk||{};
+        for(k in bp){ nextPerk[k]=bp[k]+Math.round(bp[k]*0.25*(plus+1)); }
+        html+=pgRow({ico:"🔨",title:"Tempa → +"+(plus+1),sub:"Stat "+perkStr(v.perk)+" → "+perkStr(nextPerk)+" · 💰"+enhanceCost(cat),right:C.coin>=enhanceCost(cat)?"":"🔒",on:(C.coin>=enhanceCost(cat))?function(){enhanceGear(cat);}:null,dim:C.coin<enhanceCost(cat)});
+      }else{
+        html+=pgRow({ico:"🔨",title:"Tempa (MAKS +"+MAXPLUS+")",sub:"Perlengkapan sudah ditempa sempurna.",dim:true});
+      }
+      // Reforge
+      html+=pgRow({ico:"✨",title:af?"Reforge Ulang Keajaiban":"Modifikasi (Reforge)",sub:(af?"Ganti «"+af.name+"» dengan keajaiban acak":"Tambahkan keajaiban acak")+" · 💰"+reforgeCost(cat),right:C.coin>=reforgeCost(cat)?"":"🔒",on:(C.coin>=reforgeCost(cat))?function(){reforgeGear(cat);}:null,dim:C.coin<reforgeCost(cat)});
+      // Repair
+      if(cond<100){
+        var rc=gearRepairCostPub(cat);
+        html+=pgRow({ico:"🛠️",title:"Perbaiki Kondisi → 100%",sub:"💰"+rc,right:C.coin>=rc?"":"🔒",on:(C.coin>=rc)?function(){window.mtRepairGearPage(cat);}:null,dim:C.coin<rc});
+      }
+      // Sell
+      html+=pgRow({ico:"💰",title:"Jual Kembali",sub:"dapat ~"+sellPrice(cat)+" koin (kembali ke dasar)",on:function(){ sellGear(cat); }});
+    }else{
+      html+=pgNote("Belum ada "+g.name.toLowerCase()+" terpasang. Beli salah satu di bawah untuk mulai menempa & memodifikasi.");
+    }
+
+    html+=pgSec("🛒 Beli / Ganti "+g.name);
+    g.variants.forEach(function(vr){
+      if(vr.key==="none") return;
+      var isOwned=(C.gear[cat]===vr.key);
+      var afford=(vr.price||0)===0||C.coin>=vr.price;
+      html+=pgRow({ico:g.ico,title:vr.name+(isOwned?" ✓":""),sub:(vr.price?"💰"+vr.price+" · ":"")+perkStr(vr.perk)+" · "+vr.desc,
+        right:isOwned?"dipakai":(afford?"":"🔒"),
+        dim:isOwned||!afford,
+        on:(isOwned||!afford)?null:function(){ buyVariant(cat,vr.key); }});
+    });
+    return html;
+  }
+  function gearSlotPage(cat){ return { title:(GEAR_CATALOG[cat]?GEAR_CATALOG[cat].name:"Perlengkapan"), render:function(){ return gearSlotHTML(cat); } }; }
+
+  // ---- hub semua slot ----
+  function forgeHubHTML(){
+    if(!hasC()) return pgNote("Mulai hidup dulu.");
+    ensureGearMeta();
+    var html=pgNote("Kelola tiap perlengkapanmu: beli, tempa untuk menaikkan stat, modifikasi (reforge) untuk keajaiban acak, perbaiki, atau jual kembali. Koinmu: "+C.coin);
+    var cats=["weapon","mount","tome"];
+    cats.forEach(function(cat){
+      var g=GEAR_CATALOG[cat]; if(!g) return; if(g.arcane&&!C.isMage) return;
+      var v=variantOf(cat); var plus=C.gearPlus[cat]||0; var af=C.gearAffix&&C.gearAffix[cat];
+      html+=pgRow({ico:g.ico,title:g.name,sub:(v?v.name:"—")+(plus>0?" +"+plus:"")+(af?" «"+af.name+"»":""),chev:true,
+        right:"⚒️",on:function(){ if(typeof pushPage==="function") pushPage(gearSlotPage(cat)); }});
+    });
+    return html;
+  }
+  window.openForgeHub=function(){ if(typeof pushPage==="function") pushPage({title:"Balai Tempa",render:forgeHubHTML}); };
+  window.openGearSlot=function(cat){ if(typeof pushPage==="function") pushPage(gearSlotPage(cat)); };
+
+  // ---- store category -> gear cat (untuk shortcut Balai Tempa di toko) ----
+  function storeGearCat(s){
+    if(!s) return null;
+    if(s.id==="swordsmith") return "weapon";
+    if(s.id==="wandsmith") return C&&C.isMage?"tome":"weapon";
+    if(s.id==="stable") return "mount";
+    return null;
+  }
+
+  /* ============================================================
+     TOKO SEBAGAI HALAMAN (bukan popup)
+     ============================================================ */
+  function storePageHTML(s){
+    if(!hasC()) return pgNote("Mulai hidup dulu.");
+    var items=[]; try{ items=s.build()||[]; }catch(e){ items=[]; }
+    var isEdu=(s.cat==="Bimbel"||s.cat==="Perguruan");
+    var html=pgNote(s.desc+" · <b style='color:var(--gold-bright)'>Koinmu: "+C.coin+"</b>"+(isEdu?"":" · 📦 Stok berganti tiap tahun & beda tiap kota"));
+    var gcat=storeGearCat(s);
+    if(gcat && GEAR_CATALOG[gcat]){
+      html+=pgSec("⚒️ Balai Tempa");
+      var v=variantOf(gcat); var plus=(C.gearPlus&&C.gearPlus[gcat])||0;
+      html+=pgRow({ico:"⚒️",title:"Kelola & Tingkatkan "+GEAR_CATALOG[gcat].name,sub:"Sekarang: "+(v?v.name:"—")+(plus>0?" +"+plus:"")+" · tempa · modif · perbaiki · jual",chev:true,
+        on:function(){ if(typeof pushPage==="function") pushPage(gearSlotPage(gcat)); }});
+    }
+    html+=pgSec("🛒 Barang & Jasa");
+    items.forEach(function(it){
+      var locked=C.age<(it.minAge||0);
+      var afford=(it.price===0)||(C.coin>=it.price);
+      var parts=String(it.label||"").split(" ");
+      var ico=parts[0]; var title=parts.slice(1).join(" ")||it.label;
+      html+=pgRow({ico:ico,title:title,sub:locked?("🔒 tersedia usia "+it.minAge+"+"):(it.sub||""),
+        right:locked?"":(afford?"":"🔒"),
+        dim:locked||!afford,
+        on:(locked||!afford)?null:function(){
+          try{ if(typeof snapStats==="function") snapStats(); }catch(e){}
+          try{ it.run(); }catch(e2){}
+          try{ if(typeof recordActivity==="function") recordActivity(s.name+": "+it.label,function(){}); }catch(e3){}
+          setTimeout(refresh,60);
+        }});
+    });
+    return html;
+  }
+
+  try{
+    if(typeof openStore==="function"){
+      openStore=function(storeId){
+        var s=(typeof STORES!=="undefined")?STORES.find(function(x){return x.id===storeId;}):null;
+        if(!s) return;
+        try{ if(typeof snapStats==="function") snapStats(); }catch(e){}
+        if(typeof pushPage==="function") pushPage({ title:s.name, render:function(){ return storePageHTML(s); } });
+      };
+    }
+  }catch(e){}
+
+  // arahkan tombol "Ganti" gear di tab Aset ke halaman Balai Tempa (bukan popup)
+  try{
+    if(typeof chooseGearPopup==="function"){
+      chooseGearPopup=function(cat){ if(typeof pushPage==="function") pushPage(gearSlotPage(cat)); };
+    }
+  }catch(e){}
+
+  /* ============================================================
+     HOOK: perk enhance/affix benar-benar berpengaruh tiap tahun
+     ============================================================ */
+  try{
+    if(typeof applyAssetPerksV4==="function"){
+      var _prevAP=applyAssetPerksV4;
+      applyAssetPerksV4=function(){
+        var r=_prevAP.apply(this,arguments);
+        try{
+          if(hasC() && C.gear){
+            for(var cat in C.gear){
+              var bonus=gearBonusPerk(cat);
+              if(Object.keys(bonus).length && typeof applyStats==="function") applyStats(bonus);
+            }
+          }
+        }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  // netWorth mencerminkan investasi tempa
+  try{
+    if(typeof netWorth==="function"){
+      var _prevNW=netWorth;
+      netWorth=function(){
+        var t=_prevNW.apply(this,arguments);
+        try{
+          if(hasC()){
+            for(var cat in (C.gearPlus||{})){
+              var v=variantOf(cat); if(v&&v.price){ t+=Math.round((C.gearPlus[cat]||0)*v.price*0.1); }
+            }
+          }
+        }catch(e){}
+        return t;
+      };
+    }
+  }catch(e){}
+
+  // sisipkan pintu Balai Tempa ke tab Aset (di bawah, setelah render biasa)
+  try{
+    if(typeof renderAset==="function"){
+      var _prevRA2=renderAset;
+      renderAset=function(){
+        var r=_prevRA2.apply(this,arguments);
+        try{
+          var host=document.getElementById("viewAset");
+          if(host && hasC()){
+            host.innerHTML+="<div class='tiles' style='margin-top:6px'><div class='tile fullrow' onclick='openForgeHub()'>"
+              +"<span class='ti'>⚒️</span><span class='tn'>Balai Tempa Perlengkapan</span>"
+              +"<span class='td'>Beli · tempa (enhance) · modifikasi · perbaiki · jual kembali</span></div></div>";
+          }
+        }catch(e2){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraForge={gearBonusPerk:gearBonusPerk,effPerk:effPerk,enhanceCost:enhanceCost,sellPrice:sellPrice};
+})();
+
+
+/* ==================================================================
+   MANTARA — HUB KE PETA + SAUDARA
+   1) Buang FAB pojok kanan (Balai Takdir ✦ & Guild 🛡️) — pindahkan
+      aksesnya jadi tile di tab Peta Dunia.
+   2) Saudara acak: saat lahir bisa punya kakak (tak selalu sulung),
+      dan orang tua bisa melahirkan adik selama kita masih kecil.
+   Modul mandiri.
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function _ch(p){ return (typeof chance==="function")?chance(p):Math.random()<p; }
+  function _ri(a,b){ return (typeof ri==="function")?ri(a,b):Math.floor(Math.random()*(b-a+1))+a; }
+  function _rand(a){ return (typeof rand==="function")?rand(a):a[Math.floor(Math.random()*a.length)]; }
+  function _log(t,cls){ try{ if(typeof log==="function") log(C.age,t,cls||""); }catch(e){} }
+  function _toast(t){ try{ if(typeof toast==="function") toast(t); }catch(e){} }
+
+  /* ============================================================
+     1) SEMBUNYIKAN FAB POJOK KANAN + AKSES LEWAT PETA
+     ============================================================ */
+  function hideFabs(){
+    if(document.getElementById("hub-nofab-style")) return;
+    var st=document.createElement("style"); st.id="hub-nofab-style";
+    st.textContent="#expFab,#gldFab{display:none!important;}";
+    (document.head||document.documentElement).appendChild(st);
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",hideFabs);
+  else hideFabs();
+  setTimeout(hideFabs,300);
+
+  // badge kecil kalau berkah harian / bounty siap (best-effort, aman kalau fungsi tak ada)
+  function dailyBadge(){
+    try{ if(typeof dailyReady==="function" && dailyReady()) return " <span style='color:var(--blood)'>●</span>"; }catch(e){}
+    return "";
+  }
+
+  function hubSectionHTML(){
+    return "<div class='sechead'>⚜️ Balai Petualang</div>"
+      +"<p style='font-size:10.5px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 10px;'>Pusat takdir & petualanganmu — kini menyatu di peta dunia.</p>"
+      +"<div class='tiles'>"
+      +"<div class='tile' onclick=\"(window.expOpenHub&&expOpenHub())\"><span class='ti'>✦</span>"
+      +"<span class='tn'>Balai Takdir"+dailyBadge()+"</span>"
+      +"<span class='td'>Berkah harian · faksi · rival · prestasi · dinasti</span></div>"
+      +"<div class='tile arcane' onclick=\"(window.gldOpen&&gldOpen())\"><span class='ti'>🛡️</span>"
+      +"<span class='tn'>Guild Petualang</span>"
+      +"<span class='td'>Papan bounty · peliharaan · kandang makhluk</span></div>"
+      +"</div>";
+  }
+
+  try{
+    if(typeof renderPeta==="function"){
+      var _prevRP=renderPeta;
+      renderPeta=function(){
+        var r=_prevRP.apply(this,arguments);
+        try{
+          hideFabs();
+          var host=document.getElementById("viewPeta");
+          if(host && hasC()) host.insertAdjacentHTML("beforeend", hubSectionHTML());
+        }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  /* ============================================================
+     2) SAUDARA ACAK (kakak saat lahir + adik lahir kemudian)
+     ============================================================ */
+  function famSurname(){
+    try{ return C.name.split(" ").slice(1).join(" ") || ""; }catch(e){ return ""; }
+  }
+  function makeSibling(kin,bondLo,bondHi){
+    var f=_ch(0.5);
+    var s=(typeof makeRel==="function")?makeRel("keluarga",{female:f,bond:_ri(bondLo,bondHi)}):null;
+    if(!s) return null;
+    var fn = f ? (typeof FIRST_F!=="undefined"?_rand(FIRST_F):"Sable") : (typeof FIRST_M!=="undefined"?_rand(FIRST_M):"Aldric");
+    var sn = famSurname();
+    s.name = sn ? (fn+" "+sn) : fn;
+    s.kin=kin; s.sibling=true;
+    s.trait=_rand(["periang","pendiam","ambisius","setia","licik","pemberani","bijak","penyayang","jahil","rajin"]);
+    return s;
+  }
+
+  function addStartingSiblings(){
+    if(!C || !Array.isArray(C.relations)) return;
+    // jumlah kakak — sering, supaya tak selalu sulung/anak tunggal
+    var roll=Math.random();
+    var nOlder = roll<0.42 ? 0 : roll<0.70 ? 1 : roll<0.88 ? 2 : 3;
+    for(var i=0;i<nOlder;i++){
+      var s=makeSibling("Kakak",45,72);
+      if(s){ s.ageOffset=_ri(2,15); C.relations.push(s); }
+    }
+    if(nOlder>0){
+      // catat di log kelahiran bahwa ia lahir di tengah keluarga
+      var kakak=C.relations.filter(function(r){return r.kin==="Kakak";});
+      _log("Kau lahir sebagai anak "+(nOlder+1)+" dari keluarga — kakakmu: "+kakak.map(function(r){return r.name.split(" ")[0];}).join(", ")+".","");
+    }
+  }
+
+  function maybeNewSibling(){
+    if(!hasC()) return;
+    if(C.age<1 || C.age>15) return;
+    var sibs=C.relations.filter(function(r){return r.sibling;}).length;
+    if(sibs>=5) return;
+    var mom=C.relations.find(function(r){return r.kin==="Ibu";});
+    if(!mom) return; // ibu sudah tiada / tak ada
+    if(_ch(0.10)){
+      var s=makeSibling("Adik",55,78);
+      if(!s) return;
+      s.ageOffset=-C.age;
+      C.relations.push(s);
+      _log("Ibumu melahirkan "+(s.female?"adik perempuan":"adik laki-laki")+"mu, "+s.name+"!","e-good");
+      _toast("Kau punya adik baru: "+s.name.split(" ")[0]+"!");
+    }
+  }
+
+  // hook: tambah kakak sesudah createFromDraft
+  try{
+    if(typeof createFromDraft==="function"){
+      var _prevCFD=createFromDraft;
+      createFromDraft=function(){
+        var r=_prevCFD.apply(this,arguments);
+        try{ addStartingSiblings(); }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  // hook: adik lahir acak tiap tahun (saat masih kecil)
+  try{
+    if(typeof processYearly==="function"){
+      var _prevPY=processYearly;
+      processYearly=function(){
+        var r=_prevPY.apply(this,arguments);
+        try{ maybeNewSibling(); }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraPlace={addStartingSiblings:addStartingSiblings,maybeNewSibling:maybeNewSibling};
 })();
 
 </script>
