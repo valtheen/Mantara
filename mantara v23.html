@@ -475,6 +475,19 @@
   .gameover .crest{font-size:48px;}
   .gameover h2{color:var(--blood);filter:brightness(1.5);font-size:20px;letter-spacing:.1em;margin:8px 0;}
   .epitaph{font-size:13px;line-height:1.7;margin:14px 0 22px;font-style:italic;}
+  /* Layar game-over = overlay penuh layar (menutup nav & tab di belakang) */
+  #overScreen:not(.hidden){
+    position:fixed; inset:0; z-index:100000;
+    background:
+      radial-gradient(ellipse 130% 60% at 50% -5%, #2e2440 0%, transparent 50%),
+      radial-gradient(ellipse 100% 45% at 50% 105%, #1a1208 0%, transparent 50%),
+      var(--bg0);
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:calc(env(safe-area-inset-top,0px) + 24px) 16px calc(env(safe-area-inset-bottom,0px) + 48px);
+    animation:panelIn .25s ease-out;
+  }
+  #overScreen:not(.hidden) .gameover{width:100%;max-width:430px;}
 
   /* ================================================================
      UI POLISH v1 — lebih eye-catching, tetap hemat & nyaman
@@ -2275,7 +2288,7 @@ function renderPeta(){
   // PETA VISUAL SVG dengan animasi
   if(typeof worldMapSVG==="function")html+=`<div class="map-wrap">${worldMapSVG()}</div>`;
 
-  html+=`<p style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 12px;line-height:1.5;">Tap kota di peta untuk berpindah (atau lihat daftar di bawah). Pindah kota makan aksi sesuai jarak. Kamu di <b>${city.name}</b>.</p>
+  html+=`<p style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 12px;line-height:1.5;">Tap kota di peta untuk berpindah (atau lihat daftar di bawah). Kamu di <b>${city.name}</b>.</p>
     <div class="tiles">`;
   CITIES.forEach(c=>{
     const here=c.id===C.cityId;
@@ -2355,7 +2368,7 @@ renderAktivitas=function(){
       <span class="td">${C.age<MIN_WORK_AGE?'Status sekolah, jurusan & persiapan kerja':'Pekerjaan, performa, keahlian profesi & lowongan'} — semua di satu tempat</span></div></div>`;
 
   // aktivitas umum
-  html+=`<div class="sechead">Aktivitas Umum (1 aksi)</div><div class="tiles">`;
+  html+=`<div class="sechead">Aktivitas Umum</div><div class="tiles">`;
   ACTIVITIES.filter(a=>!a.cond||a.cond(C)).forEach(a=>{
     const minA=(typeof ACT_MIN_AGE!=="undefined"&&ACT_MIN_AGE[a.id])||0;
     const locked=C.age<minA;
@@ -2589,7 +2602,7 @@ const SUBLOC_ACTS={
   ],
   ae_baths:[
     {ico:"♨️",label:"Berendam mewah",hint:"Nyawa + Bahagia + Pesona",run:()=>{if(!spendAction())return;const c=mulCost(15);if(C.coin<c){toast("Koin kurang.");return;}C.coin-=c;applyStats({health:+8,happy:+8,charm:+4});finishAct("Berendam di pemandian marmer, segar total.","e-good","win");}},
-    {ico:"💆",label:"Pijat & rawat diri",hint:"Pesona ++ (+1 aksi bonus)",run:()=>{if(!spendAction())return;const c=mulCost(25);if(C.coin<c){toast("Koin kurang.");return;}C.coin-=c;applyStats({charm:+6,happy:+5});grantActionBonus(1);finishAct("Perawatan membuatmu segar & bersemangat.","e-good","win");}},
+    {ico:"💆",label:"Pijat & rawat diri",hint:"Pesona ++",run:()=>{if(!spendAction())return;const c=mulCost(25);if(C.coin<c){toast("Koin kurang.");return;}C.coin-=c;applyStats({charm:+6,happy:+5});grantActionBonus(1);finishAct("Perawatan membuatmu segar & bersemangat.","e-good","win");}},
   ],
   // --- Thornvale ---
   th_woods:[
@@ -3934,7 +3947,7 @@ const STORES=[
       {label:"🍺 Minum & bersantai",sub:"Bahagia +6 · 💰10",price:10,minAge:16,run:()=>storeService(10,{happy:+6,health:-1},"Kau bersantai menikmati bir hangat.")},
       {label:"🍲 Makan besar",sub:"Nyawa +8 Bahagia +3 · 💰20",price:20,minAge:5,run:()=>storeService(20,{health:+8,happy:+3},"Kau menyantap hidangan lezat.")},
       {label:"👂 Dengar kabar kota",sub:"info & peluang · 💰5",price:5,minAge:10,run:()=>{if(C.coin<5){toast("Koin kurang.");return;}if(!spendAction())return;C.coin-=5;C.reputation+=1;finishAct(rand(["Kau dengar gosip bangsawan berkhianat.","Ada kabar harta karun di Saltmoor.","Konon raja mencari ksatria baru.","Wabah melanda kota seberang."]),"e-good");}},
-      {label:"🤝 Cari kenalan baru",sub:"dapat relasi · 1 aksi",price:0,minAge:13,run:()=>{if(!spendAction())return;const female=chance(0.5);const r=addRel("teman",{name:randName(female),female,bond:ri(35,55)});finishAct(`Kau berkenalan dengan ${r.name} di kedai.`,"e-good");}},
+      {label:"🤝 Cari kenalan baru",sub:"dapat relasi",price:0,minAge:13,run:()=>{if(!spendAction())return;const female=chance(0.5);const r=addRel("teman",{name:randName(female),female,bond:ri(35,55)});finishAct(`Kau berkenalan dengan ${r.name} di kedai.`,"e-good");}},
     ]},
 ];
 
@@ -4369,7 +4382,8 @@ die=function(reason){
 
     document.getElementById("epitaph").innerHTML=
       `<b>${C.name}</b><br>${C.title} · wafat usia ${C.age}${C._lineage?` · generasi ke-${C._lineage}`:''}<br>
-       📍 ${typeof currentCity==="function"?currentCity().name:(C.cityId||"Aetheria")}<br><br>
+       📍 ${typeof currentCity==="function"?currentCity().name:(C.cityId||"Aetheria")}<br>
+       ${typeof deathCauseLine==="function"?deathCauseLine(reason):""}<br>
        Harta: ${C.coin} keping · Reputasi: ${C.reputation}<br>
        Relasi: ${C.relations.length} · Properti: ${C.properties.length} · Bisnis: ${C.businesses.length}<br>
        <i>${legacy}</i>${inheritBlock}`;
@@ -5076,10 +5090,10 @@ function openSchool(){
     choices.push({label:"Keluar",run:()=>null});
   }else{
     // udah jenjang Tinggi & udah pilih jurusan: bisa belajar & ujian
-    choices.push({label:"📖 Belajar Ekstra",sub:`+${statLabel(major.stat)} · 1 aksi`,run:()=>{
+    choices.push({label:"📖 Belajar Ekstra",sub:`+${statLabel(major.stat)}`,run:()=>{
       if(typeof spendAction==="function"&&!spendAction()){closeModal();toast("Aksi habis tahun ini.");return null;}
       const r=studyExtraRun();closeModal();if(r&&typeof log==="function")log(C.age,r.t,r.cls);if(r)toast(r.t);if(typeof renderHidup==="function")renderHidup();return null;}});
-    choices.push({label:"📝 Ikut Ujian",sub:`uji ${statLabel(major.stat)} · 1 aksi`,run:()=>{
+    choices.push({label:"📝 Ikut Ujian",sub:`uji ${statLabel(major.stat)}`,run:()=>{
       if(typeof spendAction==="function"&&!spendAction()){closeModal();toast("Aksi habis tahun ini.");return null;}
       const r=takeExamRun();closeModal();if(r&&typeof log==="function")log(C.age,r.t,r.cls);if(r)toast(r.t);if(typeof renderHidup==="function")renderHidup();return null;}});
     choices.push({label:"💼 Program Karir",sub:"lihat prospek lulusan",run:()=>{closeModal();setTimeout(()=>viewSchoolCareers(),140);return null;}});
@@ -6092,7 +6106,7 @@ var PERKS = [
   {id:"benak_bijak",   cat:"Raga",  ico:"📖", name:"Benak Bijak",    max:6, desc:"+3 Akal awal / tingkat.",                            cost:function(l){return 30+l*30;}},
   {id:"nadi_arcane",   cat:"Arcane",ico:"🔮", name:"Nadi Arcane",    max:6, desc:"+3 Mana awal / tingkat.",                            cost:function(l){return 35+l*35;}},
   {id:"pesona_bangsawan",cat:"Arcane",ico:"💠",name:"Pesona Bangsawan",max:6,desc:"+3 Pesona awal / tingkat.",                          cost:function(l){return 30+l*30;}},
-  {id:"restu_leluhur", cat:"Takdir",ico:"✋", name:"Restu Leluhur",  max:4, desc:"+1 aksi bonus tiap tahun / tingkat.",               cost:function(l){return 60+l*60;}},
+  {id:"restu_leluhur", cat:"Takdir",ico:"✋", name:"Restu Leluhur",  max:4, desc:"Berkah leluhur: keberuntungan kecil tiap tahun / tingkat.",               cost:function(l){return 60+l*60;}},
   {id:"mata_takdir",   cat:"Takdir",ico:"👁️", name:"Mata Takdir",   max:5, desc:"+Keberuntungan di Kartu Takdir & duel.",           cost:function(l){return 45+l*45;}},
   {id:"berkat_umur",   cat:"Takdir",ico:"⏳", name:"Berkat Umur",    max:5, desc:"+2 Nyawa/tahun setelah tua (perlambat maut).",     cost:function(l){return 40+l*45;}},
   {id:"karisma_waris", cat:"Takdir",ico:"🌟", name:"Karisma Waris",  max:5, desc:"+12% perolehan Warisan Jiwa / tingkat.",            cost:function(l){return 50+l*55;}}
@@ -6826,7 +6840,7 @@ function viewFaction(){
       +"<div class='exp-pbar'><div class='exp-pfill' style='width:"+pct+"%;background:linear-gradient(90deg,var(--arcane),"+f.color+")'></div></div>"
       +"<div class='exp-desc' style='margin-top:8px'>Bonus pasif tahunan: memperkuat "+(f.stat==="coin"?"pundi-pundi":f.stat)+" seiring pangkat. Layani faksi untuk naik pangkat & raih gelar.</div>"
       +"<div style='display:flex;gap:8px;margin-top:10px'>"
-      +"<button class='exp-btn' style='margin:0;flex:1' onclick='expServeFaction()'>⚔️ Layani Faksi (1 aksi)</button>"
+      +"<button class='exp-btn' style='margin:0;flex:1' onclick='expServeFaction()'>⚔️ Layani Faksi</button>"
       +"<button class='exp-btn ghost' style='margin:0' onclick='expLeaveFaction()'>Keluar</button></div></div>";
     html+="<div class='exp-desc' style='margin:10px 2px'>Naik pangkat memberi keping besar & gelar kehormatan. Pangkat tertinggi membuka prestasi <b>Legenda Faksi</b>.</div>";
     return html;
@@ -6861,7 +6875,7 @@ function viewRival(){
   html+="<div class='exp-sec'>Kekuatan Rival</div><div class='exp-card'>"
     +statLine("⚔️ Kekuatan",rv.might)+statLine("🔮 Mana",rv.mana)+statLine("📖 Akal",rv.mind)+statLine("💠 Pesona",rv.charm)+"</div>";
   html+="<div style='text-align:center;margin:12px 0'>"
-    +"<button class='exp-btn' style='margin:0;font-size:13px;padding:11px 30px' onclick='expDuelRival()'>⚔️ Tantang Duel (1 aksi)</button></div>";
+    +"<button class='exp-btn' style='margin:0;font-size:13px;padding:11px 30px' onclick='expDuelRival()'>⚔️ Tantang Duel</button></div>";
   html+="<div class='exp-desc' style='text-align:center'>Menang duel memberi reputasi & Warisan Jiwa besar. Kalahkan ia berulang untuk menumbangkannya selamanya — lalu nemesis baru yang lebih kuat akan bangkit.</div>";
   html+="<div class='exp-desc' style='text-align:center;margin-top:8px;color:var(--gold-bright)'>Total rival ditumbangkan trah ini: "+(C._rivalsBeat||0)+"</div>";
   return html;
@@ -8092,10 +8106,10 @@ function renderKarir(){
       </div>
       <div class="tiles">
         ${(()=>{const st=typeof currentJobStyle==="function"?currentJobStyle():null;
-          return `<div class="tile ${st?'':'arcane'}" onclick="chooseJobStyle(${st?'true':'false'})"><span class="ti">${st?st.ico:"🎭"}</span><span class="tn">${st?"Ganti Gaya Kerja":"Pilih Gaya Kerja!"}</span><span class="td">${st?"ubah arah pengembangan · 1 aksi":"tentukan spesialisasi profesimu — gratis"}</span></div>`;})()}
-        <div class="tile" onclick="jobWorkHard()"><span class="ti">💪</span><span class="tn">Kerja Keras</span><span class="td">+koin & performa · 1 aksi</span></div>
-        <div class="tile" onclick="jobTrainDev()"><span class="ti">${d.ico}</span><span class="tn">Latih ${d.name}</span><span class="td">+gaji, promosi & ${STAT_META[d.stat]?STAT_META[d.stat].name:d.stat} · 💰${10+C.jobDev.level*25} · 1 aksi</span></div>
-        <div class="tile" onclick="jobAskPromotion()"><span class="ti">📈</span><span class="tn">Minta Promosi</span><span class="td">peluang dari performa & keahlian · 1 aksi</span></div>
+          return `<div class="tile ${st?'':'arcane'}" onclick="chooseJobStyle(${st?'true':'false'})"><span class="ti">${st?st.ico:"🎭"}</span><span class="tn">${st?"Ganti Gaya Kerja":"Pilih Gaya Kerja!"}</span><span class="td">${st?"ubah arah pengembangan":"tentukan spesialisasi profesimu — gratis"}</span></div>`;})()}
+        <div class="tile" onclick="jobWorkHard()"><span class="ti">💪</span><span class="tn">Kerja Keras</span><span class="td">+koin & performa</span></div>
+        <div class="tile" onclick="jobTrainDev()"><span class="ti">${d.ico}</span><span class="tn">Latih ${d.name}</span><span class="td">+gaji, promosi & ${STAT_META[d.stat]?STAT_META[d.stat].name:d.stat} · 💰${10+C.jobDev.level*25}</span></div>
+        <div class="tile" onclick="jobAskPromotion()"><span class="ti">📈</span><span class="tn">Minta Promosi</span><span class="td">peluang dari performa & keahlian</span></div>
         <div class="tile" onclick="jobOpenListings()"><span class="ti">📋</span><span class="tn">Lowongan Lain</span><span class="td">lirik karir berbeda</span></div>
         <div class="tile fullrow" onclick="quitCareer();renderKarir()"><span class="ti">🚪</span><span class="tn">Berhenti Kerja</span><span class="td">tinggalkan ${car.name}</span></div>
       </div>`;
@@ -8170,7 +8184,7 @@ const JOB_STYLES={
   combat:[
     {id:"striker",ico:"🔥",name:"Penyerang",desc:"Gaji +15% & Kekuatan +2/th, tapi Nyawa -1/th",pay:0.15,stats:{might:2,health:-1}},
     {id:"tank",ico:"🛡️",name:"Benteng",desc:"Nyawa +2/th & performa kerja lebih awet",pay:0,stats:{health:2},perfGuard:true},
-    {id:"swift",ico:"⚡",name:"Kilat",desc:"+1 aksi bonus/th & Pesona +1/th",pay:0,stats:{charm:1},bonusAct:true},
+    {id:"swift",ico:"⚡",name:"Kilat",desc:"Pesona +1/th",pay:0,stats:{charm:1},bonusAct:true},
   ],
   arcane:[
     {id:"sage",ico:"📘",name:"Cendekia",desc:"Akal +2/th & gaji +10%",pay:0.10,stats:{mind:2}},
@@ -8200,7 +8214,7 @@ window.chooseJobStyle=function(isChange){
   const car=CAREERS.find(x=>x.id===C.career);
   const set=JOB_STYLES[jobClassOf(C.career)]||[];
   openChoice({ico:"🎭",cancel:!!isChange,
-    prompt:`<b>Pilih Gaya Kerjamu</b> — ${car?car.name:""}<br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">Gaya menentukan arah pengembangan: bonus tahunan, gaji & risiko. Bisa diganti nanti (1 aksi).</span>`,
+    prompt:`<b>Pilih Gaya Kerjamu</b> — ${car?car.name:""}<br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">Gaya menentukan arah pengembangan: bonus tahunan, gaji & risiko. Bisa diganti nanti.</span>`,
     choices:set.map(s=>({label:`${s.ico} ${s.name}`,sub:s.desc,run:()=>{
       C.jobStyle={career:C.career,id:s.id};
       setTimeout(()=>{try{renderKarir();}catch(e){}},80);
@@ -8242,7 +8256,7 @@ window.chooseJobStyle=function(isChange){
       if(st.risky&&chance(0.15)){applyStats({health:-ri(3,9)});log(C.age,"⚗️ Eksperimenmu meledak! Untung hanya alis yang hangus.","e-bad");}
       if(st.shady&&chance(0.15)){C.reputation-=ri(2,5);log(C.age,"🕶️ Gosip liar soal caramu bekerja menyebar...","e-bad");}
     }
-    if((C.jobPerf>=75)&&C.careerLevel<car.ranks.length-1&&chance(0.3+(st&&st.promo?st.promo:0))){
+    if((C.jobPerf>=75)&&C.careerLevel<car.ranks.length-1&&(typeof window.promoFocusOK!=="function"||window.promoFocusOK())&&chance(0.3+(st&&st.promo?st.promo:0))){
       C.careerLevel++;C.careerYears=0;C.jobPerf=clamp(C.jobPerf-15);
       log(C.age,`Performamu diakui — promosi jadi ${car.ranks[C.careerLevel]}!`,"e-epic");
     }
@@ -8490,7 +8504,7 @@ function slStatusLine(){
 window.schoolInteractPopup=function(){
   if(!slEnrolled()){toast("Kau sedang tidak bersekolah.");return;}
   const sl=slState();
-  openChoice({ico:"🤝",prompt:`<b>Interaksi Kelas</b><br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">Setiap aksi memakai 1 ⚡ · Kedekatan guru: ${"🍎".repeat(Math.min(5,sl.teacher))||"—"}</span>`,
+  openChoice({ico:"🤝",prompt:`<b>Interaksi Kelas</b><br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">Kedekatan guru: ${"🍎".repeat(Math.min(5,sl.teacher))||"—"}</span>`,
     choices:[
       {label:"🗣️ Ngobrol dengan teman sekelas",hint:"Bahagia + · bisa dapat teman baru",run:()=>{
         if(!spendAction())return null;
@@ -8530,7 +8544,7 @@ window.schoolCirclePopup=function(){
   if(!slEnrolled()){toast("Kau sedang tidak bersekolah.");return;}
   const sl=slState();
   const cur=SCHOOL_CIRCLES.find(x=>x.id===sl.circle);
-  openChoice({ico:"🏰",prompt:`<b>Circle Sekolah</b><br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">${cur?`Sekarang: ${cur.ico} ${cur.name}`:"Belum ikut circle mana pun"} · pindah circle 1 ⚡</span>`,
+  openChoice({ico:"🏰",prompt:`<b>Circle Sekolah</b><br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">${cur?`Sekarang: ${cur.ico} ${cur.name}`:"Belum ikut circle mana pun"}</span>`,
     choices:SCHOOL_CIRCLES.map(c=>{
       const locked=c.req&&!c.req(C);
       const active=sl.circle===c.id;
@@ -8720,7 +8734,7 @@ window.openSchoolLifePage=function(){
     h+=pgRow({ico:"🧑‍🤝‍🧑",title:"Kelas",sub:"guru & teman sekelasmu",bar:classPopularity(),right:`Populer ${classPopularity()}%`,chev:1,on:()=>openClassPage()});
     h+=pgRow({ico:c?c.ico:"🏰",title:"Circle Sekolah",sub:c?`${c.name} — ${c.desc}`:"belum ikut kelompok sosial",chev:1,on:()=>openCirclePage()});
     h+=pgRow({ico:e?e.ico:"🎯",title:"Ekstrakurikuler",sub:e?`${e.name} — ${e.desc}`:"sihir, pedang, panahan, brawl, musik...",chev:1,on:()=>openEkskulPage()});
-    if(e)h+=pgRow({ico:"🔥",title:"Latihan Ekskul",sub:"sparring / bidikan / mantra — minigame · 1 ⚡",on:()=>{schoolEkskulTrain();}});
+    if(e)h+=pgRow({ico:"🔥",title:"Latihan Ekskul",sub:"sparring / bidikan / mantra — minigame",on:()=>{schoolEkskulTrain();}});
     h+=pgSec("Akademik");
     h+=pgRow({ico:"🏫",title:"Panel Sekolah",sub:"jurusan, belajar ekstra & ujian",chev:1,on:()=>openSchool()});
     h+=pgRow({ico:"📖",title:"Belajar Mandiri",sub:"aktivitas belajar di Dunia → Aksi",chev:1,on:()=>{mpCloseAll();switchTab("Aktivitas");}});
@@ -8745,7 +8759,7 @@ window.openMatePage=function(i){
     const m=slClass().mates[i];
     let h=pgSec(m.name+" · si "+m.trait);
     h+=pgRow({ico:m.female?"👧":"👦",title:m.name,sub:"hubungan kalian",bar:m.bond});
-    h+=pgSec("Aksi (1 ⚡)");
+    h+=pgSec("Aksi");
     h+=pgRow({ico:"🗣️",title:"Ngobrol",sub:"hubungan + · Bahagia +",on:pgDo(()=>{
       if(!spendAction())return null;m.bond=clamp(m.bond+ri(4,9));applyStats({happy:+3});
       return{t:`Kau ngobrol seru dengan ${m.name}.`};})});
@@ -8779,7 +8793,7 @@ window.openTeacherPage=function(){
     const t=slClass().teacher;
     let h=pgSec("Wali Kelas "+t.name);
     h+=pgRow({ico:t.female?"👩‍🏫":"🧑‍🏫",title:t.name,sub:t.bond>=70?"kau murid kesayangannya 🍎":"hubungan guru-murid",bar:t.bond});
-    h+=pgSec("Aksi (1 ⚡)");
+    h+=pgSec("Aksi");
     h+=pgRow({ico:"🍎",title:"Beri apel",sub:"hubungan + · Pesona +",on:pgDo(()=>{
       if(!spendAction())return null;t.bond=clamp(t.bond+ri(5,10));applyStats({charm:+2});
       return{t:`${t.name} tersenyum menerima apelmu.`};})});
@@ -8803,7 +8817,7 @@ window.openTeacherPage=function(){
 window.openCirclePage=function(){
   pushPage({title:"Circle Sekolah",render:function(){
     const sl=slState();
-    let h=pgNote("Kelompok sosial memberi bonus pasif tiap tahun. Pindah circle memakai 1 ⚡.");
+    let h=pgNote("Kelompok sosial memberi bonus pasif tiap tahun.");
     h+=pgSec("Pilih Circle");
     SCHOOL_CIRCLES.forEach(c=>{
       const locked=c.req&&!c.req(C);
@@ -8821,7 +8835,7 @@ window.openEkskulPage=function(){
     const sl=slState();
     const e=SCHOOL_EKSKUL.find(x=>x.id===sl.ekskul);
     let h=pgNote("Gabung klub lalu tekan <b>Latihan</b> — tiap klub punya minigame berbeda. Rutin ikut klub memberi bonus tahunan.");
-    if(e)h+=pgRow({ico:"🔥",title:"Latihan "+e.name,sub:"minigame sesuai klub · 1 ⚡",on:()=>{schoolEkskulTrain();}});
+    if(e)h+=pgRow({ico:"🔥",title:"Latihan "+e.name,sub:"minigame sesuai klub",on:()=>{schoolEkskulTrain();}});
     h+=pgSec("Klub Fisik");
     SCHOOL_EKSKUL.filter(x=>["sword","brawl","archery"].includes(x.id)).forEach(x=>h+=ekRow(x,sl));
     h+=pgSec("Klub Sihir (penyihir)");
@@ -8869,7 +8883,7 @@ window.jobOpenListings=function(){
     const a=ACTIVITIES.find(x=>x.id===actId);
     if(!a)return _os.apply(this,arguments);
     pushPage({title:a.name,render:function(){
-      let h=pgNote(`${a.desc||""} · setiap kegiatan memakai 1 ⚡`);
+      let h=pgNote(`${a.desc||""}`);
       h+=pgSec("Pilih Kegiatan");
       a.subs.forEach(s=>{
         h+=pgRow({ico:a.ico,title:s.label,sub:s.hint||"",on:pgDo(()=>{
@@ -9041,7 +9055,7 @@ window.openHomePage=function(){
         kid.forEach(a=>{h+=pgRow({ico:a.ico,title:a.label,sub:a.hint,on:()=>{a.run();mpRefresh();}});});
       }
     }
-    h+=pgSec("Fasilitas Rumah (1 ⚡)");
+    h+=pgSec("Fasilitas Rumah");
     hh.facilities.forEach(fid=>{
       const f=HOME_FACILITIES.find(x=>x.id===fid);if(!f)return;
       const locked=C.age<(f.minAge||0);
@@ -9067,7 +9081,7 @@ window.openSublocPage=function(sid){
     const acts=SUBLOC_ACTS[sid]||[];
     const ages=SUBLOC_ACT_MIN_AGE[sid]||[];
     let h=pgNote(`${sub.ico} ${sub.desc}`);
-    h+=pgSec("Kegiatan di sini (1 ⚡)");
+    h+=pgSec("Kegiatan di sini");
     if(!acts.length)h+=pgNote("Belum ada kegiatan khusus di tempat ini.");
     acts.forEach((a,i)=>{
       const minA=ages[i]||0;const locked=C.age<minA;
@@ -9319,7 +9333,7 @@ window.openGuildPage=function(){
       const g=GUILDS.find(x=>x.id===C.guild.id);
       h=pgSec("Keanggotaanmu");
       h+=pgRow({ico:g.ico,title:g.name,sub:`${g.ranks[C.guild.rank]} · ${C.guild.years} th · iuran 5/th · naik pangkat tiap tahun (peluang)`,bar:(C.guild.rank+1)/g.ranks.length*100,barCls:"f-mind"});
-      h+=pgRow({ico:"💪",title:"Kerja untuk Guild",sub:"tugas guild: koin & reputasi · 1 ⚡",on:pgDo(()=>{
+      h+=pgRow({ico:"💪",title:"Kerja untuk Guild",sub:"tugas guild: koin & reputasi",on:pgDo(()=>{
         if(!spendAction())return null;
         const g2=ri(10,25)*((C.guild.rank||0)+1);C.coin+=g2;C.reputation+=1;
         return{t:`${g.ico} Tugas guild selesai — +${g2} keping.`,cls:"e-good"};})});
@@ -9356,13 +9370,13 @@ window.openKingdomPage=function(){
     let h=pgSec("Takhta Aetheria");
     if(K.king.isPlayer){
       h+=pgRow({ico:"👑",title:`Raja ${C.name} — KAU!`,sub:`${K.king.dynasty} · bertakhta ${K.king.years} th · upeti +150/th`,bar:100,barCls:"f-happy"});
-      h+=pgRow({ico:"📯",title:"Keluarkan Dekrit",sub:"reputasi ++ · 💰100 · 1 ⚡",on:pgDo(()=>{
+      h+=pgRow({ico:"📯",title:"Keluarkan Dekrit",sub:"reputasi ++ · 💰100",on:pgDo(()=>{
         if(C.coin<100)return{t:"Kas pribadimu kurang.",cls:"e-bad"};
         if(!spendAction())return null;
         C.coin-=100;C.reputation+=ri(6,12);
         kAddNews(`📯 Raja ${C.name} mengeluarkan dekrit yang disambut rakyat.`);
         return{t:"Dekritmu dielu-elukan di alun-alun!",cls:"e-epic"};})});
-      h+=pgRow({ico:"🎪",title:"Gelar Pesta Rakyat",sub:"Bahagia ++ · 💰150 · 1 ⚡",on:pgDo(()=>{
+      h+=pgRow({ico:"🎪",title:"Gelar Pesta Rakyat",sub:"Bahagia ++ · 💰150",on:pgDo(()=>{
         if(C.coin<150)return{t:"Kas pribadimu kurang.",cls:"e-bad"};
         if(!spendAction())return null;
         C.coin-=150;applyStats({happy:+10,charm:+3});
@@ -9380,7 +9394,7 @@ window.openKingdomPage=function(){
     if(!K.king.isPlayer){
       h+=pgSec("Jalur Politik (18+)");
       const canKanselir=C.age>=18&&polRole()!=="kanselir"&&(C.reputation>=30&&C.stats.charm>=50);
-      h+=pgRow({ico:"🏛️",title:"Melamar jadi Kanselir",sub:canKanselir?"butuh Reputasi 30+ & Pesona 50+ · peluang dari Pesona · 1 ⚡":"🔒 usia 18+, Reputasi 30+ & Pesona 50+",dim:!canKanselir,
+      h+=pgRow({ico:"🏛️",title:"Melamar jadi Kanselir",sub:canKanselir?"butuh Reputasi 30+ & Pesona 50+ · peluang dari Pesona":"🔒 usia 18+, Reputasi 30+ & Pesona 50+",dim:!canKanselir,
         on:pgDo(()=>{
           if(!spendAction())return null;
           if(chance(0.35+C.stats.charm/300+C.stats.mind/400)){
@@ -9390,7 +9404,7 @@ window.openKingdomPage=function(){
           C.reputation=Math.max(0,C.reputation-3);
           return{t:"Dewan istana menolak lamaranmu. Bangun reputasi lagi.",cls:"e-bad"};})});
       const canGub=C.age>=18&&polRole()!=="gubernur"&&C.reputation>=50&&C.coin>=300;
-      h+=pgRow({ico:"🏙️",title:`Kampanye Gubernur ${currentCity().name}`,sub:canGub?"biaya kampanye 💰300 · peluang dari Reputasi & Pesona · 1 ⚡":"🔒 Reputasi 50+ & 💰300",dim:!canGub,
+      h+=pgRow({ico:"🏙️",title:`Kampanye Gubernur ${currentCity().name}`,sub:canGub?"biaya kampanye 💰300 · peluang dari Reputasi & Pesona":"🔒 Reputasi 50+ & 💰300",dim:!canGub,
         on:pgDo(()=>{
           if(!spendAction())return null;
           C.coin-=300;
@@ -9475,7 +9489,7 @@ const TRAITS=[
   {id:"charming",ico:"🌹",name:"Menawan",d:"Pesona +1/th",y:{charm:1}},
   {id:"greedy",ico:"🪙",name:"Tamak",d:"Menemukan koin lebih banyak, kadang reputasi tergores",coin:[3,8]},
   {id:"kind",ico:"🕊️",name:"Baik Hati",d:"Bahagia +1/th · relasi menguat perlahan",y:{happy:1},bond:true},
-  {id:"lazy",ico:"😴",name:"Pemalas",d:"Nyawa +1/th, tapi kadang kehilangan 1 aksi",y:{health:1},lazy:true},
+  {id:"lazy",ico:"😴",name:"Pemalas",d:"Nyawa +1/th",y:{health:1},lazy:true},
   {id:"gifted",ico:"✨",name:"Berbakat Arcane",d:"Mana +1/th",y:{mana:1}},
 ];
 function ensureTraits(){
@@ -10039,7 +10053,7 @@ window.openOrdoPage=function(type){
     }else if(r<O.ranks.length-1){
       const fee=100*(r+1);
       h+=pgRow({ico:"⚡",title:`UJIAN KENAIKAN → ${O.ranks[r+1]}`,
-        sub:`${type==="mage"?`hafalan ${3+r+1} rune`:"refleks tangkis"}${r+1>=3?" + duel penguji ⚔️":""} · 💰${fee} · 1 ⚡`,
+        sub:`${type==="mage"?`hafalan ${3+r+1} rune`:"refleks tangkis"}${r+1>=3?" + duel penguji ⚔️":""} · 💰${fee}`,
         right:`💰${fee}`,dim:C.coin<fee,
         on:()=>startOrdoTrial(type)});
     }else{
@@ -10191,6 +10205,16 @@ const TRACKS={
   battle:{file:"assets/music/siege_of_blackwood.mp3",name:"Siege of Blackwood",ico:"⚔️",label:"Pertarungan"},
   event:{file:"assets/music/cathedral_of_ash.mp3",name:"Cathedral of Ash",ico:"🏟️",label:"Lomba & Minigame"},
   ceremony:{file:"assets/music/crown_of_ash_and_dawn.mp3",name:"Crown of Ash and Dawn",ico:"👑",label:"Momen Agung"},
+  mourn:{file:"assets/music/ashen_chapel.mp3",name:"Ashen Chapel Echo",ico:"🕯️",label:"Duka & Kehilangan"},
+  triumph:{file:"assets/music/banner_at_dawn.mp3",name:"Banner at Dawn",ico:"🎉",label:"Kemenangan & Prestasi"},
+  city_aetheria:{file:"assets/music/city/aetheria_theme.wav",name:"Aetheria — Singgasana Emas",ico:"🏰",label:"Aetheria"},
+  city_thornvale:{file:"assets/music/city/thornvale_theme.wav",name:"Thornvale — Nyanyian Rimba",ico:"🌲",label:"Thornvale"},
+  city_saltmoor:{file:"assets/music/city/saltmoor_theme.wav",name:"Saltmoor — Ombak Pelabuhan",ico:"⚓",label:"Saltmoor"},
+  city_frostspire:{file:"assets/music/city/frostspire_theme.wav",name:"Frostspire — Menara Beku",ico:"🗼",label:"Frostspire"},
+  act_aetheria:{file:"assets/music/city/aetheria_activity.wav",name:"Intrik Istana",ico:"👑",label:"Aktivitas Aetheria"},
+  act_thornvale:{file:"assets/music/city/thornvale_activity.wav",name:"Perburuan Rimba",ico:"🏹",label:"Aktivitas Thornvale"},
+  act_saltmoor:{file:"assets/music/city/saltmoor_activity.wav",name:"Ventura Laut",ico:"⛵",label:"Aktivitas Saltmoor"},
+  act_frostspire:{file:"assets/music/city/frostspire_activity.wav",name:"Riset Arcane",ico:"🔮",label:"Aktivitas Frostspire"},
 };
 const MKEY="mantara_music_v1";
 function mLoad(){try{return Object.assign({on:1,vol:0.55,mode:"auto"},JSON.parse(localStorage.getItem(MKEY)||"{}"));}catch(e){return{on:1,vol:0.55,mode:"auto"};}}
@@ -11890,6 +11914,1682 @@ else document.addEventListener("DOMContentLoaded",function(){setTimeout(boot,250
   }catch(e){}
 
   window.__mantaraPlace={addStartingSiblings:addStartingSiblings,maybeNewSibling:maybeNewSibling};
+})();
+
+
+/* ==================================================================
+   MANTARA — MUSIK EVENT (Duka & Kemenangan)
+   • Ashen Chapel Echo (mourn): saat relasi (kerabat/pet/teman) wafat
+     atau momen duka lain (perpisahan, kematian).
+   • Banner at Dawn (triumph): saat dapat prestasi / momen membahagiakan
+     & memuaskan (promosi, lulus, menang bounty, naik takhta, dll).
+   Juga menambah EVENT tasteful: relasi bisa wafat seiring waktu,
+   supaya momen duka benar-benar terjadi.
+   Modul mandiri; men-hook log() & toast() dengan cooldown.
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function _ri(a,b){ return (typeof ri==="function")?ri(a,b):Math.floor(Math.random()*(b-a+1))+a; }
+  function _ch(p){ return (typeof chance==="function")?chance(p):Math.random()<p; }
+  function _rand(a){ return (typeof rand==="function")?rand(a):a[Math.floor(Math.random()*a.length)]; }
+  function mood(m,after){ try{ if(typeof window.MusicMood==="function") window.MusicMood(m,{force:true,revert:"calm",after:after||42000}); }catch(e){} }
+
+  // kata kunci
+  var HAPPY=[/prestasi/i,/🏅/,/dipromosikan/i,/promosi/i,/lulus/i,/naik takhta/i,/jadi raja/i,
+    /bounty selesai/i,/juara/i,/kau menang/i,/memenangkan/i,/legenda/i,/terukir sebagai legenda/i,
+    /menumbangkan/i,/menerima cintamu/i,/kalian bertunangan/i,/kau menikah/i,/naik ke tingkat/i,
+    /pangkat guild naik/i,/kau dinobatkan/i,/gelar/i];
+  var SAD=[/wafat/i,/meninggal/i,/berpulang/i,/\bgugur\b/i,/\btewas\b/i,/pergi meninggalkan/i,
+    /kau berpisah/i,/berduka/i,/duka/i,/kabar duka/i,/menghembuskan napas/i,/telah tiada/i];
+
+  var lastTrig={mourn:0,triumph:0};
+  function fire(kind){
+    var now=Date.now();
+    if(now-(lastTrig[kind]||0) < 20000) return; // cooldown 20s biar tak thrash
+    lastTrig[kind]=now;
+    mood(kind==="sad"?"mourn":"triumph", kind==="sad"?46000:38000);
+  }
+  function scan(text,cls){
+    if(!text) return;
+    var s=String(text);
+    if(cls==="e-death"){ fire("sad"); return; }
+    for(var i=0;i<SAD.length;i++){ if(SAD[i].test(s)){ fire("sad"); return; } }
+    if(cls==="e-epic"){
+      // e-epic hampir selalu momen membahagiakan/memuaskan
+      for(var b=0;b<SAD.length;b++){ if(SAD[b].test(s)) return; } // kecuali teks duka
+      fire("happy"); return;
+    }
+    for(var j=0;j<HAPPY.length;j++){ if(HAPPY[j].test(s)){ fire("happy"); return; } }
+  }
+
+  // hook log()
+  try{
+    if(typeof log==="function"){
+      var _log=log;
+      log=function(yr,text,cls){
+        var r=_log.apply(this,arguments);
+        try{ scan(text,cls); }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+  // hook toast() (prestasi kadang cuma toast)
+  try{
+    if(typeof toast==="function"){
+      var _toast=toast;
+      toast=function(msg){
+        var r=_toast.apply(this,arguments);
+        try{ scan(msg,null); }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  /* ============================================================
+     EVENT TASTEFUL: relasi bisa wafat seiring waktu
+     ============================================================ */
+  function kinLabel(r){
+    if(r.kin) return r.kin;
+    if(r.role==="pasangan") return "pasanganmu";
+    if(r.role==="bestie") return "sahabat karibmu";
+    if(r.role==="teman") return "temanmu";
+    if(r.role==="keluarga") return "kerabatmu";
+    if(r.role==="pengikut") return "pengikut setiamu";
+    return "orang terdekatmu";
+  }
+  function maybeRelationDeath(){
+    if(!hasC() || !Array.isArray(C.relations) || !C.relations.length) return;
+    if(C.age<16) return; // jarang saat sangat muda
+    // kandidat: keluarga, sahabat, pasangan, teman, pengikut — TANPA anak kandung (ahli waris aman) & musuh
+    var pool=C.relations.filter(function(r){
+      return r && !r.isChild && (r.role==="keluarga"||r.role==="bestie"||r.role==="pasangan"||r.role==="teman"||r.role==="pengikut");
+    });
+    if(!pool.length) return;
+    // peluang dasar kecil, naik seiring usia karakter (kerabat menua)
+    var base=0.025 + Math.max(0,(C.age-30))*0.002; // ~2.5% di muda → ~10% di usia 60
+    base=Math.min(0.10, base);
+    if(!_ch(base)) return;
+    // orang tua (Ibu/Ayah) & kakak lebih rentan lebih dulu; pilih dgn bobot
+    var weighted=[];
+    pool.forEach(function(r){
+      var w=1;
+      if(r.kin==="Ibu"||r.kin==="Ayah") w=3;
+      else if(r.kin==="Kakak") w=2;
+      else if(r.role==="pengikut") w=2;
+      for(var i=0;i<w;i++) weighted.push(r);
+    });
+    var victim=_rand(weighted);
+    // hapus dari relasi
+    C.relations=C.relations.filter(function(r){ return r.id!==victim.id; });
+    var causes=["karena usia tua","akibat wabah","dalam tidurnya dengan tenang","karena sakit berkepanjangan","dalam sebuah kecelakaan"];
+    var cause=_rand(causes);
+    var nm=victim.name||"Seseorang";
+    try{ if(typeof log==="function") log(C.age, "🕯️ "+nm+" ("+kinLabel(victim)+") telah wafat "+cause+". Kau berduka.", "e-death"); }catch(e){}
+    // dampak emosi
+    var hit=(victim.role==="pasangan"||victim.kin==="Ibu"||victim.kin==="Ayah")? _ri(10,18): _ri(5,11);
+    try{ if(typeof applyStats==="function") applyStats({happy:-hit}); }catch(e){}
+    if(victim.role==="pasangan"){ C.married=false; }
+    try{ if(typeof toast==="function") toast("🕯️ "+nm.split(" ")[0]+" telah wafat."); }catch(e){}
+    // catatan: scan() akan menangkap "e-death" → memutar Ashen Chapel
+  }
+
+  try{
+    if(typeof processYearly==="function"){
+      var _prevPY=processYearly;
+      processYearly=function(){
+        var r=_prevPY.apply(this,arguments);
+        try{ maybeRelationDeath(); }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraEventMusic={scan:scan,maybeRelationDeath:maybeRelationDeath};
+})();
+
+
+/* ==================================================================
+   MANTARA — PENGUASA KOTA & KEBIJAKAN (dunia politik hidup)
+   • Tiap kota punya penguasa dengan KEPRIBADIAN (arketipe) yang
+     memengaruhi harga & kehidupan seluruh aktivitas di kota itu.
+   • Penguasa menua & berganti lintas generasi (wafat/kudeta) —
+     tercantum di Berita + notifikasi.
+   • Tiap pergantian mengumumkan KEBIJAKAN baru.
+   • Aetheria mengikuti "Raja" dari sistem politik yang sudah ada.
+   Modul mandiri; memakai ulang kAddNews/berita, mulCost, pushPage.
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function _ri(a,b){ return (typeof ri==="function")?ri(a,b):Math.floor(Math.random()*(b-a+1))+a; }
+  function _ch(p){ return (typeof chance==="function")?chance(p):Math.random()<p; }
+  function _rand(a){ return (typeof rand==="function")?rand(a):a[Math.floor(Math.random()*a.length)]; }
+  function _name(f){ try{ return (typeof randName==="function")?randName(f):"Roderic"; }catch(e){ return "Roderic"; } }
+  function _log(t,cls){ try{ if(typeof log==="function") log(C.age,t,cls||""); }catch(e){} }
+  function _toast(t){ try{ if(typeof toast==="function") toast(t); }catch(e){} }
+  function _news(t){ try{ if(typeof kAddNews==="function") kAddNews(t); }catch(e){} }
+  function _apply(o){ try{ if(typeof applyStats==="function") applyStats(o); }catch(e){} }
+  function cityList(){ try{ return CITIES; }catch(e){ return []; } }
+  function cityById(id){ return cityList().find(function(c){return c.id===id;})||{id:id,name:id,ico:"🏙️"}; }
+
+  var CITY_RULER_TITLE={aetheria:"Raja",thornvale:"Adipati",saltmoor:"Bandar Agung",frostspire:"Magister"};
+
+  // ---------- ARKETIPE KEPRIBADIAN ----------
+  var ARCHES={
+    ramah:{name:"Ramah & Dermawan",ico:"😊",cost:0.9,coinYr:[6,18],statYr:{happy:2},rep:1,
+      blurb:"Penguasa yang mengasihi rakyat. Harga murah, hidup tenteram, sedekah mengalir.",
+      effect:"Harga −10% · +kebahagiaan & sedikit koin tiap tahun · kota aman.",
+      policies:["Pajak diringankan untuk rakyat kecil.","Lumbung kerajaan dibuka saat paceklik.","Sedekah bulanan bagi kaum papa.","Jalan & jembatan diperbaiki tanpa pungutan."],
+      flavor:["Rakyat memuji kedermawanan sang penguasa.","Sedekah kerajaan sampai ke pintumu.","Pasar ramai, harga bersahabat."]},
+    serius:{name:"Serius & Disiplin",ico:"⚖️",cost:1.0,coinYr:[0,6],statYr:{mind:2},rep:1,
+      blurb:"Menjunjung hukum & ketertiban. Kota aman dan tertib, meski terasa kaku.",
+      effect:"Harga normal · +akal tiap tahun · kejahatan ditekan.",
+      policies:["Hukum ditegakkan tanpa pandang bulu.","Wajib belajar bagi anak-anak kota.","Jam malam diberlakukan demi keamanan.","Korupsi pejabat diberantas keras."],
+      flavor:["Pengawal kota berpatroli tertib.","Pengumuman dekrit hukum dibacakan di alun-alun.","Segalanya berjalan sesuai aturan."]},
+    flamboyan:{name:"Flamboyan",ico:"🎭",cost:1.15,coinYr:[-6,8],statYr:{charm:2,happy:1},rep:0,
+      blurb:"Gemar pesta & kemewahan. Kota semarak dan penuh warna, tapi harga membumbung.",
+      effect:"Harga +15% · +pesona & kebahagiaan · festival tanpa henti.",
+      policies:["Festival kota digelar sepanjang musim.","Pajak kemewahan membiayai pesta akbar.","Seniman & bard mendapat naungan istana.","Pertunjukan megah tiap purnama."],
+      flavor:["Musik & tawa memenuhi jalanan kota.","Parade warna-warni melintasi alun-alun.","Semua orang berdandan untuk pesta istana."]},
+    bengis:{name:"Bengis & Lalim",ico:"😈",cost:1.25,coinYr:[-24,-8],statYr:{might:2,happy:-2},rep:-1,
+      blurb:"Tiran kejam. Pajak mencekik & rakyat takut, tapi militer kota amat perkasa.",
+      effect:"Harga +25% · pajak menggerus koin · +kekuatan · kota mencekam.",
+      policies:["Wajib militer bagi seluruh pemuda.","Pajak upeti dinaikkan drastis.","Pembangkang dihukum di alun-alun.","Perbatasan ditutup, darurat perang diberlakukan."],
+      flavor:["Pemungut pajak mengetuk keras pintu-pintu.","Tiang gantungan berdiri di alun-alun sebagai peringatan.","Latihan militer menggema hingga malam."]},
+    licik:{name:"Licik & Culas",ico:"🦑",cost:1.05,coinYr:[-16,26],statYr:{},rep:-1,
+      blurb:"Penguasa korup. Suap merajalela, pasar gelap subur, peruntungan naik-turun.",
+      effect:"Harga fluktuatif · koin bisa untung/rugi tak terduga · pasar gelap subur.",
+      policies:["Suap jadi pelicin segala urusan.","Pasar gelap dibiarkan berkembang.","Jabatan diperjualbelikan diam-diam.","Cukai dagang penuh celah & pungli."],
+      flavor:["Koin berpindah tangan di lorong-lorong gelap.","Pejabat berbisik menawarkan 'jalan pintas'.","Entah untung entah buntung hari ini."]},
+    arcane:{name:"Bijak Arcane",ico:"🔮",cost:1.05,coinYr:[0,6],statYr:{},mageBonus:{mana:2,mind:1},rep:0,
+      blurb:"Pelindung ilmu sihir. Para penyihir makmur & dimuliakan di bawah naungannya.",
+      effect:"Harga normal · penyihir dapat +mana/akal tiap tahun · riset arcane didanai.",
+      policies:["Beasiswa bagi penyihir muda berbakat.","Menara arcane dibuka untuk umum.","Riset mantra didanai perbendaharaan kota.","Perpustakaan kuno dibuka bagi para pelajar."],
+      flavor:["Cahaya arcane berpendar dari menara sihir.","Para penyihir berkumpul menukar mantra.","Aliran mana terasa lebih pekat di udara kota."]},
+    inkuisitor:{name:"Inkuisitor Fanatik",ico:"⛪",cost:1.0,coinYr:[0,4],statYr:{},magePenalty:{mana:-3,happy:-2},rep:1,
+      blurb:"Fanatik anti-sihir. Rakyat biasa taat & aman, namun penyihir diburu tanpa ampun.",
+      effect:"Harga normal · penyihir menderita (−mana) & terancam · warga saleh dihormati.",
+      policies:["Sihir dilarang keras di seluruh penjuru kota.","Inkuisisi memburu penyihir liar.","Ibadah wajib bagi seluruh warga.","Hadiah besar bagi pelapor penyihir."],
+      flavor:["Lonceng inkuisisi berdentang memanggil ibadah.","Poster buruan penyihir tertempel di tembok kota.","Para penyihir menyembunyikan jati diri mereka."]},
+  };
+  var ARCH_KEYS=Object.keys(ARCHES);
+
+  // ---------- DATA ----------
+  function newRuler(cityId){
+    var arch=_rand(ARCH_KEYS); var a=ARCHES[arch];
+    return { name:_name(_ch(0.22)), dynasty:_rand((typeof DYNASTIES!=="undefined")?DYNASTIES:["Wangsa Aurelius"]),
+      age:_ri(28,58), years:_ri(1,15), arch:arch, policy:_rand(a.policies), _kid:null };
+  }
+  function ensureRulers(){
+    if(!hasC() && typeof C==="undefined") return;
+    if(typeof C==="undefined"||!C) return;
+    if(!C.rulers) C.rulers={};
+    cityList().forEach(function(c){ if(!C.rulers[c.id]) C.rulers[c.id]=newRuler(c.id); });
+    syncAetheria();
+  }
+  // Aetheria mengikuti Raja dari sistem politik yang ada
+  function syncAetheria(){
+    if(typeof ensureKingdom!=="function") return;
+    var K; try{ K=ensureKingdom(); }catch(e){ return; }
+    if(!K||!K.king) return;
+    var rl=C.rulers&&C.rulers.aetheria; if(!rl) return;
+    var idn=(K.king.name||"?")+"|"+(K.king.dynasty||"?");
+    if(rl._kid!==idn){
+      var wasFirst=(rl._kid==null);
+      rl._kid=idn;
+      rl.name=K.king.name||rl.name; rl.dynasty=K.king.dynasty||rl.dynasty;
+      rl.age=K.king.age||rl.age; rl.years=K.king.years||1;
+      rl.arch=_rand(ARCH_KEYS); rl.policy=_rand(ARCHES[rl.arch].policies);
+      if(!wasFirst) announcePolicy("aetheria","natural");
+    }
+  }
+  function rulerOf(cityId){ if(!C.rulers) ensureRulers(); return C.rulers?C.rulers[cityId]:null; }
+  function archOf(cityId){ var rl=rulerOf(cityId); return rl?ARCHES[rl.arch]:null; }
+
+  // ---------- PENGUMUMAN ----------
+  function announcePolicy(cityId,mode){
+    var c=cityById(cityId); var rl=C.rulers[cityId]; if(!rl) return;
+    var a=ARCHES[rl.arch]; var title=CITY_RULER_TITLE[cityId]||"Penguasa";
+    _news("📜 Kebijakan baru "+c.name+" — "+title+" "+rl.name+" ("+a.ico+" "+a.name+"): “"+rl.policy+"”");
+    if(C.cityId===cityId){
+      _log("📜 "+title+" "+rl.name.split(" ")[0]+" menerapkan kebijakan baru di "+c.name+": "+rl.policy,"");
+      _toast(a.ico+" Kebijakan baru di "+c.name+"!");
+    }
+  }
+  function succeed(cityId,mode){
+    var c=cityById(cityId); var old=C.rulers[cityId];
+    var title=CITY_RULER_TITLE[cityId]||"Penguasa";
+    var coup=(mode==="coup");
+    var fresh=newRuler(cityId);
+    if(coup){ // dinasti berbeda
+      var others=(typeof DYNASTIES!=="undefined")?DYNASTIES.filter(function(d){return d!==(old&&old.dynasty);}):null;
+      if(others&&others.length) fresh.dynasty=_rand(others);
+      fresh.age=_ri(24,42); fresh.years=0;
+    } else { fresh.years=0; fresh.age=_ri(26,48); }
+    C.rulers[cityId]=fresh;
+    var head=coup
+      ? "⚔️ KUDETA di "+c.name+"! "+fresh.dynasty+" merebut kuasa — "+title+" "+ (old?old.name:"lama") +" digulingkan."
+      : "⚰️ "+title+" "+ (old?old.name:"") +" dari "+c.name+" mangkat. "+fresh.name+" ("+fresh.dynasty+") naik takhta.";
+    _news(head);
+    _log(head, coup?"e-bad":"e-good"); // notifikasi (hindari kelas e-epic/e-death agar musik tak salah picu)
+    if(C.cityId===cityId) _toast((coup?"⚔️":"⚰️")+" Penguasa baru di "+c.name+"!");
+    announcePolicy(cityId, mode);
+  }
+
+  // ---------- SUKSESI TAHUNAN ----------
+  function tickRulers(){
+    ensureRulers();
+    cityList().forEach(function(c){
+      if(c.id==="aetheria") return; // ikut sistem Raja politik (disinkron di syncAetheria)
+      var rl=C.rulers[c.id]; if(!rl) return;
+      rl.age++; rl.years++;
+      var dc = rl.age>66?0.16 : rl.age>56?0.07 : 0.025;
+      if(_ch(dc)) succeed(c.id, _ch(0.16)?"coup":"natural");
+      else if(_ch(0.015)) succeed(c.id,"coup"); // gejolak politik langka
+    });
+    syncAetheria();
+  }
+
+  // ---------- EFEK KEPRIBADIAN pada kehidupan kota ----------
+  function applyReign(){
+    if(!hasC()) return;
+    var rl=rulerOf(C.cityId); if(!rl) return;
+    var a=ARCHES[rl.arch]; if(!a) return;
+    if(a.coinYr){ var d=_ri(a.coinYr[0],a.coinYr[1]); if(d) C.coin=Math.max(0,(C.coin||0)+d); }
+    if(a.statYr && Object.keys(a.statYr).length) _apply(a.statYr);
+    if(C.isMage && a.mageBonus) _apply(a.mageBonus);
+    if(C.isMage && a.magePenalty) _apply(a.magePenalty);
+    if(a.rep) C.reputation=Math.max(0,(C.reputation||0)+a.rep);
+    if(_ch(0.22)) _log("🏙️ "+_rand(a.flavor), a.rep<0?"e-bad":"");
+  }
+
+  // ---------- HOOK: harga kota dipengaruhi kepribadian penguasa ----------
+  try{
+    if(typeof mulCost==="function"){
+      var _mc=mulCost;
+      mulCost=function(base){
+        var v=_mc.apply(this,arguments);
+        try{ var a=archOf(C.cityId); if(a&&a.cost) v=Math.max(1,Math.round(v*a.cost)); }catch(e){}
+        return v;
+      };
+    }
+  }catch(e){}
+
+  // ---------- HOOK tahunan ----------
+  try{
+    if(typeof advanceYear==="function"){
+      var _adv=advanceYear;
+      advanceYear=function(){
+        var r=_adv.apply(this,arguments);
+        try{ if(hasC()){ ensureRulers(); tickRulers(); applyReign(); } }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  /* ============================================================
+     UI — panel & halaman penguasa di tab Peta
+     ============================================================ */
+  function effLine(a,isMage){
+    var extra="";
+    if(isMage && a.mageBonus) extra=" · penyihir +mana/akal";
+    if(isMage && a.magePenalty) extra=" · ⚠️ penyihir diburu";
+    return a.effect+extra;
+  }
+  window.openRulerPage=function(cityId){
+    if(typeof pushPage!=="function") return;
+    pushPage({title:"Penguasa "+cityById(cityId).name, render:function(){
+      ensureRulers();
+      var c=cityById(cityId); var rl=C.rulers[cityId]; var a=ARCHES[rl.arch];
+      var title=CITY_RULER_TITLE[cityId]||"Penguasa";
+      var here=(C.cityId===cityId);
+      var h="<div class='pg-hero' style='text-align:center;padding:14px 12px;margin:2px 0 10px;background:linear-gradient(155deg,var(--card),var(--bg1));border:1px solid var(--line);border-radius:14px'>"
+        +"<div style='font-size:40px;line-height:1'>"+a.ico+"</div>"
+        +"<div style='font-size:16px;font-weight:700;color:var(--gold-bright);margin-top:6px'>"+title+" "+rl.name+"</div>"
+        +"<div style='font-size:11px;color:var(--arcane-glow)'>"+rl.dynasty+" · "+c.ico+" "+c.name+"</div>"
+        +"<div style='font-size:11px;color:var(--parchment);margin-top:6px'>Kepribadian: <b>"+a.name+"</b></div>"
+        +"<div style='font-size:10px;color:var(--ink-soft);filter:brightness(1.7);margin-top:2px'>bertakhta "+rl.years+" th · usia "+rl.age+"</div>"
+        +"</div>";
+      h+=pgNote(a.blurb);
+      h+=pgSec("Kebijakan Berlaku");
+      h+=pgRow({ico:"📜",title:rl.policy,sub:"dekrit "+title+" "+rl.name.split(" ")[0]});
+      h+=pgSec("Pengaruh ke Kota"+(here?" (kotamu kini)":""));
+      h+=pgRow({ico:"⚖️",title:"Dampak sehari-hari",sub:effLine(a,C.isMage)});
+      h+=pgSec("Wangsa & Takhta");
+      h+=pgRow({ico:"👑",title:rl.dynasty,sub:"berkuasa di "+c.name+" · "+rl.years+" tahun"});
+      if(here) h+=pgNote("Kamu tinggal di "+c.name+", jadi kebijakan & kepribadian "+title+" "+rl.name.split(" ")[0]+" memengaruhi harga & kehidupanmu tiap tahun. Pindah kota untuk merasakan penguasa lain.");
+      return h;
+    }});
+  };
+
+  function rulersSectionHTML(){
+    if(!hasC()) return "";
+    ensureRulers();
+    var html="<div class='sechead'>👑 Penguasa Kota & Kebijakan</div>"
+      +"<p style='font-size:10.5px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 10px;'>Tiap kota dipimpin penguasa berkepribadian berbeda yang memengaruhi harga & kehidupan di sana. Mereka menua & berganti seiring waktu — pantau di 📜 Berita.</p>"
+      +"<div class='tiles'>";
+    cityList().forEach(function(c){
+      var rl=C.rulers[c.id]; if(!rl) return; var a=ARCHES[rl.arch];
+      var title=CITY_RULER_TITLE[c.id]||"Penguasa"; var here=(c.id===C.cityId);
+      html+="<div class='tile"+(here?" here":"")+"' onclick=\"openRulerPage('"+c.id+"')\">"
+        +(here?"<span class='badge'>KOTAMU</span>":"")
+        +"<span class='ti'>"+a.ico+"</span><span class='tn'>"+c.name+"</span>"
+        +"<span class='td'>"+title+" "+rl.name.split(" ")[0]+" · "+a.name+"</span></div>";
+    });
+    html+="</div>";
+    return html;
+  }
+
+  try{
+    if(typeof renderPeta==="function"){
+      var _rp=renderPeta;
+      renderPeta=function(){
+        var r=_rp.apply(this,arguments);
+        try{
+          var host=document.getElementById("viewPeta");
+          if(host && hasC()) host.insertAdjacentHTML("beforeend", rulersSectionHTML());
+        }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraRulers={ensureRulers:ensureRulers,rulerOf:rulerOf,archOf:archOf,ARCHES:ARCHES,succeed:succeed,tickRulers:tickRulers};
+})();
+
+
+/* ==================================================================
+   MANTARA — EKONOMI & DUNIA DINAMIS
+   Indeks pasar berfluktuasi (boom/bust) + peristiwa dunia (panen,
+   wabah, perang, blokade, festival, dsb) yang menggeser harga &
+   income usaha, dengan berita/notifikasi. Panel di tab Peta.
+   Modul mandiri; menumpuk di atas mulCost (sudah dipengaruhi penguasa).
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function _ri(a,b){ return (typeof ri==="function")?ri(a,b):Math.floor(Math.random()*(b-a+1))+a; }
+  function _ch(p){ return (typeof chance==="function")?chance(p):Math.random()<p; }
+  function _rand(a){ return (typeof rand==="function")?rand(a):a[Math.floor(Math.random()*a.length)]; }
+  function _log(t,cls){ try{ if(typeof log==="function") log(C.age,t,cls||""); }catch(e){} }
+  function _toast(t){ try{ if(typeof toast==="function") toast(t); }catch(e){} }
+  function _news(t){ try{ if(typeof kAddNews==="function") kAddNews(t); }catch(e){} }
+  function _apply(o){ try{ if(typeof applyStats==="function") applyStats(o); }catch(e){} }
+
+  var WORLD_EVENTS=[
+    {id:"harvest",name:"Panen Raya",ico:"🌾",dur:[2,4],price:0.85,income:1.15,cls:"e-good",
+      news:"🌾 Panen raya melimpah di seluruh negeri — harga pangan anjlok, lumbung penuh.",note:"Harga turun, hasil bumi melimpah."},
+    {id:"plague",name:"Wabah Pes",ico:"🦠",dur:[2,5],price:1.18,income:0.8,cls:"e-bad",health:[2,6],
+      news:"🦠 Wabah menyebar dari kota ke kota — harga obat melonjak, banyak usaha lesu.",note:"Harga naik, nyawa terancam, usaha lesu."},
+    {id:"war",name:"Perang Antar-Wangsa",ico:"⚔️",dur:[3,6],price:1.2,income:0.85,cls:"e-bad",
+      news:"⚔️ Perang pecah antar wangsa! Barang langka, jasa prajurit & pandai besi dicari.",note:"Harga naik, permintaan senjata tinggi, bahaya."},
+    {id:"blockade",name:"Blokade Dagang",ico:"⛔",dur:[2,4],price:1.25,income:0.75,cls:"e-bad",
+      news:"⛔ Jalur dagang diblokade — barang impor langka, harga meroket.",note:"Harga meroket, dagang tersendat."},
+    {id:"goldrush",name:"Demam Emas",ico:"⛏️",dur:[2,4],price:1.1,income:1.25,cls:"e-good",
+      news:"⛏️ Demam emas! Tambang baru ditemukan — peluang kaya mendadak terbuka.",note:"Peluang untung besar, harga sedikit naik."},
+    {id:"festival",name:"Festival Kerajaan",ico:"🎪",dur:[1,2],price:1.08,income:1.1,cls:"e-good",happy:[3,7],
+      news:"🎪 Festival akbar kerajaan digelar! Rakyat bersuka cita, pasar ramai.",note:"Kota semarak, kebahagiaan naik."},
+    {id:"winter",name:"Musim Dingin Panjang",ico:"❄️",dur:[2,4],price:1.15,income:0.85,cls:"e-bad",health:[1,4],
+      news:"❄️ Musim dingin panjang mencekam negeri — kayu bakar & pangan mahal.",note:"Harga naik, nyawa tergerus dingin."},
+    {id:"golden",name:"Zaman Keemasan",ico:"🌟",dur:[3,6],price:0.9,income:1.2,cls:"e-good",happy:[2,5],
+      news:"🌟 Negeri memasuki Zaman Keemasan — kemakmuran & seni berkembang pesat.",note:"Makmur: harga turun, usaha subur."},
+    {id:"bandit",name:"Serbuan Bandit",ico:"🏴",dur:[2,3],price:1.12,income:0.85,cls:"e-bad",
+      news:"🏴 Gerombolan bandit merajalela di jalur kafilah — dagang jadi berisiko.",note:"Dagang berisiko, harga naik."},
+    {id:"boom",name:"Ledakan Dagang",ico:"📦",dur:[2,4],price:1.05,income:1.3,cls:"e-good",
+      news:"📦 Rute dagang baru dibuka ke pulau selatan — perputaran uang meledak!",note:"Usaha untung besar, pasar sibuk."}
+  ];
+  function evDef(id){ return WORLD_EVENTS.find(function(w){return w.id===id;}); }
+
+  function ensureMarket(){
+    if(typeof C==="undefined"||!C) return null;
+    if(!C.market) C.market={climate:1.0, events:[]};
+    return C.market;
+  }
+  function marketPriceMul(){
+    var m=ensureMarket(); if(!m) return 1;
+    var p=m.climate||1; m.events.forEach(function(e){ p*=(e.price||1); });
+    return Math.max(0.7,Math.min(1.5,p));
+  }
+  function marketIncomeMul(){
+    var m=ensureMarket(); if(!m) return 1;
+    var p=1; m.events.forEach(function(e){ p*=(e.income||1); });
+    return Math.max(0.4,Math.min(1.8,p));
+  }
+
+  function tickMarket(){
+    var m=ensureMarket(); if(!m) return;
+    // iklim ekonomi: random walk mean-reverting
+    m.climate += (1.0-m.climate)*0.15 + (_ri(-4,4)/100);
+    m.climate = Math.max(0.85, Math.min(1.18, m.climate));
+    // kurangi durasi & akhiri
+    m.events.forEach(function(e){ e.yearsLeft--; });
+    m.events.filter(function(e){return e.yearsLeft<=0;}).forEach(function(e){
+      _news(e.ico+" "+e.name+" berakhir. Keadaan berangsur normal.");
+    });
+    m.events=m.events.filter(function(e){ return e.yearsLeft>0; });
+    // spawn baru (maks 2 bersamaan)
+    if(m.events.length<2 && _ch(0.28)){
+      var pool=WORLD_EVENTS.filter(function(w){ return !m.events.find(function(e){return e.id===w.id;}); });
+      if(pool.length){
+        var w=_rand(pool);
+        m.events.push({id:w.id,name:w.name,ico:w.ico,price:w.price,income:w.income,note:w.note,yearsLeft:_ri(w.dur[0],w.dur[1])});
+        _news(w.news);
+        _log(w.ico+" "+w.name+" dimulai — "+w.note, w.cls==="e-bad"?"e-bad":"");
+        _toast(w.ico+" "+w.name+"!");
+      }
+    }
+    // efek samping tahunan peristiwa aktif
+    if(hasC()){
+      m.events.forEach(function(e){
+        var def=evDef(e.id); if(!def) return;
+        if(def.health) _apply({health:-_ri(def.health[0],def.health[1])});
+        if(def.happy)  _apply({happy:+_ri(def.happy[0],def.happy[1])});
+      });
+    }
+  }
+
+  // ---------- HOOK: harga dipengaruhi pasar (menumpuk di atas penguasa) ----------
+  try{
+    if(typeof mulCost==="function"){
+      var _mc=mulCost;
+      mulCost=function(base){
+        var v=_mc.apply(this,arguments);
+        try{ v=Math.max(1, Math.round(v*marketPriceMul())); }catch(e){}
+        return v;
+      };
+    }
+  }catch(e){}
+
+  // ---------- HOOK: income usaha dipengaruhi iklim ekonomi ----------
+  try{
+    if(typeof processBusinesses==="function"){
+      var _pb=processBusinesses;
+      processBusinesses=function(){
+        var r=_pb.apply(this,arguments);
+        try{
+          if(hasC() && Array.isArray(C.businesses)){
+            var mul=marketIncomeMul();
+            if(Math.abs(mul-1)>0.01){
+              C.businesses.forEach(function(b){
+                var def=(typeof BUSINESS_TYPES!=="undefined")?BUSINESS_TYPES.find(function(x){return x.id===b.id;}):null;
+                if(!def) return;
+                var base=def.income[b.level]||0;
+                var delta=Math.round(base*(mul-1));
+                if(delta) C.coin=Math.max(0,C.coin+delta);
+              });
+            }
+          }
+        }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  // ---------- HOOK tahunan ----------
+  try{
+    if(typeof advanceYear==="function"){
+      var _adv=advanceYear;
+      advanceYear=function(){
+        var r=_adv.apply(this,arguments);
+        try{ if(hasC()){ ensureMarket(); tickMarket(); } }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  // ---------- PANEL di tab Peta ----------
+  function marketSectionHTML(){
+    if(!hasC()) return "";
+    var m=ensureMarket(); if(!m) return "";
+    var idx=Math.round(marketPriceMul()*100);
+    var lbl = idx<95?"Murah (deflasi)": idx>112?"Mahal (inflasi)":"Stabil";
+    var col = idx<95?"var(--good)": idx>112?"var(--bad)":"var(--gold-bright)";
+    var html="<div class='sechead'>📈 Pasar & Peristiwa Dunia</div>"
+      +"<div class='tiles'><div class='tile fullrow'><span class='ti'>📈</span>"
+      +"<span class='tn'>Indeks Harga: <b style='color:"+col+"'>"+idx+"%</b> — "+lbl+"</span>"
+      +"<span class='td'>"+(m.events.length? (m.events.length+" peristiwa aktif menggerakkan ekonomi") : "Pasar tenang — tak ada gejolak besar")+"</span></div></div>";
+    if(m.events.length){
+      html+="<div class='tiles'>";
+      m.events.forEach(function(e){
+        html+="<div class='tile'><span class='ti'>"+e.ico+"</span><span class='tn'>"+e.name+"</span>"
+          +"<span class='td'>"+e.note+" · "+e.yearsLeft+" th lagi</span></div>";
+      });
+      html+="</div>";
+    }
+    return html;
+  }
+  try{
+    if(typeof renderPeta==="function"){
+      var _rp=renderPeta;
+      renderPeta=function(){
+        var r=_rp.apply(this,arguments);
+        try{
+          var host=document.getElementById("viewPeta");
+          if(host && hasC()) host.insertAdjacentHTML("beforeend", marketSectionHTML());
+        }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraEconomy={ensureMarket:ensureMarket,tickMarket:tickMarket,marketPriceMul:marketPriceMul,marketIncomeMul:marketIncomeMul,WORLD_EVENTS:WORLD_EVENTS};
+})();
+
+
+/* ==================================================================
+   MANTARA — EKSPEDISI & DUNGEON (roguelike push-your-luck)
+   Jelajah dungeon berjenjang ruang-demi-ruang: monster, jebakan,
+   harta, altar, teka-teki, pedagang — makin dalam makin berbahaya &
+   makin besar loot. Boss di dasar. Loot: koin, item langka, bahan,
+   XP guild & reputasi. Nyambung ke Guild, Balai Tempa, inventory.
+   Berbasis halaman (pushPage) — tanpa popup.
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function _ri(a,b){ return (typeof ri==="function")?ri(a,b):Math.floor(Math.random()*(b-a+1))+a; }
+  function _ch(p){ return (typeof chance==="function")?chance(p):Math.random()<p; }
+  function _rand(a){ return (typeof rand==="function")?rand(a):a[Math.floor(Math.random()*a.length)]; }
+  function _log(t,cls){ try{ if(typeof log==="function") log(C.age,t,cls||""); }catch(e){} }
+  function _toast(t){ try{ if(typeof toast==="function") toast(t); }catch(e){} }
+  function _sfx(n){ try{ if(typeof playSFX==="function") playSFX(n); }catch(e){} }
+  function _apply(o){ try{ if(typeof applyStats==="function") applyStats(o); }catch(e){} }
+  function _addItem(k){ try{ if(typeof addItem==="function") addItem(k); }catch(e){} }
+  function esc(s){ try{ return (typeof window.esc==="function")?window.esc(s):String(s);}catch(e){return String(s);} }
+
+  // ---- item loot baru ----
+  try{
+    if(typeof ITEM_CATALOG!=="undefined"){
+      [
+        {key:"gemstone",ico:"💎",name:"Permata Kasar",price:0,reusable:false,use:function(){var g=_ri(80,200);C.coin+=g;return "Kau menjual permata seharga "+g+" keping.";}},
+        {key:"relic",ico:"🏺",name:"Relik Kuno",price:0,reusable:false,use:function(){var g=_ri(180,420);C.coin+=g;return "Kolektor membeli relik kuno seharga "+g+" keping.";}},
+        {key:"rune_shard",ico:"🔹",name:"Serpih Rune",price:0,reusable:false,use:function(){ if(C.isMage){ _apply({mana:8,mind:3}); return "Kau menyerap serpih rune — mana & akal meningkat."; } var g=_ri(120,260); C.coin+=g; return "Kau menjual serpih rune seharga "+g+" keping."; }},
+        {key:"beast_core",ico:"🟣",name:"Inti Buas",price:0,reusable:false,use:function(){ _apply({might:5,health:4}); return "Kau menyerap inti buas — tubuhmu menguat."; }}
+      ].forEach(function(it){ if(!ITEM_CATALOG.find(function(x){return x.key===it.key;})) ITEM_CATALOG.push(it); });
+    }
+  }catch(e){}
+
+  var DUNGEONS=[
+    {id:"goblin_cave",name:"Gua Goblin",ico:"👺",tier:0,minPow:16,depth:[3,4],boss:"Kepala Suku Goblin",flavor:"Sarang goblin dangkal di tepi hutan."},
+    {id:"old_ruins",name:"Reruntuhan Kuno",ico:"🏛️",tier:1,minPow:34,depth:[3,5],boss:"Golem Penjaga",flavor:"Puing peradaban lama, penuh jebakan berkarat."},
+    {id:"spider_nest",name:"Sarang Laba-laba",ico:"🕸️",tier:2,minPow:58,depth:[4,5],boss:"Ratu Laba-laba",flavor:"Lorong berselaput sutra & bisa mematikan."},
+    {id:"cursed_crypt",name:"Kripta Terkutuk",ico:"⚰️",tier:3,minPow:88,depth:[4,6],boss:"Raja Lich",flavor:"Kripta bangsawan yang bangkit sebagai mayat hidup."},
+    {id:"dragon_lair",name:"Liang Naga",ico:"🐉",tier:4,minPow:128,depth:[5,6],boss:"Naga Merah",flavor:"Gua belerang panas, tumpukan harta berkilau."},
+    {id:"void_tower",name:"Menara Kehampaan",ico:"🌌",tier:5,minPow:172,depth:[6,7],boss:"Penyihir Kehampaan",flavor:"Menara arcane yang melengkung di luar realita."}
+  ];
+  function dunById(id){ return DUNGEONS.find(function(d){return d.id===id;}); }
+
+  function power(){
+    try{ if(window.__mantaraLiving&&window.__mantaraLiving.guildPower) return window.__mantaraLiving.guildPower(); }catch(e){}
+    var s=(C&&C.stats)||{}; return Math.round((s.might||0)+((C&&C.isMage)?(s.mana||0)*0.8:0)+(s.mind||0)*0.2+((C&&C.reputation)||0)*0.15);
+  }
+  function addGuildXP(x){
+    if(!C._guild) C._guild={xp:0,rank:0,done:0,fail:0};
+    C._guild.xp=(C._guild.xp||0)+x;
+    var need=(C._guild.rank+1)*40;
+    while(C._guild.rank<5 && C._guild.xp>=need){ C._guild.rank++; need=(C._guild.rank+1)*40; _log("🎖️ Pangkat Guild naik berkat ekspedisi!","e-good"); }
+  }
+  function guildRank(){ return (C&&C._guild)?(C._guild.rank||0):0; }
+
+  // ---- state run (module-scoped; loot hilang kalau kabur) ----
+  var DR=null;
+
+  function baseDiff(di){ return Math.round(DR.def.minPow*(0.72+di*0.16)+DR.def.tier*4); }
+  function winChance(diff){ var pw=power(); return Math.max(0.08, Math.min(0.95, 0.5+(pw-diff)/Math.max(1,diff)*0.5)); }
+  function dmg(di,heavy){ var base=4+DR.def.tier*3+di*2; if(heavy)base=Math.round(base*1.6); return _ri(Math.max(1,Math.round(base*0.5)),Math.max(2,base)); }
+  function hurt(n){ _apply({health:-n}); if(C.stats.health<=0){ DR.phase="dead"; } }
+  function lootItem(){
+    var t=DR.def.tier;
+    var common=["lucky_coin","training_manual","ancient_scroll","charm_perfume","gemstone"];
+    var rare=["gemstone","relic","rune_shard","beast_core"];
+    if(t>=3 && _ch(0.5)) return _rand(rare);
+    if(t>=1 && _ch(0.25)) return _rand(rare);
+    return _rand(common);
+  }
+  function gainLoot(coin,item,xp,rep){
+    if(coin){ DR.loot.coin+=coin; }
+    if(item){ DR.loot.items[item]=(DR.loot.items[item]||0)+1; }
+    if(xp){ DR.loot.xp+=xp; }
+    if(rep){ DR.loot.rep+=rep; }
+  }
+  function bankLoot(){
+    if(!DR) return {coin:0,items:0};
+    var itemCount=0;
+    C.coin+=DR.loot.coin;
+    Object.keys(DR.loot.items).forEach(function(k){ for(var i=0;i<DR.loot.items[k];i++){ _addItem(k); itemCount++; } });
+    if(DR.loot.rep) C.reputation=(C.reputation||0)+DR.loot.rep;
+    if(DR.loot.xp) addGuildXP(DR.loot.xp);
+    return {coin:DR.loot.coin,items:itemCount};
+  }
+
+  var ROOM_META={
+    monster:{ico:"👹",name:"Ruang Monster"},
+    trap:{ico:"🪤",name:"Lorong Berjebakan"},
+    treasure:{ico:"💰",name:"Bilik Harta"},
+    shrine:{ico:"🛐",name:"Altar Kuno"},
+    puzzle:{ico:"🧩",name:"Teka-teki Rune"},
+    merchant:{ico:"🧙",name:"Pedagang Bayangan"},
+    rest:{ico:"🔥",name:"Perapian Aman"},
+    boss:{ico:"☠️",name:"Sarang Boss"}
+  };
+  function genRoom(di){
+    if(di>=DR.target) return {type:"boss",resolved:false};
+    var r=Math.random(), type;
+    if(r<0.40) type="monster";
+    else if(r<0.56) type="trap";
+    else if(r<0.70) type="treasure";
+    else if(r<0.80) type="shrine";
+    else if(r<0.89) type="puzzle";
+    else if(r<0.95) type="merchant";
+    else type="rest";
+    return {type:type,resolved:false};
+  }
+
+  // ---- resolusi tiap jenis ruang ----
+  window.dunAct=function(kind){
+    if(!DR||DR.phase==="dead") return;
+    var di=DR.depth, room=DR.room, msg="", cls="e-good";
+    if(room.type==="monster" || room.type==="boss"){
+      var boss=(room.type==="boss");
+      var diff=baseDiff(di)*(boss?1.5:1);
+      var wc=winChance(diff);
+      if(_ch(wc)){
+        var mult=boss?2.6:1;
+        var coin=Math.round(_ri(12,26)*(DR.def.tier+1)*mult);
+        var xp=(DR.def.tier+1)*(boss?8:3);
+        gainLoot(coin, _ch(boss?1:0.5)?lootItem():null, xp, boss?DR.def.tier+3:1);
+        if(boss){ gainLoot(0, lootItem(), 0, 0); DR.clearedBoss=true; }
+        _sfx("win");
+        msg=(boss?"⚔️ Kau menumbangkan "+DR.def.boss+"! Jarahan besar kau rebut."
+                 :"⚔️ Kau mengalahkan monster & merampas "+coin+" keping.");
+        cls="e-epic";
+        var scratch=dmg(di,false); if(!boss) scratch=Math.round(scratch*0.5); hurt(scratch);
+      }else{
+        var d=dmg(di,boss); hurt(d);
+        _sfx("death");
+        msg=(boss?"☠️ "+DR.def.boss+" terlalu perkasa! Kau terluka parah (−"+d+" nyawa) dan mundur."
+                 :"🩸 Monster melukaimu (−"+d+" nyawa).");
+        cls="e-bad";
+        if(boss && DR.phase!=="dead"){ DR.phase="retreat"; }
+      }
+    } else if(room.type==="trap"){
+      var diff2=baseDiff(di)*0.9;
+      if(power()*(0.6+Math.random()*0.6) >= diff2*0.6){
+        var g=_ri(6,16)*(DR.def.tier+1); gainLoot(g,null,1,0);
+        msg="🪤 Kau melewati jebakan dengan lincah & menemukan "+g+" keping tersembunyi."; cls="e-good";
+      }else{ var d2=dmg(di,false); hurt(d2); msg="🪤 Jebakan terpicu! (−"+d2+" nyawa)."; cls="e-bad"; }
+    } else if(room.type==="treasure"){
+      var coin2=Math.round(_ri(20,45)*(DR.def.tier+1)); var it=lootItem();
+      gainLoot(coin2,it,2,0);
+      msg="💰 Peti harta! +"+coin2+" keping"+(it?" & sebuah barang langka":"")+"."; cls="e-epic";
+    } else if(room.type==="shrine"){
+      if(kind==="heal"){ var h=_ri(12,26); _apply({health:+h}); msg="🛐 Altar memulihkan tubuhmu (+"+h+" nyawa)."; }
+      else { var bstat = C.isMage? {mana:6,mind:2} : {might:5,charm:2}; _apply(bstat); msg="🛐 Berkah altar mengalir ke dirimu."; }
+      cls="e-good";
+    } else if(room.type==="puzzle"){
+      if((C.stats.mind||0)*(0.6+Math.random()*0.7) >= baseDiff(di)*0.5){
+        var g3=_ri(15,35)*(DR.def.tier+1); var it3=_ch(0.5)?lootItem():null; gainLoot(g3,it3,3,1);
+        msg="🧩 Kau memecahkan teka-teki rune! +"+g3+" keping"+(it3?" & barang langka":"")+"."; cls="e-epic";
+      }else{ msg="🧩 Rune itu membingungkan. Kau menyerah tanpa hasil."; cls=""; }
+    } else if(room.type==="merchant"){
+      if(kind==="buy"){
+        var price=Math.round(_ri(40,90)*(DR.def.tier+1));
+        if(C.coin>=price){ C.coin-=price; var it4=lootItem(); DR.loot.items[it4]=(DR.loot.items[it4]||0)+1; msg="🧙 Kau membeli barang langka dari pedagang bayangan (−"+price+" keping)."; cls="e-good"; }
+        else { msg="🧙 Koinmu tak cukup untuk barang pedagang bayangan."; cls="e-bad"; }
+      } else { msg="🧙 Kau melewati pedagang bayangan tanpa membeli."; cls=""; }
+    } else if(room.type==="rest"){
+      var h2=_ri(8,18); _apply({health:+h2}); msg="🔥 Kau beristirahat di perapian aman (+"+h2+" nyawa)."; cls="e-good";
+    }
+    DR.lastMsg=msg; DR.lastCls=cls; room.resolved=true;
+    if(DR.phase!=="dead"){
+      if(room.type==="boss" && DR.phase!=="retreat"){ DR.phase="done"; }
+      else if(DR.phase!=="retreat"){ DR.phase="choice"; }
+    }
+    // kematian di dungeon
+    if(DR.phase==="dead"){ finishDeath(); return; }
+    if(DR.phase==="done"){ finishClear(); return; }
+    if(DR.phase==="retreat"){ finishRetreat(true); return; }
+    try{ if(typeof mpRefresh==="function") mpRefresh(); if(typeof renderHidup==="function") renderHidup(); }catch(e){}
+  };
+
+  window.dunDeeper=function(){
+    if(!DR||DR.phase!=="choice") return;
+    DR.depth++;
+    DR.room=genRoom(DR.depth);
+    DR.phase="room";
+    try{ if(typeof mpRefresh==="function") mpRefresh(); }catch(e){}
+  };
+  window.dunRetreat=function(){ finishRetreat(false); };
+
+  function finishRetreat(forced){
+    if(!DR) return;
+    var r=bankLoot();
+    _log((forced?"Kau dipukul mundur dari ":"Kau mundur dari ")+DR.def.name+" membawa "+r.coin+" keping & "+r.items+" barang.","e-good");
+    _toast("Ekspedisi selesai: +"+r.coin+" koin");
+    endRun();
+  }
+  function finishClear(){
+    if(!DR) return;
+    var r=bankLoot();
+    if(C._guild) C._guild.done=(C._guild.done||0)+1;
+    _log("🏆 Kau menaklukkan "+DR.def.name+" & mengalahkan "+DR.def.boss+"! Total jarahan: "+r.coin+" keping, "+r.items+" barang.","e-epic");
+    _toast("🏆 "+DR.def.name+" ditaklukkan!");
+    endRun();
+  }
+  function finishDeath(){
+    // loot hilang; kematian ditangani die()
+    var nm=DR?DR.def.name:"dungeon";
+    DR=null;
+    try{ if(typeof mpCloseAll==="function") mpCloseAll(); }catch(e){}
+    try{ if(typeof die==="function") die("Tewas di kedalaman "+nm+"."); }catch(e){}
+  }
+  function endRun(){
+    DR=null;
+    try{ if(typeof popPage==="function") popPage(); }catch(e){}
+    try{ if(typeof renderAll==="function") renderAll(); }catch(e){}
+  }
+
+  // ---- HALAMAN RUN ----
+  function hpBar(){
+    var hp=Math.max(0,Math.round((C.stats&&C.stats.health)||0));
+    var col=hp>=60?"var(--good)":hp>=30?"var(--gold)":"var(--bad)";
+    return "<div class='exp-pbar' style='margin-top:6px'><div class='exp-pfill' style='width:"+hp+"%;background:"+col+"'></div></div>"
+      +"<div style='font-size:9px;color:var(--ink-soft);filter:brightness(1.7);margin-top:2px'>❤️ Nyawa "+hp+"%</div>";
+  }
+  function lootSummary(){
+    var items=Object.keys(DR.loot.items).reduce(function(a,k){return a+DR.loot.items[k];},0);
+    return "💰 "+DR.loot.coin+" · 🎁 "+items+" barang · ✦ "+DR.loot.xp+" XP";
+  }
+  function runHTML(){
+    if(!DR) return pgNote("Ekspedisi berakhir.");
+    var d=DR.def, room=DR.room, di=DR.depth;
+    var rm=ROOM_META[room.type]||ROOM_META.monster;
+    var deepText=(room.type==="boss")?("SARANG BOSS — "+d.boss):("Kedalaman "+(di+1)+" / "+(DR.target+1));
+    var h="<div class='pg-hero' style='text-align:center;padding:12px;margin:2px 0 10px;background:linear-gradient(155deg,#241a2e,#16110c);border:1px solid var(--line2);border-radius:14px'>"
+      +"<div style='font-size:34px'>"+d.ico+"</div>"
+      +"<div style='font-size:15px;font-weight:700;color:var(--gold-bright)'>"+d.name+"</div>"
+      +"<div style='font-size:10.5px;color:var(--arcane-glow)'>"+deepText+"</div>"
+      +hpBar()
+      +"<div style='font-size:10px;color:var(--gold);margin-top:6px'>Jarahan: "+lootSummary()+"</div></div>";
+
+    if(DR.lastMsg){ h+=pgNote(DR.lastMsg); }
+
+    if(DR.phase==="room" || (DR.phase==="choice"&&!room.resolved)){
+      h+=pgSec(rm.ico+" "+rm.name);
+      if(room.type==="boss"){
+        var wc=Math.round(winChance(baseDiff(di)*1.5)*100);
+        h+=pgNote("Boss <b>"+d.boss+"</b> menghadangmu di dasar. Peluang menang ~"+wc+"%. Menang = jarahan besar; kalah = terluka parah & terpukul mundur.");
+        h+=pgRow({ico:"⚔️",title:"Lawan "+d.boss,sub:"pertaruhkan segalanya",on:function(){window.dunAct("fight");}});
+      } else if(room.type==="monster"){
+        var wc2=Math.round(winChance(baseDiff(di))*100);
+        h+=pgRow({ico:"⚔️",title:"Serang monster",sub:"peluang menang ~"+wc2+"%",on:function(){window.dunAct("fight");}});
+      } else if(room.type==="shrine"){
+        h+=pgRow({ico:"❤️",title:"Berdoa untuk pemulihan",sub:"pulihkan nyawa",on:function(){window.dunAct("heal");}});
+        h+=pgRow({ico:"✨",title:"Mohon berkah kekuatan",sub:"bonus stat",on:function(){window.dunAct("bless");}});
+      } else if(room.type==="merchant"){
+        h+=pgRow({ico:"🛒",title:"Beli barang langka",sub:"bayar koin untuk item",on:function(){window.dunAct("buy");}});
+        h+=pgRow({ico:"🚶",title:"Lewati saja",sub:"tanpa membeli",on:function(){window.dunAct("skip");}});
+      } else {
+        h+=pgRow({ico:rm.ico,title:"Selidiki",sub:"lihat apa yang menanti",on:function(){window.dunAct("go");}});
+      }
+    } else if(DR.phase==="choice"){
+      h+=pgSec("Persimpangan");
+      h+=pgNote("Lorong bercabang. Makin dalam makin berbahaya, tapi jarahan makin besar. Amankan jarahanmu sekarang atau lanjut turun?");
+      h+=pgRow({ico:"⬇️",title:"Turun lebih dalam",sub:"risiko naik, hadiah lebih besar",on:function(){window.dunDeeper();}});
+      h+=pgRow({ico:"🏃",title:"Mundur & amankan jarahan",sub:"keluar membawa "+lootSummary(),on:function(){window.dunRetreat();}});
+    }
+    h+=pgNote("⚠️ Kabur lewat tombol kembali = jarahan hangus. Waspadai nyawamu — mati di sini berarti tamat.");
+    return h;
+  }
+
+  window.enterDungeon=function(id){
+    if(!hasC()){ _toast("Mulai hidup dulu."); return; }
+    if(C.age<15){ _toast("Ekspedisi untuk petualang usia 15+."); return; }
+    var d=dunById(id); if(!d) return;
+    if((C.stats.health||0)<25){ _toast("Nyawamu terlalu lemah untuk berekspedisi. Pulihkan dulu."); return; }
+    var target=_ri(d.depth[0],d.depth[1]);
+    DR={def:d,depth:0,target:target-1,loot:{coin:0,items:{},xp:0,rep:0},room:null,phase:"room",lastMsg:null,clearedBoss:false};
+    DR.room=genRoom(0);
+    _sfx("year");
+    if(typeof pushPage==="function") pushPage({title:d.name, render:runHTML});
+  };
+
+  // ---- HALAMAN PILIH EKSPEDISI ----
+  window.openExpeditions=function(){
+    DR=null;
+    if(typeof pushPage!=="function") return;
+    pushPage({title:"Ekspedisi & Dungeon", render:function(){
+      if(!hasC()) return pgNote("Mulai hidup dulu.");
+      var pw=power(); var rk=guildRank();
+      var h=pgNote("Kekuatan tempurmu: <b style='color:var(--gold-bright)'>⚔️ "+pw+"</b> · Pangkat Guild membuka dungeon lebih ganas. Perkuat stat, gear (Balai Tempa), & peliharaan sebelum turun.");
+      h+=pgSec("Pilih Tujuan");
+      DUNGEONS.forEach(function(d){
+        var locked = d.tier > rk+1; // guild rank membuka tier
+        var wc=Math.round(winChance(Math.round(d.minPow*0.72+d.tier*4))*100);
+        var col=wc>=60?"var(--good)":wc>=35?"var(--gold-bright)":"var(--bad)";
+        h+=pgRow({ico:d.ico,title:d.name+(locked?" 🔒":""),
+          sub: locked ? ("terkunci — naikkan pangkat Guild dulu")
+                      : (d.flavor+" · butuh kekuatan ~"+d.minPow+" · peluang awal "+wc+"%"),
+          right: locked?"🔒":"›",
+          dim: locked,
+          on: locked?null:function(){ window.enterDungeon(d.id); }});
+      });
+      h+=pgNote("Boss di dasar tiap dungeon menjatuhkan jarahan terbesar. Loot: koin, barang langka, XP guild & reputasi. Nyawa habis di dalam = tamat riwayatmu.");
+      return h;
+    }});
+  };
+
+  // ---- pintu masuk di tab Peta ----
+  function expeditionTileHTML(){
+    if(!hasC()) return "";
+    return "<div class='sechead'>🗺️ Ekspedisi</div>"
+      +"<div class='tiles'><div class='tile fullrow' onclick='openExpeditions()'>"
+      +"<span class='ti'>⚔️</span><span class='tn'>Ekspedisi & Dungeon</span>"
+      +"<span class='td'>Jelajah dungeon berjenjang — monster, jebakan, harta, boss & loot langka</span></div></div>";
+  }
+  try{
+    if(typeof renderPeta==="function"){
+      var _rp=renderPeta;
+      renderPeta=function(){
+        var r=_rp.apply(this,arguments);
+        try{ var host=document.getElementById("viewPeta"); if(host&&hasC()) host.insertAdjacentHTML("beforeend", expeditionTileHTML()); }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraDungeon={DUNGEONS:DUNGEONS,enter:function(id){window.enterDungeon(id);},state:function(){return DR;},power:power};
+})();
+
+
+/* ==================================================================
+   MANTARA — AMBIENCE ADAPTIF PROSEDURAL (Web Audio, tanpa file)
+   Bed suasana yang di-generate real-time & berganti mengikuti
+   biome/sub-lokasi: hutan berangin, dermaga berombak, menara beku,
+   aula istana, keramaian pasar, sarang judi, & lorong dungeon.
+   Berlapis di bawah musik; crossfade halus saat berpindah tempat.
+   Nol aset — semua disintesis; hemat ukuran.
+   ================================================================== */
+(function(){
+  "use strict";
+  if(typeof window==="undefined") return;
+  var AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return;
+
+  var ctx=null, master=null, bed=null, curBiome=null, sparkleT=null, unlocked=false;
+  var AMB_KEY="mantara_amb_on";
+  function ambOn(){ try{ var v=localStorage.getItem(AMB_KEY); return v===null?true:v==="1"; }catch(e){ return true; } }
+  function setAmbFlag(on){ try{ localStorage.setItem(AMB_KEY,on?"1":"0"); }catch(e){} }
+
+  function ensureCtx(){
+    if(ctx) return true;
+    try{
+      ctx=new AC();
+      master=ctx.createGain(); master.gain.value=0; master.connect(ctx.destination);
+      return true;
+    }catch(e){ ctx=null; return false; }
+  }
+  function noiseBuffer(){
+    var len=Math.floor(ctx.sampleRate*2), buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+    var last=0;
+    for(var i=0;i<len;i++){ var w=Math.random()*2-1; last=(last+0.02*w)/1.02; d[i]=last*3.5; } // pink-ish
+    return buf;
+  }
+
+  // ---------- param per biome ----------
+  var BIOMES={
+    forest:{filt:"lowpass",freq:900,noise:0.5,lfo:0.08,lfoDepth:0.4,pads:[110,164.8],padGain:0.05,
+      sparkle:{every:[2200,5200],freqs:[1800,2600,3200],dur:0.09,gain:0.05,type:"sine"}}, // burung
+    harbor:{filt:"lowpass",freq:500,noise:0.6,lfo:0.14,lfoDepth:0.6,pads:[73.4,110],padGain:0.05,
+      sparkle:{every:[3500,7000],freqs:[900,700],dur:0.5,gain:0.05,type:"sine",slide:-300}}, // camar
+    frozen:{filt:"bandpass",freq:1600,noise:0.45,lfo:0.1,lfoDepth:0.5,pads:[196,261.6,392],padGain:0.035,
+      sparkle:{every:[3000,6500],freqs:[2600,3100,3600],dur:0.3,gain:0.04,type:"triangle"}}, // kilau
+    palace:{filt:"lowpass",freq:600,noise:0.18,lfo:0.05,lfoDepth:0.2,pads:[130.8,196,261.6],padGain:0.06,
+      sparkle:{every:[6000,11000],freqs:[523,659],dur:0.6,gain:0.04,type:"sine"}}, // dentang halus
+    market:{filt:"bandpass",freq:1000,noise:0.4,lfo:0.2,lfoDepth:0.5,pads:[146.8],padGain:0.03,
+      sparkle:{every:[1500,3500],freqs:[500,650,800,430],dur:0.12,gain:0.045,type:"square"}}, // keramaian
+    den:{filt:"bandpass",freq:800,noise:0.35,lfo:0.18,lfoDepth:0.4,pads:[98],padGain:0.03,
+      sparkle:{every:[900,2200],freqs:[1200,1500],dur:0.05,gain:0.05,type:"square"}}, // klik dadu
+    dungeon:{filt:"lowpass",freq:320,noise:0.4,lfo:0.06,lfoDepth:0.3,pads:[55,58.3],padGain:0.07,
+      sparkle:{every:[2500,6000],freqs:[420,300],dur:0.15,gain:0.055,type:"sine",slide:-120}}, // tetesan
+    calm:{filt:"lowpass",freq:700,noise:0.25,lfo:0.07,lfoDepth:0.3,pads:[130.8,196],padGain:0.045,
+      sparkle:{every:[5000,9000],freqs:[880,988],dur:0.4,gain:0.03,type:"sine"}}
+  };
+
+  function stopBed(b,fade){
+    if(!b) return;
+    try{ b.g.gain.cancelScheduledValues(ctx.currentTime); b.g.gain.setValueAtTime(b.g.gain.value,ctx.currentTime); b.g.gain.linearRampToValueAtTime(0,ctx.currentTime+(fade||0.8)); }catch(e){}
+    setTimeout(function(){ try{ b.nodes.forEach(function(n){ try{ n.stop&&n.stop(); }catch(e){} try{ n.disconnect&&n.disconnect(); }catch(e){} }); }catch(e){} }, (fade||0.8)*1000+120);
+  }
+  function buildBed(key){
+    var p=BIOMES[key]||BIOMES.calm;
+    var g=ctx.createGain(); g.gain.value=0; g.connect(master);
+    var nodes=[];
+    // noise bed
+    try{
+      var src=ctx.createBufferSource(); src.buffer=noiseBuffer(); src.loop=true;
+      var filt=ctx.createBiquadFilter(); filt.type=p.filt; filt.frequency.value=p.freq;
+      var ng=ctx.createGain(); ng.gain.value=p.noise;
+      src.connect(filt); filt.connect(ng); ng.connect(g);
+      // LFO amplitudo (angin/ombak)
+      var lfo=ctx.createOscillator(); lfo.frequency.value=p.lfo;
+      var lg=ctx.createGain(); lg.gain.value=p.noise*p.lfoDepth;
+      lfo.connect(lg); lg.connect(ng.gain);
+      src.start(); lfo.start();
+      nodes.push(src,lfo);
+    }catch(e){}
+    // pad nada rendah
+    try{
+      (p.pads||[]).forEach(function(fr){
+        var o=ctx.createOscillator(); o.type="sine"; o.frequency.value=fr;
+        var og=ctx.createGain(); og.gain.value=p.padGain;
+        o.connect(og); og.connect(g); o.start(); nodes.push(o);
+      });
+    }catch(e){}
+    return {g:g,nodes:nodes,p:p};
+  }
+
+  function scheduleSparkle(){
+    clearTimeout(sparkleT);
+    if(!bed||!ctx) return;
+    var p=bed.p, sp=p.sparkle; if(!sp) return;
+    var wait=sp.every[0]+Math.random()*(sp.every[1]-sp.every[0]);
+    sparkleT=setTimeout(function(){
+      try{
+        var o=ctx.createOscillator(); o.type=sp.type||"sine";
+        var f=sp.freqs[Math.floor(Math.random()*sp.freqs.length)];
+        o.frequency.setValueAtTime(f,ctx.currentTime);
+        if(sp.slide) o.frequency.linearRampToValueAtTime(Math.max(80,f+sp.slide),ctx.currentTime+sp.dur);
+        var g=ctx.createGain(); g.gain.setValueAtTime(0,ctx.currentTime);
+        g.gain.linearRampToValueAtTime(sp.gain,ctx.currentTime+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+sp.dur);
+        o.connect(g); g.connect(master); o.start(); o.stop(ctx.currentTime+sp.dur+0.05);
+      }catch(e){}
+      scheduleSparkle();
+    }, wait);
+  }
+
+  function setBiome(key){
+    if(!ambOn()){ return; }
+    if(!ensureCtx()) return;
+    try{ if(ctx.state==="suspended") ctx.resume(); }catch(e){}
+    if(key===curBiome && bed) return;
+    curBiome=key;
+    var old=bed;
+    bed=buildBed(key);
+    try{ bed.g.gain.setValueAtTime(0,ctx.currentTime); bed.g.gain.linearRampToValueAtTime(1,ctx.currentTime+1.0); }catch(e){}
+    try{ master.gain.cancelScheduledValues(ctx.currentTime); master.gain.linearRampToValueAtTime(0.20,ctx.currentTime+1.0); }catch(e){}
+    stopBed(old,0.9);
+    scheduleSparkle();
+  }
+  function stopAll(){
+    clearTimeout(sparkleT);
+    if(master&&ctx){ try{ master.gain.linearRampToValueAtTime(0,ctx.currentTime+0.5); }catch(e){} }
+    stopBed(bed,0.5); bed=null; curBiome=null;
+  }
+
+  // ---------- pilih biome dari lokasi ----------
+  function biomeForLocation(){
+    try{
+      if(window.__mantaraDungeon && window.__mantaraDungeon.state && window.__mantaraDungeon.state()) return "dungeon";
+    }catch(e){}
+    if(typeof C==="undefined"||!C||!C.alive) return "calm";
+    var sub=C.subloc||"", city=C.cityId||"";
+    if(/den|judi/.test(sub)) return "den";
+    if(/market|pasar|grocer/.test(sub)) return "market";
+    if(sub.indexOf("th_")===0 || city==="thornvale") return "forest";
+    if(sub.indexOf("sa_")===0 || city==="saltmoor") return "harbor";
+    if(sub.indexOf("fr_")===0 || city==="frostspire") return "frozen";
+    if(sub.indexOf("ae_")===0 || city==="aetheria") return "palace";
+    return "calm";
+  }
+  window.updateAmbience=function(){
+    try{ if(!ambOn()){ stopAll(); return; } setBiome(biomeForLocation()); }catch(e){}
+  };
+  window.setAmbienceOn=function(on){
+    setAmbFlag(!!on);
+    if(on){ unlocked=true; window.updateAmbience(); }
+    else stopAll();
+  };
+
+  // ---------- hooks ----------
+  document.addEventListener("pointerdown",function(){
+    if(unlocked) return; unlocked=true;
+    if(ambOn()) window.updateAmbience();
+  },{passive:true});
+
+  function wrap(name){
+    try{
+      if(typeof window[name]==="function"){
+        var _f=window[name];
+        window[name]=function(){ var r=_f.apply(this,arguments); try{ setTimeout(window.updateAmbience,80); }catch(e){} return r; };
+      }
+    }catch(e){}
+  }
+  // fungsi global (bukan window.*) di-wrap lewat eval-safe pengecekan
+  try{ if(typeof gotoSubloc==="function"){ var _gs=gotoSubloc; gotoSubloc=function(){ var r=_gs.apply(this,arguments); try{setTimeout(window.updateAmbience,80);}catch(e){} return r; }; } }catch(e){}
+  try{ if(typeof switchTab==="function"){ var _st=switchTab; switchTab=function(){ var r=_st.apply(this,arguments); try{setTimeout(window.updateAmbience,80);}catch(e){} return r; }; } }catch(e){}
+  wrap("travelTo"); wrap("enterDungeon"); wrap("popPage"); wrap("openExpeditions");
+  // mirror ke tombol musik: kalau musik dimatikan, ambience ikut; dinyalakan, ikut
+  try{ if(typeof window.musicSetOn==="function"){ var _ms=window.musicSetOn; window.musicSetOn=function(on){ var r=_ms.apply(this,arguments); try{ window.setAmbienceOn(!!on); }catch(e){} return r; }; } }catch(e){}
+
+  // ---------- kontrol di tab Peta (opsional, ringan) ----------
+  try{
+    if(typeof renderPeta==="function"){
+      var _rp=renderPeta;
+      renderPeta=function(){
+        var r=_rp.apply(this,arguments);
+        try{
+          var host=document.getElementById("viewPeta");
+          if(host && typeof C!=="undefined" && C && C.alive){
+            host.insertAdjacentHTML("beforeend",
+              "<div class='tiles' style='margin-top:6px'><div class='tile fullrow' onclick=\"setAmbienceOn("+(ambOn()?"false":"true")+")\">"
+              +"<span class='ti'>"+(ambOn()?"🔊":"🔇")+"</span><span class='tn'>Ambience Suasana: "+(ambOn()?"NYALA":"MATI")+"</span>"
+              +"<span class='td'>Bunyi latar hidup mengikuti tempatmu (hutan, dermaga, dungeon…)</span></div></div>");
+          }
+        }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraAmbience={setBiome:setBiome,updateAmbience:function(){window.updateAmbience();},biomeFor:biomeForLocation};
+})();
+
+
+/* ==================================================================
+   MANTARA — SINKRONISASI JABATAN & STRUKTUR
+   • Jabatan politik (Raja/Gubernur/Kanselir) kini muncul sebagai
+     "pekerjaan saat ini" di tab Karir (Diri).
+   • Gelar karakter ikut jabatan politik tertinggi.
+   • Nama Gubernur (halaman Kerajaan) disinkronkan dengan Penguasa
+     Kota (sistem rulers) agar tak ada nama berbeda utk kota sama.
+   Modul mandiri.
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function cityName(id){ try{ return (typeof cityOf==="function")?cityOf(id).name:id; }catch(e){ return id; } }
+  function polRoleNow(){ return (hasC() && C.polRole && C.polRole.role) ? C.polRole.role : null; }
+
+  function polInfo(){
+    var pr=polRoleNow(); if(!pr) return null;
+    if(pr==="raja")     return {ico:"👑",name:(C.female?"Ratu":"Raja")+" Aetheria", role:"Penguasa Kerajaan", pay:150,
+      title:(C.female?"Ratu":"Raja")+" Aetheria"};
+    if(pr==="gubernur") return {ico:"🏙️",name:"Gubernur "+cityName(C.polRole.city), role:"Pemimpin Kota", pay:90,
+      title:"Gubernur "+cityName(C.polRole.city)};
+    if(pr==="kanselir") return {ico:"🏛️",name:"Kanselir Kerajaan", role:"Tangan Kanan Raja", pay:60,
+      title:"Kanselir Kerajaan"};
+    return null;
+  }
+
+  /* ---- 1) GELAR ikut jabatan politik (menimpa gelar karir) ---- */
+  try{
+    if(typeof updateTitle==="function"){
+      var _ut=updateTitle;
+      updateTitle=function(){
+        var r=_ut.apply(this,arguments);
+        try{ var p=polInfo(); if(p) C.title=p.title; }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  /* ---- 2) JABATAN POLITIK tampil di tab Karir ---- */
+  function polCardHTML(){
+    var p=polInfo(); if(!p) return "";
+    return "<div class='sechead'>🏛️ Jabatan Negara</div>"
+      +"<div class='charcard' style='margin-bottom:10px'><div class='chartop'>"
+      +"<div class='portrait'>"+p.ico+"</div>"
+      +"<div class='cinfo'><div class='cname'>"+p.name+"</div>"
+      +"<div class='ctitle'>"+p.role+" · tunjangan +"+p.pay+"/th</div>"
+      +"<div class='cage'>Jabatan resmi kerajaan — kelola di Balairung Kerajaan.</div></div></div>"
+      +"<div class='tiles'><div class='tile fullrow' onclick=\"switchTab('Peta');setTimeout(function(){try{openKingdomPage()}catch(e){}},140)\">"
+      +"<span class='ti'>🏛️</span><span class='tn'>Buka Balairung Kerajaan ▸</span>"
+      +"<span class='td'>dekrit, kampanye, jabatan, kudeta & politik</span></div></div>";
+  }
+  try{
+    if(typeof renderKarir==="function"){
+      var _rk=renderKarir;
+      renderKarir=function(){
+        var r=_rk.apply(this,arguments);
+        try{
+          if(polRoleNow()){
+            var host=document.getElementById("viewKarir");
+            if(host){
+              var card=polCardHTML();
+              // sisipkan sebelum bagian Pekerjaan/Lowongan agar terkelompok rapi
+              var heads=host.querySelectorAll(".sechead");
+              var target=null;
+              for(var i=0;i<heads.length;i++){
+                var t=heads[i].textContent||"";
+                if(/Pekerja|Lowongan/.test(t) || t.indexOf("💼")>=0 || t.indexOf("📋")>=0){ target=heads[i]; break; }
+              }
+              if(target) target.insertAdjacentHTML("beforebegin", card);
+              else host.insertAdjacentHTML("afterbegin", card);
+            }
+          }
+        }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  /* ---- 3) SINKRON Gubernur (Kerajaan) ↔ Penguasa Kota (rulers) ---- */
+  // Kota non-ibukota: nama "Gubernur" di halaman Kerajaan = nama penguasa
+  // kota dari sistem rulers, supaya tak ada dua nama untuk kota yang sama.
+  function syncGovernors(){
+    if(!hasC()) return;
+    try{
+      var K = (typeof ensureKingdom==="function")?ensureKingdom():C.kingdom;
+      if(!K||!K.governors) return;
+      if(window.__mantaraRulers && window.__mantaraRulers.ensureRulers) window.__mantaraRulers.ensureRulers();
+      if(!C.rulers) return;
+      ["thornvale","saltmoor","frostspire"].forEach(function(id){
+        var rl=C.rulers[id]; if(!rl) return;
+        var playerGov = (C.polRole && C.polRole.role==="gubernur" && C.polRole.city===id);
+        if(playerGov){ rl.name=C.name; K.governors[id]=C.name+" (KAU)"; }
+        else { K.governors[id]=rl.name; }
+      });
+    }catch(e){}
+  }
+  try{
+    if(typeof advanceYear==="function"){
+      var _adv=advanceYear;
+      advanceYear=function(){ var r=_adv.apply(this,arguments); try{ syncGovernors(); }catch(e){} return r; };
+    }
+  }catch(e){}
+  try{
+    if(typeof renderPeta==="function"){
+      var _rp=renderPeta;
+      renderPeta=function(){ try{ syncGovernors(); }catch(e){} return _rp.apply(this,arguments); };
+    }
+  }catch(e){}
+  // sinkron sekali saat halaman Kerajaan dibuka
+  try{
+    if(typeof window.openKingdomPage==="function"){
+      var _okp=window.openKingdomPage;
+      window.openKingdomPage=function(){ try{ syncGovernors(); }catch(e){} return _okp.apply(this,arguments); };
+    }
+  }catch(e){}
+
+  window.__mantaraSync={polInfo:polInfo,syncGovernors:syncGovernors};
+})();
+
+
+/* ==================================================================
+   MANTARA — IDENTITAS KOTA (tiap kota unik & khas)
+   Aetheria   👑 Intrik Istana   — sumber daya: Segel Kerajaan 📜
+   Thornvale  🌲 Perburuan Rimba — sumber daya: Herba Langka 🌿
+   Saltmoor   ⚓ Ventura Laut     — sumber daya: Doubloon 🪙
+   Frostspire 🗼 Riset Arcane     — sumber daya: Kristal Mana 💠
+   Tiap kota punya aktivitas khas (berbasis halaman), sumber daya
+   lokal yang dibelanjakan untuk hadiah unik, dan event khusus kota.
+   Modul mandiri; pushPage/pgRow. Nyambung ke ekonomi, gear, dungeon.
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function _ri(a,b){ return (typeof ri==="function")?ri(a,b):Math.floor(Math.random()*(b-a+1))+a; }
+  function _ch(p){ return (typeof chance==="function")?chance(p):Math.random()<p; }
+  function _rand(a){ return (typeof rand==="function")?rand(a):a[Math.floor(Math.random()*a.length)]; }
+  function _log(t,cls){ try{ if(typeof log==="function") log(C.age,t,cls||""); }catch(e){} }
+  function _toast(t){ try{ if(typeof toast==="function") toast(t); }catch(e){} }
+  function _sfx(n){ try{ if(typeof playSFX==="function") playSFX(n); }catch(e){} }
+  function _apply(o){ try{ if(typeof applyStats==="function") applyStats(o); }catch(e){} }
+  function _addItem(k){ try{ if(typeof addItem==="function") addItem(k); }catch(e){} }
+  function _news(t){ try{ if(typeof kAddNews==="function") kAddNews(t); }catch(e){} }
+  function cityName(id){ try{ return (typeof cityOf==="function")?cityOf(id).name:id; }catch(e){ return id; } }
+
+  var RES={ seal:{ico:"📜",name:"Segel Kerajaan"}, herb:{ico:"🌿",name:"Herba Langka"},
+            doubloon:{ico:"🪙",name:"Doubloon"}, crystal:{ico:"💠",name:"Kristal Mana"} };
+  function ensureRes(){ if(!hasC())return; if(!C.cityRes) C.cityRes={seal:0,herb:0,doubloon:0,crystal:0};
+    ["seal","herb","doubloon","crystal"].forEach(function(k){ if(C.cityRes[k]==null)C.cityRes[k]=0; }); }
+  function res(k){ ensureRes(); return C.cityRes[k]||0; }
+  function addRes(k,n){ ensureRes(); C.cityRes[k]=Math.max(0,(C.cityRes[k]||0)+n); }
+  function spendRes(k,n){ ensureRes(); if((C.cityRes[k]||0)<n) return false; C.cityRes[k]-=n; return true; }
+  function resLine(){ ensureRes(); return "📜"+res("seal")+"  🌿"+res("herb")+"  🪙"+res("doubloon")+"  💠"+res("crystal"); }
+  function power(){ try{ if(window.__mantaraLiving&&window.__mantaraLiving.guildPower) return window.__mantaraLiving.guildPower(); }catch(e){} var s=(C&&C.stats)||{}; return Math.round((s.might||0)+((C&&C.isMage)?(s.mana||0)*0.8:0)); }
+  function refresh(){ try{ if(typeof renderAll==="function")renderAll(); }catch(e){} try{ if(typeof mpRefresh==="function")mpRefresh(); }catch(e){} }
+  function doAct(fn){ return function(){ if(!hasC())return; var r=fn(); if(r){ _log(r.t,r.cls||"e-good"); _toast(r.t.replace(/<[^>]+>/g,"")); } refresh(); }; }
+
+  /* ============================================================
+     AETHERIA — INTRIK ISTANA (👑 Segel Kerajaan)
+     ============================================================ */
+  function aetheriaPage(){
+    var h=pgNote("Kota tahta & intrik. Jalin kuasa di balik singgasana — kumpulkan <b>Segel Kerajaan 📜</b> dari pengaruhmu, tukar jadi gelar & keistimewaan. "+resLine());
+    h+=pgSec("Balairung Intrik");
+    h+=pgRow({ico:"🎩",title:"Hadir di Jamuan Istana",sub:"jalin relasi bangsawan · reputasi & segel",on:doAct(function(){
+      if(_ch(0.15)){ _apply({happy:-4}); C.reputation=Math.max(0,C.reputation-3); return {t:"Kau tersandung etiket & jadi bahan gunjingan istana.",cls:"e-bad"}; }
+      C.reputation+=_ri(2,5); addRes("seal",_ri(1,2)); _apply({charm:+1});
+      return {t:"Kau berbaur anggun di jamuan istana. +reputasi & 📜 segel."};
+    })});
+    h+=pgRow({ico:"🍷",title:"Gelar Perjamuan Mewah",sub:"💰120 · pesona & banyak segel",on:doAct(function(){
+      if(C.coin<120) return {t:"Kas kurang untuk perjamuan.",cls:"e-bad"};
+      C.coin-=120; addRes("seal",_ri(2,4)); _apply({charm:+3,happy:+4}); C.reputation+=3;
+      return {t:"Perjamuanmu jadi buah bibir kaum ningrat! +📜 segel & pesona."};
+    })});
+    h+=pgRow({ico:"🤝",title:"Sponsori Ningrat Muda",sub:"💰250 · investasi pengaruh besar",on:doAct(function(){
+      if(C.coin<250) return {t:"Butuh 250 keping.",cls:"e-bad"};
+      C.coin-=250; addRes("seal",_ri(4,7)); C.reputation+=_ri(5,9);
+      return {t:"Ningrat yang kau sokong berhutang budi. Pengaruhmu meluas. +📜 banyak segel."};
+    })});
+    h+=pgRow({ico:"🗡️",title:"Sebar Intrik Politik",sub:"berisiko — bisa naik/hancur reputasi",on:doAct(function(){
+      if(_ch(0.5)){ C.reputation+=_ri(8,15); addRes("seal",_ri(1,3)); return {t:"Intrikmu berhasil menjatuhkan saingan! Reputasi melonjak.",cls:"e-epic"}; }
+      C.reputation=Math.max(0,C.reputation-_ri(6,12)); _apply({happy:-6}); return {t:"Intrikmu terbongkar! Namamu tercoreng di istana.",cls:"e-bad"};
+    })});
+    h+=pgSec("Tukar Segel Kerajaan 📜");
+    h+=pgRow({ico:"🎖️",title:"Beli Gelar Kehormatan",sub:"5 📜 → reputasi besar",dim:res("seal")<5,on:res("seal")<5?null:doAct(function(){
+      if(!spendRes("seal",5)) return {t:"Segel kurang.",cls:"e-bad"};
+      C.reputation+=_ri(12,20); return {t:"Raja menganugerahkan gelar kehormatan padamu! Reputasi melambung.",cls:"e-epic"};
+    })});
+    h+=pgRow({ico:"💰",title:"Tebus Upeti Kerajaan",sub:"4 📜 → 💰 besar",dim:res("seal")<4,on:res("seal")<4?null:doAct(function(){
+      if(!spendRes("seal",4)) return {t:"Segel kurang.",cls:"e-bad"};
+      var g=_ri(150,320); C.coin+=g; return {t:"Segelmu ditukar upeti "+g+" keping dari kas kerajaan."};
+    })});
+    return h;
+  }
+
+  /* ============================================================
+     THORNVALE — PERBURUAN RIMBA (🌲 Herba Langka)
+     ============================================================ */
+  function thornvalePage(){
+    var h=pgNote("Rimba luas penuh buruan & tumbuhan langka. Buru bestia, ramu <b>Herba Langka 🌿</b> jadi ramuan sakti. "+resLine());
+    h+=pgSec("Perburuan");
+    h+=pgRow({ico:"🏹",title:"Buru Buruan Liar",sub:"kekuatan menentukan · koin, kulit & kadang herba",on:doAct(function(){
+      var wc=Math.min(0.9,0.45+power()/160);
+      if(_ch(wc)){ var g=_ri(15,40); C.coin+=g; _addItem("hide"); if(_ch(0.4))addRes("herb",1); _apply({might:+2,happy:+3});
+        return {t:"Buruan sukses! +"+g+" keping, kulit buruan"+(_ch(0.4)?" & 🌿 herba":"")+".",cls:"e-good"}; }
+      _apply({health:-_ri(4,12)}); return {t:"Buruan lolos & kau tergores dalam pengejaran.",cls:"e-bad"};
+    })});
+    h+=pgRow({ico:"🐺",title:"Buru Bestia Buas",sub:"berbahaya — trofi & herba langka",on:doAct(function(){
+      var wc=Math.min(0.85,0.30+power()/150);
+      if(_ch(wc)){ var g=_ri(40,90); C.coin+=g; addRes("herb",_ri(1,3)); if(_ch(0.5))_addItem("beast_core"); _apply({might:+3,reputation:0}); C.reputation+=2;
+        return {t:"Kau menumbangkan bestia buas! +"+g+" keping & 🌿 herba langka.",cls:"e-epic"}; }
+      _apply({health:-_ri(10,24),happy:-4}); return {t:"Bestia itu terlalu ganas — kau nyaris jadi mangsa.",cls:"e-bad"};
+    })});
+    h+=pgRow({ico:"🌿",title:"Meramu Herba Hutan",sub:"jelajah & kumpulkan tumbuhan langka",on:doAct(function(){
+      var n=_ri(1,3); addRes("herb",n); if(_ch(0.3))_apply({mind:+2});
+      return {t:"Kau mengumpulkan "+n+" 🌿 herba langka dari rimba."};
+    })});
+    h+=pgSec("Ramuan dari Herba 🌿");
+    h+=pgRow({ico:"🧪",title:"Racik Ramuan Nyawa",sub:"2 🌿 → pulih nyawa besar",dim:res("herb")<2,on:res("herb")<2?null:doAct(function(){
+      if(!spendRes("herb",2))return{t:"Herba kurang.",cls:"e-bad"}; _apply({health:+_ri(18,32)}); return {t:"Ramuanmu memulihkan tubuh secara ajaib."};
+    })});
+    h+=pgRow({ico:"💪",title:"Racik Tonik Perkasa",sub:"3 🌿 → Kekuatan permanen",dim:res("herb")<3,on:res("herb")<3?null:doAct(function(){
+      if(!spendRes("herb",3))return{t:"Herba kurang.",cls:"e-bad"}; _apply({might:+_ri(4,8)}); return {t:"Tonik herbal membakar ototmu — Kekuatan naik!",cls:"e-epic"};
+    })});
+    h+=pgRow({ico:"💰",title:"Jual Herba ke Tabib Kota",sub:"1 🌿 → koin",dim:res("herb")<1,on:res("herb")<1?null:doAct(function(){
+      if(!spendRes("herb",1))return{t:"Tak ada herba.",cls:"e-bad"}; var g=_ri(25,55); C.coin+=g; return {t:"Tabib membeli herbamu seharga "+g+" keping."};
+    })});
+    return h;
+  }
+
+  /* ============================================================
+     SALTMOOR — VENTURA LAUT (⚓ Doubloon)
+     ============================================================ */
+  function ensureVoyages(){ if(!C.voyages)C.voyages=[]; }
+  function saltmoorPage(){
+    ensureVoyages();
+    var h=pgNote("Pelabuhan dagang & sarang penyelundup. Danai pelayaran berisiko, selundupkan barang, raih <b>Doubloon 🪙</b> untuk pasar gelap. "+resLine());
+    if(C.voyages.length){
+      h+=pgSec("Pelayaran Berjalan");
+      C.voyages.forEach(function(v){ h+=pgRow({ico:"⛵",title:"Modal "+v.amt+" keping",sub:"tiba "+v.yearsLeft+" th lagi · risiko "+(v.risk>0.3?"tinggi":"sedang")}); });
+    }
+    h+=pgSec("Ventura & Selundup");
+    [["Kecil",120,1,0.22],["Sedang",300,2,0.3],["Besar",700,2,0.38]].forEach(function(t){
+      h+=pgRow({ico:"⛵",title:"Danai Pelayaran "+t[0],sub:"💰"+t[1]+" · untung "+Math.round(t[1]*1.6)+"–"+Math.round(t[1]*2.6)+" + 🪙 · "+t[2]+" th",dim:C.coin<t[1],
+        on:C.coin<t[1]?null:doAct(function(){ C.coin-=t[1]; ensureVoyages(); C.voyages.push({amt:t[1],yearsLeft:t[2],risk:t[3]}); return {t:"Kapalmu berlayar membawa modal "+t[1]+" keping. Nantikan hasilnya."}; })});
+    });
+    h+=pgRow({ico:"🏴",title:"Selundupkan Barang Gelap",sub:"risiko reputasi · doubloon + koin",on:doAct(function(){
+      if(_ch(0.25)){ C.reputation=Math.max(0,C.reputation-_ri(5,10)); var loss=Math.min(C.coin,_ri(20,60)); C.coin-=loss; return {t:"Penjaga pelabuhan menggerebek! Kau kehilangan "+loss+" keping & nama.",cls:"e-bad"}; }
+      var g=_ri(30,80); C.coin+=g; addRes("doubloon",_ri(2,4)); return {t:"Penyelundupanmu mulus. +"+g+" keping & 🪙 doubloon.",cls:"e-good"};
+    })});
+    h+=pgSec("Pasar Gelap Doubloon 🪙");
+    h+=pgRow({ico:"🗡️",title:"Beli Senjata Selundupan",sub:"6 🪙 → tingkatkan senjata (+1 tempa)",dim:res("doubloon")<6,on:res("doubloon")<6?null:doAct(function(){
+      if(!spendRes("doubloon",6))return{t:"Doubloon kurang.",cls:"e-bad"};
+      try{ if(!C.gearPlus)C.gearPlus={}; C.gearPlus.weapon=Math.min(8,(C.gearPlus.weapon||0)+1); }catch(e){}
+      return {t:"Senjatamu ditempa ulang dengan logam selundupan — makin tajam!",cls:"e-epic"};
+    })});
+    h+=pgRow({ico:"🎁",title:"Beli Peti Misteri",sub:"4 🪙 → barang langka acak",dim:res("doubloon")<4,on:res("doubloon")<4?null:doAct(function(){
+      if(!spendRes("doubloon",4))return{t:"Doubloon kurang.",cls:"e-bad"};
+      _addItem(_rand(["lucky_coin","ancient_scroll","gemstone","relic","rune_shard"]));
+      return {t:"Peti misteri berisi barang langka!",cls:"e-good"};
+    })});
+    return h;
+  }
+  function resolveVoyages(){
+    if(!hasC()||!C.voyages||!C.voyages.length) return;
+    var keep=[];
+    C.voyages.forEach(function(v){ v.yearsLeft--; if(v.yearsLeft>0){ keep.push(v); return; }
+      if(_ch(v.risk)){ var lost=Math.round(v.amt*(_ch(0.5)?0.5:1)); _log("⛵ Pelayaranmu diterjang "+(_ch(0.5)?"badai":"bajak laut")+"! Modal "+v.amt+" hilang sebagian ("+lost+").","e-bad"); if(lost<v.amt){ C.coin+=(v.amt-lost); } }
+      else { var ret=Math.round(v.amt*(1.6+Math.random())); C.coin+=ret; addRes("doubloon",_ri(2,5)); _log("⛵ Kapalmu pulang membawa untung "+ret+" keping & 🪙 doubloon!","e-epic"); }
+    });
+    C.voyages=keep;
+  }
+
+  /* ============================================================
+     FROSTSPIRE — RISET ARCANE (🗼 Kristal Mana)
+     ============================================================ */
+  function frostspirePage(){
+    var h=pgNote("Menara sihir beku, pusat ilmu arcane. Tambang <b>Kristal Mana 💠</b>, riset mantra, & enchant perlengkapan. "+(C.isMage?"":"<br><span style='color:var(--bad)'>Non-penyihir bisa meditasi & enchant, tapi riset mantra tinggi butuh darah arcane.</span>")+" "+resLine());
+    h+=pgSec("Menara Arcanum");
+    h+=pgRow({ico:"❄️",title:"Meditasi Ley-line",sub:"serap energi beku · kristal + mana",on:doAct(function(){
+      addRes("crystal",_ri(1,3)); _apply(C.isMage?{mana:+_ri(3,7),mind:+1}:{mind:+2,happy:+2});
+      return {t:"Kau menyelaraskan diri dengan ley-line. +💠 kristal"+(C.isMage?" & mana":"")+"."};
+    })});
+    h+=pgRow({ico:"🔮",title:"Riset Mantra",sub:(C.isMage?"2 💠 + 💰80 · buka kekuatan arcane (berisiko)":"🔒 khusus penyihir"),dim:!C.isMage||res("crystal")<2||C.coin<80,
+      on:(!C.isMage||res("crystal")<2||C.coin<80)?null:doAct(function(){
+        spendRes("crystal",2); C.coin-=80;
+        if(_ch(0.68)){ _apply({mana:+_ri(6,12),mind:+_ri(2,4)}); return {t:"Risetmu berhasil! Mantra baru terukir & mana melonjak.",cls:"e-epic"}; }
+        _apply({health:-_ri(6,14),mana:-3}); return {t:"Eksperimenmu meledak! Arcane liar menghantam balik.",cls:"e-bad"};
+      })});
+    h+=pgRow({ico:"💠",title:"Enchant Perlengkapan",sub:"3 💠 → tingkatkan senjata (+1 tempa arcane)",dim:res("crystal")<3,on:res("crystal")<3?null:doAct(function(){
+      if(!spendRes("crystal",3))return{t:"Kristal kurang.",cls:"e-bad"};
+      try{ if(!C.gearPlus)C.gearPlus={}; var cat=(C.isMage&&C.gear&&C.gear.tome&&C.gear.tome!=="none")?"tome":"weapon"; C.gearPlus[cat]=Math.min(8,(C.gearPlus[cat]||0)+1); }catch(e){}
+      return {t:"Perlengkapanmu berpendar dengan enchant arcane!",cls:"e-epic"};
+    })});
+    h+=pgRow({ico:"📖",title:"Pelajari Tomus Terlarang",sub:"berisiko Inkuisisi · pengetahuan besar",on:doAct(function(){
+      var inkuis=false; try{ var a=window.__mantaraRulers&&window.__mantaraRulers.archOf&&window.__mantaraRulers.archOf("frostspire"); inkuis=a&&a.magePenalty; }catch(e){}
+      if(C.isMage && inkuis && _ch(0.4)){ _apply({health:-_ri(8,18),happy:-6}); C.reputation=Math.max(0,C.reputation-5); return {t:"Inkuisisi memergokimu membaca tomus terlarang! Kau nyaris ditangkap.",cls:"e-bad"}; }
+      _apply(C.isMage?{mana:+_ri(4,9),mind:+_ri(3,6)}:{mind:+_ri(3,6)}); addRes("crystal",1);
+      return {t:"Pengetahuan kuno mengalir ke benakmu.",cls:"e-arcane"};
+    })});
+    h+=pgSec("Tukar Kristal 💠");
+    h+=pgRow({ico:"💰",title:"Jual Kristal ke Kolektor",sub:"1 💠 → koin",dim:res("crystal")<1,on:res("crystal")<1?null:doAct(function(){
+      if(!spendRes("crystal",1))return{t:"Tak ada kristal.",cls:"e-bad"}; var g=_ri(40,90); C.coin+=g; return {t:"Kolektor arcane membayar "+g+" keping untuk kristalmu."};
+    })});
+    return h;
+  }
+
+  /* ============================================================
+     REGISTRASI & PINTU MASUK
+     ============================================================ */
+  var CITY_SIG={
+    aetheria:{ico:"👑",name:"Intrik Istana",res:"seal",page:aetheriaPage,
+      blurb:"Panjat tangga kekuasaan lewat jamuan, sponsor & intrik. Kumpulkan Segel Kerajaan."},
+    thornvale:{ico:"🏹",name:"Perburuan Rimba",res:"herb",page:thornvalePage,
+      blurb:"Buru bestia & ramu herba langka jadi ramuan sakti."},
+    saltmoor:{ico:"⛵",name:"Ventura Laut",res:"doubloon",page:saltmoorPage,
+      blurb:"Danai pelayaran dagang berisiko & selundupkan barang demi Doubloon."},
+    frostspire:{ico:"🔮",name:"Riset Arcane",res:"crystal",page:frostspirePage,
+      blurb:"Tambang Kristal Mana, riset mantra & enchant perlengkapan."}
+  };
+  window.openCitySignature=function(cityId){
+    var sig=CITY_SIG[cityId]; if(!sig||typeof pushPage!=="function") return;
+    pushPage({title:sig.name+" — "+cityName(cityId), render:function(){ if(!hasC())return pgNote("Mulai hidup dulu."); return sig.page(); }});
+  };
+
+  // panel "Ciri Khas Kota" di tab Peta (untuk kota tempatmu berada)
+  function sigSectionHTML(){
+    if(!hasC()) return "";
+    ensureRes();
+    var id=C.cityId, sig=CITY_SIG[id]; if(!sig) return "";
+    return "<div class='sechead'>"+sig.ico+" Ciri Khas "+cityName(id)+"</div>"
+      +"<p style='font-size:10.5px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 8px;line-height:1.5;'>"+sig.blurb+"<br>Sumber dayamu: "+resLine()+"</p>"
+      +"<div class='tiles'><div class='tile fullrow arcane' onclick=\"openCitySignature('"+id+"')\">"
+      +"<span class='ti'>"+sig.ico+"</span><span class='tn'>"+sig.name+" ▸</span>"
+      +"<span class='td'>aktivitas khas hanya ada di "+cityName(id)+"</span></div></div>";
+  }
+  try{
+    if(typeof renderPeta==="function"){
+      var _rp=renderPeta;
+      renderPeta=function(){
+        var r=_rp.apply(this,arguments);
+        try{ var host=document.getElementById("viewPeta"); if(host&&hasC()) host.insertAdjacentHTML("beforeend", sigSectionHTML()); }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  /* ---- EVENT UNIK PER KOTA (hanya saat berada di kota itu) ---- */
+  var CITY_EVENTS={
+    aetheria:[
+      function(){ C.reputation+=_ri(2,5); addRes("seal",1); return "🎪 Kau diundang ke pesta topeng istana — namamu makin dikenal ningrat. +📜"; },
+      function(){ if(_ch(0.5)){C.reputation=Math.max(0,C.reputation-4);return "🗣️ Gosip miring tentangmu beredar di koridor istana.";} var g=_ri(40,100);C.coin+=g;return "👑 Raja berkenan memberimu hadiah "+g+" keping."; }
+    ],
+    thornvale:[
+      function(){ addRes("herb",_ri(1,2)); return "🦌 Kau menemukan padang herba tersembunyi di rimba. +🌿"; },
+      function(){ if(power()>40){_addItem("hide");C.coin+=_ri(20,50);return "🐗 Bestia menyerang kampmu — kau mengusirnya & mengambil rampasannya.";} _apply({health:-_ri(5,12)});return "🐗 Bestia buas menyerang di malam hari — kau terluka mempertahankan diri."; }
+    ],
+    saltmoor:[
+      function(){ addRes("doubloon",_ri(1,3)); return "🏴‍☠️ Kau memenangkan taruhan dengan pelaut mabuk. +🪙 doubloon."; },
+      function(){ if(_ch(0.4)){_apply({health:-_ri(4,10)});return "🦠 Wabah pelabuhan menjangkitimu sebentar.";} var g=_ri(30,80);C.coin+=g;return "🚢 Kapal dagang butuh kuli mendadak — upah "+g+" keping."; }
+    ],
+    frostspire:[
+      function(){ addRes("crystal",_ri(1,2)); _apply(C.isMage?{mana:+4}:{mind:+2}); return "❄️ Badai mana melanda menara — kau memanen 💠 kristal dari sisa-sisanya."; },
+      function(){ if(C.isMage){_apply({mana:+_ri(4,8)});return "🔮 Ley-line bergolak — mana di tubuhmu meluap.";} _apply({health:-_ri(3,8)});return "🥶 Udara beku Frostspire menggerus tenagamu."; }
+    ]
+  };
+  try{
+    if(typeof advanceYear==="function"){
+      var _adv=advanceYear;
+      advanceYear=function(){
+        var r=_adv.apply(this,arguments);
+        try{
+          if(hasC()){
+            resolveVoyages();
+            if(_ch(0.22)){ var pool=CITY_EVENTS[C.cityId]; if(pool){ var msg=_rand(pool)(); if(msg) _log(msg, /terluka|wabah|gosip|menggerus|menyerang/.test(msg)?"e-bad":"e-good"); } }
+          }
+        }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraCityId={CITY_SIG:CITY_SIG,res:res,addRes:addRes,resolveVoyages:resolveVoyages};
+})();
+
+
+/* ==================================================================
+   MANTARA — JUKEBOX MUSIK (rotasi otomatis tiap 30–45 detik)
+   Mengganti lagu latar otomatis setiap 30–45 detik dari playlist
+   (tema tenang + tema tiap kota + musik aktivitas), diacak agar
+   bervariasi. Tidak mengganggu momen kontekstual (duel, duka,
+   kemenangan, upacara) & tidak mengganggu pilihan manual. Tiba di
+   kota baru memainkan tema kota itu sekali sebagai sambutan.
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  var CONTEXTUAL={battle:1,event:1,mourn:1,triumph:1,ceremony:1};
+  var BG=["calm","city_aetheria","city_thornvale","city_saltmoor","city_frostspire",
+          "act_aetheria","act_thornvale","act_saltmoor","act_frostspire"];
+  var order=[], oi=0, jt=null;
+  function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=(Math.random()*(i+1))|0; var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+  function nextTrack(prev){
+    if(!order.length || oi>=order.length){
+      order=shuffle(BG); oi=0;
+      if(hasC()&&C.cityId){ var ct="city_"+C.cityId, k=order.indexOf(ct); if(k>0){ order.splice(k,1); order.unshift(ct); } }
+    }
+    var t=order[oi++];
+    if(t===prev){ t=order[oi++]||order[0]; }
+    return t;
+  }
+  function state(){ try{ return window.musicNow?window.musicNow():null; }catch(e){ return null; } }
+  function rotate(){
+    try{
+      var st=state();
+      if(st&&st.state){
+        if(!st.state.on){ schedule(); return; }                  // musik dimatikan
+        if(st.state.mode!=="auto"){ schedule(); return; }        // mode manual — hormati pilihan user
+        if(st.mood&&CONTEXTUAL[st.mood]){ schedule(); return; }  // sedang momen kontekstual
+      }
+      var trk=nextTrack(st?st.mood:null);
+      if(typeof window.MusicMood==="function") window.MusicMood(trk);
+    }catch(e){}
+    schedule();
+  }
+  function schedule(){ clearTimeout(jt); jt=setTimeout(rotate, 30000+((Math.random()*15000)|0)); } // 30–45 dtk
+  function startJuke(){ if(jt) return; schedule(); }
+  document.addEventListener("pointerdown", startJuke, {passive:true, once:true});
+  setTimeout(startJuke, 2500);
+
+  // tiba di kota baru -> mainkan tema kota itu sekali (sambutan), lalu rotasi lanjut
+  try{
+    if(typeof travelTo==="function"){
+      var _tt=travelTo;
+      travelTo=function(){
+        var r=_tt.apply(this,arguments);
+        try{ setTimeout(function(){
+          var st=state();
+          if(st&&st.state&&st.state.on&&st.state.mode==="auto"&&!(st.mood&&CONTEXTUAL[st.mood])&&hasC()&&typeof window.MusicMood==="function"){
+            window.MusicMood("city_"+C.cityId); schedule();
+          }
+        },350); }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraJukebox={next:nextTrack,rotate:rotate,BG:BG,schedule:schedule};
+})();
+
+
+/* ==================================================================
+   MANTARA — KARIR TERFOKUS + ALASAN WAFAT
+   1) Naik pangkat tiap profesi bergantung STAT FOKUS-nya sendiri:
+      gladiator → Kekuatan, politikus → Pesona & Akal, penyihir → Mana,
+      dsb. Syaratnya ditampilkan jelas di tombol "Minta Promosi".
+   2) Layar kematian menampilkan PENYEBAB wafat (usia tua / penyakit /
+      peristiwa terakhir / dsb), bukan sekadar generik.
+   Modul mandiri.
+   ================================================================== */
+(function(){
+  "use strict";
+  function hasC(){ return typeof C!=="undefined" && C && C.alive; }
+  function _ri(a,b){ return (typeof ri==="function")?ri(a,b):Math.floor(Math.random()*(b-a+1))+a; }
+  function clamp01(v){ return Math.max(0,Math.min(1,v)); }
+  function statName(k){ try{ return (typeof STAT_META!=="undefined"&&STAT_META[k])?STAT_META[k].name:k; }catch(e){ return k; } }
+
+  /* ---------- FOKUS PROMOSI PER PROFESI ---------- */
+  var CLASS_SECONDARY={combat:"health",arcane:"mind",social:"mind",labor:"might"};
+  function jobStat(id){ try{ if(typeof jobDevOf==="function"){ var d=jobDevOf(id); if(d&&d.stat) return d.stat; } }catch(e){} return "mind"; }
+  function careerFocus(id){
+    var primary=jobStat(id);
+    var cls=(typeof jobClassOf==="function")?jobClassOf(id):"labor";
+    var secondary=CLASS_SECONDARY[cls]||"mind";
+    if(secondary===primary){ secondary = primary==="might"?"mind":(primary==="mind"?"charm":(primary==="charm"?"might":"mind")); }
+    return {primary:primary, secondary:secondary};
+  }
+  // ambang stat fokus utk naik ke pangkat berikutnya (naik tiap jenjang)
+  function promoThreshold(level){ return 30 + (level+1)*13; }  // lv0->1:43, 1->2:56, 2->3:69
+
+  window.promoFocusOK=function(){
+    try{
+      if(!hasC()||!C.career) return true;
+      var f=careerFocus(C.career); var thr=promoThreshold(C.careerLevel||0);
+      return (C.stats[f.primary]||0) >= thr-8; // gerbang lunak utk promosi otomatis
+    }catch(e){ return true; }
+  };
+
+  function promoChance(){
+    var f=careerFocus(C.career); var thr=promoThreshold(C.careerLevel||0);
+    var primVal=C.stats[f.primary]||0, secVal=C.stats[f.secondary]||0;
+    var perf=((C.jobPerf||50))/170;
+    var dev=((C.jobDev&&C.jobDev.level)||0)*0.05;
+    var st=(typeof currentJobStyle==="function")?currentJobStyle():null;
+    var stp=(st&&st.promo)||0;
+    var focusEdge=(primVal-thr)/75;               // stat fokus utama sangat menentukan
+    var secBonus=Math.max(0,(secVal-thr)/460);    // stat pendukung pengaruh kecil
+    return clamp01(perf*0.9+dev+stp+focusEdge*1.15+secBonus);
+  }
+  function promoReqText(){
+    if(!hasC()||!C.career) return "";
+    var car=(typeof CAREERS!=="undefined")?CAREERS.find(function(x){return x.id===C.career;}):null;
+    if(!car) return "";
+    if(C.careerLevel>=car.ranks.length-1) return "Kau di puncak profesi ini 👑";
+    var f=careerFocus(C.career); var thr=promoThreshold(C.careerLevel||0);
+    var primVal=Math.round(C.stats[f.primary]||0);
+    var ready=primVal>=thr;
+    return "Fokus "+statName(f.primary)+" "+primVal+"/"+thr+(ready?" ✓ siap naik":" — asah dulu")+" · dibantu "+statName(f.secondary);
+  }
+
+  /* ---------- override jobAskPromotion: berbasis fokus ---------- */
+  try{
+    if(typeof window.jobAskPromotion==="function"){
+      window.jobAskPromotion=function(){
+        if(!hasC()||!C.career) return;
+        try{ if(typeof ensureJobState==="function") ensureJobState(); }catch(e){}
+        var car=(typeof CAREERS!=="undefined")?CAREERS.find(function(x){return x.id===C.career;}):null; if(!car) return;
+        if(C.careerLevel>=car.ranks.length-1){ if(typeof toast==="function") toast("Kau sudah di puncak karir ini! 👑"); return; }
+        var f=careerFocus(C.career); var thr=promoThreshold(C.careerLevel||0);
+        var primVal=C.stats[f.primary]||0;
+        var p=promoChance();
+        if(Math.random()<p){
+          C.careerLevel++; C.careerYears=0; C.jobPerf=Math.max(0,(C.jobPerf||50)-20);
+          if(typeof finishAct==="function") finishAct("📈 Promosi! Kau kini "+car.ranks[C.careerLevel]+" — "+statName(f.primary)+"mu membuka jalan.","e-epic","win");
+        }else{
+          C.jobPerf=Math.max(0,(C.jobPerf||50)-_ri(4,10));
+          var need = primVal<thr
+            ? "Naik pangkat "+car.name+" menuntut "+statName(f.primary)+" tinggi (kini "+Math.round(primVal)+", butuh ≥"+thr+"). Latih keahlian profesimu."
+            : "Atasan belum terkesan — tingkatkan performa & keahlian profesimu.";
+          if(typeof finishAct==="function") finishAct(need,"e-bad");
+        }
+      };
+    }
+  }catch(e){}
+
+  /* ---------- tampilkan syarat di tombol "Minta Promosi" ---------- */
+  try{
+    if(typeof renderKarir==="function"){
+      var _rk=renderKarir;
+      renderKarir=function(){
+        var r=_rk.apply(this,arguments);
+        try{
+          if(hasC()&&C.career){
+            var host=document.getElementById("viewKarir");
+            if(host){
+              var tile=host.querySelector('[onclick*="jobAskPromotion"] .td');
+              if(tile){ tile.textContent=promoReqText(); }
+            }
+          }
+        }catch(e){}
+        return r;
+      };
+    }
+  }catch(e){}
+
+  /* ============================================================
+     2) ALASAN / PENYEBAB WAFAT
+     ============================================================ */
+  function enrichDeath(reason){
+    var r=String(reason||""); var age=(hasC()||C)?((C&&C.age)||0):0;
+    // usia tua
+    if(/usia tua|old age/i.test(r) || age>=70) return {ico:"⏳",text:"Usia tua — kau wafat dengan tenang di umur "+age+"."};
+    // penyakit / wabah / dingin
+    var plague=false;
+    try{ plague=C&&C.market&&C.market.events&&C.market.events.some(function(e){return e.id==="plague"||e.id==="winter";}); }catch(e){}
+    if(/wabah|hitam|sakit|penyakit|beku|dingin|\bpes\b/i.test(r) || plague) return {ico:"🤒",text:"Penyakit merenggut nyawamu di umur "+age+"."};
+    // peristiwa/pertarungan dengan alasan spesifik
+    if(r && !/menyerah|fatal|parah|akibat|pilihanmu|tubuhmu|lukamu/i.test(r)) return {ico:"⚔️",text:r+(/\d/.test(r)?"":" (umur "+age+")")};
+    // luka berat (peristiwa terakhir)
+    if(/luka|parah/i.test(r)) return {ico:"🩸",text:"Luka dari peristiwa terakhir terlalu parah — kau gugur di umur "+age+"."};
+    // kemiskinan
+    try{ if(C && C.coin<=5) return {ico:"🥀",text:"Tubuh yang letih karena kekurangan akhirnya menyerah (umur "+age+")."}; }catch(e){}
+    // penuaan bertahap
+    if(age>=55) return {ico:"⏳",text:"Tubuh yang menua akhirnya menyerah di umur "+age+"."};
+    return {ico:"💔",text:"Tubuhmu menyerah di umur "+age+"."};
+  }
+  window.deathCauseLine=function(reason){
+    try{
+      var c = (C && C._deathReason) ? C._deathReason : enrichDeath(reason);
+      return "<span style='color:var(--bad);filter:brightness(1.3)'>"+c.ico+" "+c.text+"</span>";
+    }catch(e){ return ""; }
+  };
+  // tangkap alasan tepat sebelum die menampilkan epitaf
+  try{
+    if(typeof die==="function"){
+      var _die=die;
+      die=function(reason){
+        try{ if(typeof C!=="undefined"&&C) C._deathReason=enrichDeath(reason); }catch(e){}
+        return _die.apply(this,arguments);
+      };
+    }
+  }catch(e){}
+
+  window.__mantaraJobDeath={careerFocus:careerFocus,promoThreshold:promoThreshold,promoChance:promoChance,promoReqText:promoReqText,enrichDeath:enrichDeath};
 })();
 
 </script>
