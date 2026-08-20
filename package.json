@@ -2,11 +2,11 @@
   "name": "mantara",
   "version": "1.0.0",
   "private": true,
-  "description": "Mantara — Hikayat Dunia Sihir (iOS, Android, web)",
+  "description": "Mantara — Hikayat Dunia Sihir (iOS, Android, web). Sumber modular di src/, dibundel jadi satu file oleh scripts/bundle.js",
   "scripts": {
     "start": "npm run build && serve www -l 3000 --no-clipboard",
     "dev": "npm run build && serve www -l 3000 --no-clipboard",
-    "build": "node scripts/build-www.js",
+    "build": "node scripts/bundle.js && node scripts/build-www.js",
     "icons": "bash scripts/generate-app-icons.sh",
     "icons:native": "npx @capacitor/assets generate --assetPath resources --iconBackgroundColor '#171019' --iconBackgroundColorDark '#171019' --splashBackgroundColor '#171019' --splashBackgroundColorDark '#171019'",
     "icons:all": "npm run icons && npm run icons:native",
@@ -16,7 +16,9 @@
     "cap:run:ios": "npm run cap:sync && npx cap run ios",
     "cap:run:android": "npm run cap:sync && npx cap run android",
     "release:check": "node scripts/release-check.js",
-    "release:prepare": "bash scripts/prepare-release.sh"
+    "release:prepare": "bash scripts/prepare-release.sh",
+    "bundle": "node scripts/bundle.js",
+    "bundle:check": "node scripts/bundle.js --check"
   },
   "dependencies": {
     "@capacitor/android": "^7.2.0",

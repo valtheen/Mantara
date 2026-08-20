@@ -1,0 +1,266 @@
+[
+  {
+    "file": "00-boot.js",
+    "title": "Error guard, katalog aset, util dasar",
+    "lines": 182,
+    "bytes": 8600
+  },
+  {
+    "file": "01-core-career.js",
+    "title": "Karir, bisnis, aktivitas, aksi relasi",
+    "lines": 125,
+    "bytes": 10384
+  },
+  {
+    "file": "02-core-loop.js",
+    "title": "Loop inti: updateTitle, EVENTS, misi",
+    "lines": 169,
+    "bytes": 16277
+  },
+  {
+    "file": "03-ui-render.js",
+    "title": "Toast, log, render relasi, render dasar",
+    "lines": 154,
+    "bytes": 7886
+  },
+  {
+    "file": "04-assets.js",
+    "title": "Properti multi-unit, gear, sewa",
+    "lines": 301,
+    "bytes": 16827
+  },
+  {
+    "file": "05-character.js",
+    "title": "Appearance, net worth, inventory, kustomisasi",
+    "lines": 279,
+    "bytes": 13920
+  },
+  {
+    "file": "06-world-time.js",
+    "title": "Kota, jarak, kuota aksi, advanceYear, travel",
+    "lines": 440,
+    "bytes": 19997
+  },
+  {
+    "file": "07-games.js",
+    "title": "Animasi, turnamen, judi, aktivitas sub-lokasi",
+    "lines": 421,
+    "bytes": 24192
+  },
+  {
+    "file": "08-trade.js",
+    "title": "Wardrobe, hadiah, tawar-menawar, lelang",
+    "lines": 338,
+    "bytes": 18844
+  },
+  {
+    "file": "09-school.js",
+    "title": "Sekolah berjenjang, kuis, ijazah",
+    "lines": 294,
+    "bytes": 13436
+  },
+  {
+    "file": "10-popup.js",
+    "title": "Fondasi popup konsisten + tombol kembali",
+    "lines": 126,
+    "bytes": 4728
+  },
+  {
+    "file": "11-aging.js",
+    "title": "Aging events (event tak terduga per umur)",
+    "lines": 177,
+    "bytes": 13930
+  },
+  {
+    "file": "12-social.js",
+    "title": "Percakapan & profil NPC",
+    "lines": 82,
+    "bytes": 5201
+  },
+  {
+    "file": "13-stores.js",
+    "title": "Toko berkategori di peta",
+    "lines": 164,
+    "bytes": 13220
+  },
+  {
+    "file": "14-careers-plus.js",
+    "title": "Karir tambahan, event karir, encounter",
+    "lines": 230,
+    "bytes": 14468
+  },
+  {
+    "file": "15-lineage.js",
+    "title": "Keturunan, pewarisan harta, kematian",
+    "lines": 182,
+    "bytes": 9361
+  },
+  {
+    "file": "16-worldmap.js",
+    "title": "Peta dunia SVG + animasi perjalanan",
+    "lines": 186,
+    "bytes": 9465
+  },
+  {
+    "file": "17-overview.js",
+    "title": "Overview karakter, optimasi performa",
+    "lines": 207,
+    "bytes": 10288
+  },
+  {
+    "file": "18-save.js",
+    "title": "Save system localStorage",
+    "lines": 76,
+    "bytes": 2847
+  },
+  {
+    "file": "19-balance-age.js",
+    "title": "Balancing mortalitas + sekolah kota",
+    "lines": 358,
+    "bytes": 16802
+  },
+  {
+    "file": "20-platform.js",
+    "title": "Audio SFX, IAP, multi-slot, aset kustom, navigasi",
+    "lines": 809,
+    "bytes": 36276
+  },
+  {
+    "file": "21-expansion.js",
+    "title": "Dinasti, perk, faksi, rival, takdir, harian",
+    "lines": 1035,
+    "bytes": 60706
+  },
+  {
+    "file": "22-arena.js",
+    "title": "Arena, duel taktis, gauntlet, minigame laga",
+    "lines": 807,
+    "bytes": 50918
+  },
+  {
+    "file": "23-career-ui.js",
+    "title": "Kursus, busana toko, menu karir terpadu",
+    "lines": 388,
+    "bytes": 23695
+  },
+  {
+    "file": "24-minigames.js",
+    "title": "Balap sapu terbang, ular naga",
+    "lines": 195,
+    "bytes": 10065
+  },
+  {
+    "file": "25-school-life.js",
+    "title": "Kehidupan sekolah, sub-halaman, rumah keluarga",
+    "lines": 680,
+    "bytes": 40548
+  },
+  {
+    "file": "26-kingdom.js",
+    "title": "Arena lokasi, kerajaan, politik, guild, berita",
+    "lines": 334,
+    "bytes": 19702
+  },
+  {
+    "file": "27-traits-map.js",
+    "title": "Perangai, POI peta, ilustrasi rumah",
+    "lines": 386,
+    "bytes": 29762
+  },
+  {
+    "file": "28-ordo.js",
+    "title": "Perhiasan, lamaran, ordo berjenjang, profesi",
+    "lines": 333,
+    "bytes": 18269
+  },
+  {
+    "file": "29-music.js",
+    "title": "Musik latar adaptif + tema kota",
+    "lines": 173,
+    "bytes": 9627
+  },
+  {
+    "file": "30-onboarding.js",
+    "title": "Splash, minigame bidikan, penunjuk takdir",
+    "lines": 449,
+    "bytes": 25750
+  },
+  {
+    "file": "31-living.js",
+    "title": "Kuota aksi, aset hidup, peliharaan, guild bounty",
+    "lines": 673,
+    "bytes": 36540
+  },
+  {
+    "file": "32-forge.js",
+    "title": "Toko halaman + balai tempa",
+    "lines": 335,
+    "bytes": 16041
+  },
+  {
+    "file": "33-family.js",
+    "title": "Hub peta, saudara kandung",
+    "lines": 143,
+    "bytes": 5997
+  },
+  {
+    "file": "34-rulers.js",
+    "title": "Musik event, wafatnya relasi, penguasa kota",
+    "lines": 382,
+    "bytes": 20490
+  },
+  {
+    "file": "35-economy.js",
+    "title": "Ekonomi dinamis, ekspedisi & dungeon",
+    "lines": 504,
+    "bytes": 26810
+  },
+  {
+    "file": "36-ambience.js",
+    "title": "Ambience prosedural, sinkronisasi jabatan",
+    "lines": 315,
+    "bytes": 14821
+  },
+  {
+    "file": "37-city-identity.js",
+    "title": "Identitas khas tiap kota",
+    "lines": 264,
+    "bytes": 19305
+  },
+  {
+    "file": "38-jukebox-death.js",
+    "title": "Jukebox, karir terfokus, alasan wafat",
+    "lines": 201,
+    "bytes": 10538
+  },
+  {
+    "file": "39-romance.js",
+    "title": "Percintaan mendalam",
+    "lines": 356,
+    "bytes": 21583
+  },
+  {
+    "file": "40-v24-balance.js",
+    "title": "v24 Lapis A: overlay, kurva stat, umur, origin",
+    "lines": 279,
+    "bytes": 12975
+  },
+  {
+    "file": "41-v24-prophecy.js",
+    "title": "v24 Lapis B: Ramalan",
+    "lines": 341,
+    "bytes": 17412
+  },
+  {
+    "file": "42-v24-content.js",
+    "title": "v24 Lapis C: paket konten (event & dilema)",
+    "lines": 324,
+    "bytes": 39075
+  },
+  {
+    "file": "43-v24-season.js",
+    "title": "v24 Lapis D: Musim Wangsa (season pass)",
+    "lines": 486,
+    "bytes": 27849
+  }
+]

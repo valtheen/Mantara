@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 112" role="img" aria-labelledby="title desc">
+  <title id="title">Sigil Mantara</title>
+  <desc id="desc">Perisai dengan monogram M, bulan, dan empat kota</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd75e"/>
+      <stop offset="1" stop-color="#bd7a16"/>
+    </linearGradient>
+  </defs>
+  <path d="M48 4 84 18v33c0 27-15 45-36 57C27 96 12 78 12 51V18L48 4Z" fill="#17111d" stroke="url(#g)" stroke-width="4"/>
+  <path d="M25 76V34l23 25 23-25v42" fill="none" stroke="url(#g)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M28 87c12 7 28 7 40 0" fill="none" stroke="#e8b83d" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="22" cy="21" r="3" fill="#f6cb50"/>
+  <circle cx="74" cy="21" r="3" fill="#f6cb50"/>
+  <circle cx="22" cy="88" r="3" fill="#f6cb50"/>
+  <circle cx="74" cy="88" r="3" fill="#f6cb50"/>
+</svg>
