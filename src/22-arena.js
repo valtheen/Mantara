@@ -75,14 +75,79 @@ var BTL=null; // state pertarungan aktif
 function meMaxHp(){ return Math.round(55 + stat("might")*0.5 + stat("health")*0.7 + ascLvl()*6); }
 function meMaxMana(){ return Math.round(26 + stat("mana")*0.8); }
 
+function foeHash(s){
+  var h=2166136261, i, text=String(s||"");
+  for(i=0;i<text.length;i++){ h^=text.charCodeAt(i); h=Math.imul(h,16777619); }
+  return h>>>0;
+}
+function creatureKind(foe){
+  var text=((foe&&foe.name)||"")+" "+((foe&&foe.ico)||"");
+  if(/naga|wyrm|dragon|🐉|🐲/i.test(text)) return "dragon";
+  if(/badai|tempest|storm|langit|petir|thunder/i.test(text)) return "storm";
+  if(/roh|hantu|penunggu|arwah|spect|ghost|👻/i.test(text)) return "spirit";
+  if(/golem|batu|construct/i.test(text)) return "golem";
+  if(/laba|spider|arach|🕷/i.test(text)) return "spider";
+  if(/serigala|griff|gryph|beruang|rubah|singa|harimau|bestia|beast|🐺|🦅|🐻|🦊|🦁/i.test(text)) return "beast";
+  if(/iblis|demon|monster|troll|ogre|👹|👺|😈/i.test(text)) return "demon";
+  return foe&&foe.creature?"demon":"";
+}
+function creatureLabel(kind){
+  return ({dragon:"NAGA",storm:"MAKHLUK LANGIT",spirit:"ROH",golem:"GOLEM",spider:"MAKHLUK",beast:"BESTIA",demon:"MONSTER"})[kind]||"MONSTER";
+}
+function humanFoeKind(foe){
+  var text=((foe&&foe.name)||"")+" "+((foe&&foe.title)||"")+" "+((foe&&foe.role)||"");
+  if(/magus|penyihir|sihir|mage|arcane|nekromanser/i.test(text)) return "mage";
+  if(/ksatria|paladin|knight/i.test(text)) return "knight";
+  if(/pengawal|prajurit|kapten|guard/i.test(text)) return "guard";
+  if(/gladiator|juara|jawara/i.test(text)) return "champion";
+  if(/bandit|perampok|penjahat/i.test(text)) return "bandit";
+  if(/pelatih|penguji|guru/i.test(text)) return "trainer";
+  if(/kawan|sparring|teman/i.test(text)) return "sparring";
+  return foe&&foe.npc?"rival":"fighter";
+}
+function humanFoeLabel(kind){
+  return ({mage:"PENYIHIR",knight:"KSATRIA",guard:"PENGAWAL",champion:"JUARA",bandit:"BANDIT",trainer:"PELATIH",sparring:"REKAN LATIH",rival:"RIVAL",fighter:"PETARUNG"})[kind]||"PETARUNG";
+}
+function creaturePortrait(foe,kind){
+  var id="btl-creature-"+(foeHash(foe.name)%100000), body="";
+  if(kind==="dragon") body=
+    "<path class='cp-wing' d='M44 53C25 31 12 31 8 38c10 4 10 14 3 25 13-5 24-3 35 7M76 53c19-22 32-22 36-15-10 4-10 14-3 25-13-5-24-3-35 7'/>"+
+    "<path class='cp-dark' d='M37 46 28 18l23 19M83 46l9-28-23 19'/><path class='cp-main' d='M34 43Q60 24 86 43l-4 42-22 20-22-20Z'/>"+
+    "<path class='cp-light' d='M43 42q17-15 34 0l-6 10H49Z'/><path class='cp-eye' d='m42 61 13-4-5 10Zm36 0-13-4 5 10Z'/>"+
+    "<path class='cp-line' d='M52 80q8-7 16 0M55 89h10M37 48l-7 9M83 48l7 9'/><path class='cp-fang' d='m48 88 5 10 3-11m16 1-5 10-3-11'/>";
+  else if(kind==="storm") body=
+    "<path class='cp-wing' d='M49 56C32 34 14 33 7 42c14 5 16 16 7 29 15-6 27-3 37 7m20-22c17-22 35-23 42-14-14 5-16 16-7 29-15-6-27-3-37 7'/><path class='cp-main' d='M33 52q27-29 54 0l-7 36-20 18-20-18Z'/>"+
+    "<path class='cp-light' d='m60 26-13 32h13l-7 29 24-39H64l9-22Z'/><path class='cp-eye' d='m37 64 17-5-6 11Zm46 0-17-5 6 11Z'/><path class='cp-line' d='M47 86q13-9 26 0'/><path class='cp-fang' d='m48 86 6 14 4-13m14-1-6 14-4-13'/>";
+  else if(kind==="spirit") body=
+    "<path class='cp-aura' d='M27 100c11-9 8-20 7-32-2-26 8-43 26-47 18 4 28 21 26 47-1 12-4 23 7 32-10 5-18-2-24 2-6 4-12 4-18 0-6-4-14 3-24-2Z'/>"+
+    "<path class='cp-main' d='M35 74c-1-31 8-48 25-53 17 5 26 22 25 53-7 17-15 25-25 25S42 91 35 74Z'/><path class='cp-eye' d='M42 60q7-9 14 0-7 8-14 0Zm22 0q7-9 14 0-7 8-14 0Z'/><path class='cp-line' d='M51 78q9-8 18 0'/>";
+  else if(kind==="golem") body=
+    "<path class='cp-dark' d='m31 42 12-20 18 5 16-5 13 20-7 17 5 29-28 18-28-18 5-29Z'/><path class='cp-main' d='m42 39 18-10 19 10 5 20-9 30-15 10-16-10-8-30Z'/>"+
+    "<path class='cp-light' d='m43 47 15-8-4 20-14 7m37-19-15-8 4 20 14 7'/><path class='cp-eye' d='m43 59 12-4-3 9Zm34 0-12-4 3 9Z'/><path class='cp-line' d='m47 77 13 6 13-6M58 29l2 13 7 9-7 9 6 13-6 10'/>";
+  else if(kind==="spider") body=
+    "<path class='cp-line cp-legs' d='M42 53 19 37 8 41m35 22L17 57 7 64m36 10-24 8-8 12m67-41 23-16 11 4M77 63l26-6 10 7M77 74l24 8 8 12'/><ellipse class='cp-dark' cx='60' cy='48' rx='19' ry='22'/><ellipse class='cp-main' cx='60' cy='78' rx='27' ry='30'/>"+
+    "<path class='cp-light' d='M45 63q15-14 30 0l-5 10H50Z'/><g class='cp-eye'><circle cx='48' cy='49' r='4'/><circle cx='58' cy='45' r='4'/><circle cx='72' cy='49' r='4'/><circle cx='62' cy='56' r='4'/></g><path class='cp-fang' d='m52 64 5 13 3-14m8 1-5 13-3-14'/>";
+  else if(kind==="beast") body=
+    "<path class='cp-dark' d='M35 45 22 22q23 2 30 16m33 7 13-23q-23 2-30 16'/><path class='cp-main' d='M31 47q29-26 58 0l-8 42-21 17-21-17Z'/>"+
+    "<path class='cp-light' d='M44 43q16-13 32 0l-5 18H49Zm3 34 13-9 13 9-5 15H52Z'/><path class='cp-eye' d='m39 61 16-5-5 10Zm42 0-16-5 5 10Z'/><path class='cp-dark' d='m54 76 6-5 6 5-6 7Z'/><path class='cp-line' d='M60 82v8m0 0q-8 7-14 0m14 0q8 7 14 0'/><path class='cp-fang' d='m46 89 6 12 3-13m19 1-6 12-3-13'/>";
+  else body=
+    "<path class='cp-dark' d='M39 44 25 12q25 8 31 27m25 5 14-32Q70 20 64 39'/><path class='cp-main' d='M30 47q30-25 60 0l-7 41-23 18-23-18Z'/>"+
+    "<path class='cp-light' d='M42 44q18-14 36 0l-7 13H49Z'/><path class='cp-eye' d='m39 62 17-6-6 12Zm42 0-17-6 6 12Z'/><path class='cp-line' d='M51 82q9-8 18 0M38 48l-9 10m53-10 9 10'/><path class='cp-fang' d='m47 83 7 17 4-15m15-2-7 17-4-15'/>";
+  return "<span class='btl-creature btl-creature--"+kind+"' role='img' aria-label='Wujud "+esc(foe.name)+"'>"+
+    "<svg viewBox='0 0 120 120' aria-hidden='true'><defs><radialGradient id='"+id+"' cx='35%' cy='25%'><stop offset='0' stop-color='currentColor' stop-opacity='.35'/><stop offset='1' stop-color='currentColor' stop-opacity='0'/></radialGradient></defs>"+
+    "<circle class='cp-halo' cx='60' cy='60' r='56' fill='url(#"+id+")'/><ellipse class='cp-shadow' cx='60' cy='105' rx='36' ry='8'/><g>"+body+"</g></svg></span>";
+}
+
 function startTacticalDuel(foe, opts){
   if(!alive()){ T("Perlu kehidupan aktif."); return; }
   opts=opts||{};
-  var isCreature=!!foe.creature||/naga|wyrm|iblis|golem|monster|bestia|griffon|serigala|troll|laba|ular|roh|hantu/i.test(foe.name||"");
-  var foeNpc=foe.npc||(!isCreature?{id:"arena-"+Math.random().toString(36).slice(2,9),name:foe.name,role:"petarung arena",age:foe.age||ri(18,52),female:foe.female}:null);
+  var kind=creatureKind(foe), isCreature=!!kind, roleKind=isCreature?"creature":humanFoeKind(foe);
+  var foeNpc=foe.npc||(!isCreature?{id:"arena-"+foeHash(foe.name),name:foe.name,role:"petarung arena",age:foe.age||ri(18,52),female:foe.female!==undefined?foe.female:(foeHash(foe.name)%4===0)}:null);
   BTL={
     foe:{ name:foe.name, ico:foe.ico||"🗡️", hp:foe.hp, maxHp:foe.hp,
-          avatar:foeNpc&&typeof npcAvatar==="function"?npcAvatar(foeNpc,foeNpc.age,"npc-avatar--battle"):null,
+          creature:isCreature, kind:kind, roleKind:roleKind,
+          avatar:isCreature?creaturePortrait(foe,kind):(foeNpc&&typeof npcAvatar==="function"?npcAvatar(foeNpc,foeNpc.age,"npc-avatar--battle"):null),
+          typeLabel:isCreature?creatureLabel(kind):humanFoeLabel(roleKind),
           atk:foe.atk||20, mag:foe.mag||0, guard:false, critNext:false,
           boss:!!foe.boss, chargeIn:foe.boss?3:0, charging:false, special:foe.special||"Napas Api" },
     me:{ hp:meMaxHp(), maxHp:meMaxHp(), sta:100, maxSta:100, mana:meMaxMana(), maxMana:meMaxMana(), guard:false, critNext:false },
@@ -108,13 +173,13 @@ function buildDuelOverlay(){
   "<div class='exp-panel btl-panel'>"
   +"<div class='exp-head'><span class='exp-title' id='btlTitle'>⚔️ DUEL</span><button class='exp-x' onclick='arenaDuelQuit()'>✕</button></div>"
   +"<div class='btl-stage'>"
-  +"  <div class='btl-foe'><div class='btl-ava' id='btlFoeAva'>🗡️</div>"
+  +"  <div class='btl-foe'><div class='btl-portrait-shell'><div class='btl-ava foe' id='btlFoeAva'>🗡️</div><span class='btl-kind' id='btlFoeType'>LAWAN</span></div>"
   +"    <div class='btl-name' id='btlFoeName'>Lawan</div>"
   +"    <div class='btl-bar hp'><div class='btl-fill hpf' id='btlFoeHp'></div><span class='btl-num' id='btlFoeHpN'></span></div>"
   +"    <div class='btl-warn' id='btlWarn'></div>"
   +"  </div>"
   +"  <div class='btl-vs'>⚔</div>"
-  +"  <div class='btl-me'><div class='btl-ava me' id='btlMeAva'>🧙</div>"
+  +"  <div class='btl-me'><div class='btl-portrait-shell'><div class='btl-ava me' id='btlMeAva'>🧙</div><span class='btl-kind me'>KAMU</span></div>"
   +"    <div class='btl-name'>Kau</div>"
   +"    <div class='btl-bar hp'><div class='btl-fill hpf' id='btlMeHp'></div><span class='btl-num' id='btlMeHpN'></span></div>"
   +"    <div class='btl-bar sta'><div class='btl-fill staf' id='btlMeSta'></div><span class='btl-lab'>STA</span></div>"
@@ -135,7 +200,12 @@ function renderDuel(){
   if(!BTL) return;
   document.getElementById("btlTitle").textContent="⚔️ "+BTL.title;
   var foeAva=document.getElementById("btlFoeAva");
+  var foeWasHit=foeAva.classList.contains("hit");
+  foeAva.className="btl-ava foe btl-role-"+BTL.foe.roleKind+(foeWasHit?" hit":"");
   if(BTL.foe.avatar)foeAva.innerHTML=BTL.foe.avatar;else foeAva.textContent=BTL.foe.ico;
+  foeAva.setAttribute("aria-label",BTL.foe.name);
+  foeAva.classList.toggle("charging",!!BTL.foe.charging);
+  var foeType=document.getElementById("btlFoeType"); if(foeType) foeType.textContent=BTL.foe.typeLabel;
   var meAva=document.getElementById("btlMeAva");
   if(meAva&&typeof portraitEmoji==="function")meAva.innerHTML=portraitEmoji();
   document.getElementById("btlFoeName").textContent=BTL.foe.name+(BTL.foe.boss?" 🐉":"");
@@ -360,7 +430,7 @@ function openRivalWager(){
    ================================================================== */
 var GAUNTLET_FOES=[
   {name:"Bandit Jalanan",ico:"🦰"},{name:"Prajurit Sewaan",ico:"🪖"},{name:"Gladiator Veteran",ico:"🗡️"},
-  {name:"Penyihir Kelana",ico:"🧙"},{name:"Ksatria Hitam",ico:"⚫"},{name:"Juara Bertahan",ico:"👑"},
+  {name:"Golem Benteng",ico:"🪨",creature:true},{name:"Penyihir Kelana",ico:"🧙"},{name:"Ksatria Hitam",ico:"⚫"},
   {name:"Iblis Arena",ico:"👹",creature:true},{name:"Raja Gladiator",ico:"🛡️"}
 ];
 function startGauntlet(wave, purse){
@@ -665,7 +735,23 @@ function injectArenaStyle(){
   +".btl-stage{display:flex;align-items:stretch;justify-content:space-between;gap:8px;padding:8px 14px 4px;}"
   +".btl-foe,.btl-me{flex:1;min-width:0;text-align:center;}"
   +".btl-vs{align-self:center;font-size:16px;color:var(--gold);opacity:.6;}"
-  +".btl-ava{font-size:40px;line-height:1;transition:transform .12s;display:inline-block;}"
+  +".btl-portrait-shell{position:relative;width:94px;height:94px;margin:0 auto 13px;}"
+  +".btl-ava{position:relative;width:94px;height:94px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border:2px solid rgba(209,87,113,.58);border-radius:50%;background:radial-gradient(circle at 50% 34%,rgba(99,35,52,.33),rgba(17,10,15,.98) 72%);box-shadow:inset 0 0 0 5px rgba(12,8,12,.75),0 8px 22px rgba(0,0,0,.36),0 0 20px rgba(209,87,113,.1);font-size:40px;line-height:1;overflow:visible;transition:transform .12s,box-shadow .25s,border-color .25s;}"
+  +".btl-ava.me{border-color:rgba(139,140,255,.7);background:radial-gradient(circle at 50% 34%,rgba(91,82,155,.33),rgba(16,12,24,.98) 72%);box-shadow:inset 0 0 0 5px rgba(12,8,18,.72),0 8px 22px rgba(0,0,0,.36),0 0 20px rgba(124,121,255,.12);}"
+  +".btl-kind{position:absolute;left:50%;bottom:-8px;z-index:3;transform:translateX(-50%);max-width:110px;padding:3px 8px;border:1px solid rgba(209,87,113,.55);border-radius:999px;background:#1a0d13;color:#ef8299;font:700 7px/1.1 sans-serif;letter-spacing:.12em;white-space:nowrap;box-shadow:0 3px 9px rgba(0,0,0,.35);}"
+  +".btl-kind.me{border-color:rgba(139,140,255,.58);background:#11101d;color:#aca8ff;}"
+  +".btl-ava .npc-avatar--battle{width:86px;height:86px;margin:auto;border-radius:50%;overflow:hidden;}"
+  +".btl-ava .npc-avatar--battle .avatar-svg{transform:scale(1.08);transform-origin:50% 58%;}"
+  +".btl-ava.btl-role-mage{border-color:#9f8cf3;background:radial-gradient(circle at 50% 34%,rgba(89,68,155,.38),rgba(16,12,25,.98) 72%);}"
+  +".btl-ava.btl-role-knight,.btl-ava.btl-role-guard{border-color:#bdc8dc;background:radial-gradient(circle at 50% 34%,rgba(119,132,156,.31),rgba(14,15,20,.98) 72%);}"
+  +".btl-ava.btl-role-champion{border-color:#e3bd54;background:radial-gradient(circle at 50% 34%,rgba(159,111,31,.35),rgba(20,14,10,.98) 72%);}"
+  +".btl-ava.btl-role-bandit{border-color:#b16d5e;background:radial-gradient(circle at 50% 34%,rgba(105,50,39,.34),rgba(18,12,12,.98) 72%);}"
+  +".btl-ava.btl-role-mage:after,.btl-ava.btl-role-knight:after,.btl-ava.btl-role-guard:after,.btl-ava.btl-role-champion:after,.btl-ava.btl-role-bandit:after{position:absolute;right:-4px;top:6px;z-index:4;width:22px;height:22px;display:grid;place-items:center;border:1px solid currentColor;border-radius:50%;background:#171019;box-shadow:0 3px 8px #000;font:700 12px/1 serif;}"
+  +".btl-ava.btl-role-mage:after{content:'✦';color:#ab98ff}.btl-ava.btl-role-knight:after{content:'◆';color:#d4dceb}.btl-ava.btl-role-guard:after{content:'♜';color:#c4cfdf}.btl-ava.btl-role-champion:after{content:'♛';color:#efc85c}.btl-ava.btl-role-bandit:after{content:'×';color:#d48673}"
+  +".btl-creature{display:block;width:88px;height:88px;color:#df617d;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45));}"
+  +".btl-creature svg{display:block;width:100%;height:100%;overflow:visible}.btl-creature .cp-shadow{fill:#000;opacity:.42}.btl-creature .cp-main{fill:currentColor;stroke:#f094a6;stroke-width:2;stroke-linejoin:round}.btl-creature .cp-dark{fill:#39141f;stroke:#ba4964;stroke-width:2;stroke-linejoin:round}.btl-creature .cp-light{fill:#f1879c;opacity:.54}.btl-creature .cp-wing{fill:#4a1825;stroke:#c94d69;stroke-width:2.4;stroke-linejoin:round}.btl-creature .cp-eye{fill:#ffd66e;filter:drop-shadow(0 0 4px #ff9b45)}.btl-creature .cp-line,.btl-creature .cp-legs{fill:none;stroke:#3b121b;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.btl-creature .cp-legs{stroke:#c54f69;stroke-width:5}.btl-creature .cp-fang{fill:#f8e4d3}.btl-creature--dragon{color:#d65d48}.btl-creature--dragon .cp-main{stroke:#f09a68}.btl-creature--dragon .cp-eye{fill:#ffe27c}.btl-creature--storm{color:#778ee8}.btl-creature--storm .cp-main{stroke:#afbcff}.btl-creature--storm .cp-light{fill:#f2d65b;opacity:.92}.btl-creature--storm .cp-eye{fill:#edf4ff}.btl-creature--spirit{color:#748bc1;opacity:.92}.btl-creature--spirit .cp-main{stroke:#b5cbff}.btl-creature--spirit .cp-aura{fill:#758bd0;opacity:.22}.btl-creature--golem{color:#98745f}.btl-creature--golem .cp-main{stroke:#d1a986}.btl-creature--golem .cp-dark{fill:#49392f;stroke:#8f7160}.btl-creature--beast{color:#ad704b}.btl-creature--beast .cp-main{stroke:#e5ad70}.btl-creature--spider{color:#8c536e}.btl-creature--spider .cp-main{stroke:#ca7d9e}"
+  +".btl-ava.charging{border-color:#ff815f;box-shadow:inset 0 0 0 5px rgba(12,8,12,.72),0 0 26px rgba(255,82,55,.55);animation:btlCharge .72s ease-in-out infinite alternate}.btl-ava.charging .btl-creature{filter:drop-shadow(0 0 8px #ff6048)}"
+  +"@keyframes btlCharge{to{transform:scale(1.045)}}"
   +".btl-ava.hit{animation:btlHit .26s;}"
   +"@keyframes btlHit{0%{transform:translateX(0)}25%{transform:translateX(-6px) scale(1.1)}50%{transform:translateX(6px)}100%{transform:translateX(0)}}"
   +".btl-name{font-size:12px;font-weight:700;margin:4px 0 6px;color:var(--parchment);}"
