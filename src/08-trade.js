@@ -65,7 +65,8 @@ function wardrobeHTML(){
     const cat=WARDROBE_CATALOG[slot];
     const cur=cat.variants.find(v=>v.key===C.wardrobe[slot]);
     const perkStr=Object.entries(cur.perk||{}).map(([k,v])=>`${STAT_META[k]?STAT_META[k].name:k}+${v}`).join(" ")||"—";
-    html+=`<div class="asset"><span class="assetico">${cat.ico}</span>
+    const wardrobeGraphic=typeof wardrobeIconHTML==="function"?wardrobeIconHTML(slot,cur.key):cat.ico;
+    html+=`<div class="asset"><span class="assetico">${wardrobeGraphic}</span>
       <div class="assetinfo"><div class="assetname">${cur.name}</div>
         <div class="assetlvl">${cat.name} · ${perkStr}/th</div>
         <div class="assetdesc">${cur.desc}</div></div>
@@ -80,14 +81,14 @@ function chooseWardrobePopup(slot){
   const choices=cat.variants.filter(v=>ownedKeys.includes(v.key)).map(v=>{
     const wearing=C.wardrobe[slot]===v.key;
     const perks=Object.entries(v.perk||{}).map(([k,val])=>`${STAT_META[k]?STAT_META[k].name:k}+${val}`).join(" ")||"—";
-    return {label:`${v.name}${wearing?' ✓ dipakai':''}`,sub:perks+"/th",hint:v.desc,
+    return {label:`${typeof wardrobeIconHTML==="function"?wardrobeIconHTML(slot,v.key):""} ${v.name}${wearing?' ✓ dipakai':''}`,sub:perks+"/th",hint:v.desc,
       disabled:wearing,
       run:()=>{C.wardrobe[slot]=v.key;applyWardrobePerks();
         return{t:`Kau kini mengenakan ${v.name}.`,cls:"e-good"};}};
   });
   choices.push({label:"🛒 Cari busana baru di Toko",sub:"Butik, Pandai Besi & Tukang Tongkat",
     run:()=>{setTimeout(()=>switchTab('Toko'),120);return null;}});
-  openChoice({ico:cat.ico,prompt:`<b>Lemari ${cat.name}</b><br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">Pilih yang mau dipakai (${ownedKeys.length} dimiliki)</span>`,
+  openChoice({ico:typeof wardrobeIconHTML==="function"?wardrobeIconHTML(slot,C.wardrobe[slot]):cat.ico,prompt:`<b>Lemari ${cat.name}</b><br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">Pilih yang mau dipakai (${ownedKeys.length} dimiliki)</span>`,
     choices});
 }
 
@@ -99,7 +100,7 @@ function giftItemPopup(itemKey){
   const it=ITEM_CATALOG.find(x=>x.key===itemKey);if(!it)return;
   if(!C.relations.length){toast("Belum ada relasi untuk diberi hadiah.");return;}
   openChoice({ico:"🎁",prompt:`Beri <b>${it.name}</b> kepada siapa?`,
-    choices:C.relations.map(r=>({label:`${r.ico} ${r.name}`,sub:r.role,run:()=>{
+    choices:C.relations.map(r=>({label:`${typeof npcAvatar==="function"?npcAvatar(r,typeof relationAge==="function"?relationAge(r):C.age,"npc-avatar--inline"):r.ico} ${r.name}`,sub:r.role,run:()=>{
       C.inventory[itemKey]--;
       const val=it.price||15;
       const boost=Math.min(20,Math.round(val/8)+ri(3,7));

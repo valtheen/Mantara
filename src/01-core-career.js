@@ -109,7 +109,7 @@ const REL_ACTIONS={
   pasangan:[
     {label:"Kencan romantis",cls:"love",run:r=>{r.bond=clamp(r.bond+ri(5,11));applyStats({happy:+10,charm:+2});C.coin-=ri(5,20);return `Malam romantis bersama ${r.name}.`;}},
     {label:"Menikah",cls:"love",run:r=>{if(C.married)return "Kau sudah menikah.";if(C.age<16)return "Kau terlalu muda.";if(r.bond>=70){C.married=true;applyStats({happy:+20});C.coin-=ri(20,60);return `Kau menikah dengan ${r.name}! Pesta megah.`;}return `${r.name} belum siap menikah.`;}},
-    {label:"Punya anak",run:r=>{if(!C.married)return "Menikahlah dulu.";if(C.age<16||C.age>50)return "Bukan waktu tepat.";const ch=addRel("keluarga",{female:chance(0.5),bond:ri(60,80),isChild:true});ch.name=rand(ch.female?FIRST_F:FIRST_M)+" "+C.name.split(" ")[1];applyStats({happy:+12,health:-3});C.coin-=ri(10,30);return `Anakmu, ${ch.name}, lahir!`;}},
+    {label:"Punya anak",run:r=>{if(!C.married)return "Menikahlah dulu.";if(C.age<16||C.age>50)return "Bukan waktu tepat.";const ch=addRel("keluarga",{female:chance(0.5),bond:ri(60,80),isChild:true});ch.name=uniqueFamilyName(ch.female,C.name.split(" ").slice(1).join(" "));applyStats({happy:+12,health:-3});C.coin-=ri(10,30);return `Anakmu, ${ch.name}, lahir!`;}},
     {label:"Selingkuh",cls:"danger",run:r=>{if(chance(0.5)){r.bond=clamp(r.bond-ri(30,50));r.role="musuh";return `${r.name} memergokimu! Cinta jadi benci.`;}applyStats({happy:+5});return "Perselingkuhanmu lolos... untuk kini.";}},
   ],
   musuh:[

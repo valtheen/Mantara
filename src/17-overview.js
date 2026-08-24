@@ -57,7 +57,7 @@ function openOverview(relId){
   const progress=`<div class="ov-progress">Keterbukaan: ${Math.min(known,6)}/6 lapis · ngobrol lebih sering untuk membuka lebih banyak</div>`;
 
   snapStats&&snapStats();
-  openChoice({ico:r.ico,
+  openChoice({ico:typeof npcAvatar==="function"?npcAvatar(r,relationAge(r),"npc-avatar--hero"):r.ico,
     prompt:`<div class="ov-name">${r.name}</div>${tableHTML}${progress}`,
     choices:[
       {label:"💬 Ngobrol (pilih topik)",sub:"buka info lebih dalam",cls:"love",run:()=>{closeModal();setTimeout(()=>openConversation(relId),140);return null;}},

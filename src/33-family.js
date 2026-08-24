@@ -72,9 +72,8 @@
     var f=_ch(0.5);
     var s=(typeof makeRel==="function")?makeRel("keluarga",{female:f,bond:_ri(bondLo,bondHi)}):null;
     if(!s) return null;
-    var fn = f ? (typeof FIRST_F!=="undefined"?_rand(FIRST_F):"Sable") : (typeof FIRST_M!=="undefined"?_rand(FIRST_M):"Aldric");
     var sn = famSurname();
-    s.name = sn ? (fn+" "+sn) : fn;
+    s.name = typeof uniqueFamilyName==="function"?uniqueFamilyName(f,sn):((f?"Sable":"Aldric")+(sn?" "+sn:""));
     s.kin=kin; s.sibling=true;
     s.trait=_rand(["periang","pendiam","ambisius","setia","licik","pemberani","bijak","penyayang","jahil","rajin"]);
     return s;

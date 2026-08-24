@@ -251,26 +251,30 @@
     if(!hasC()) return "";
     ensureLiving();
     var rows=[];
+    function repairLabel(cost){
+      if(typeof mantaraIcon==="function")return mantaraIcon("hammer","func-icon--pill")+" "+cost+" "+mantaraIcon("coin","func-icon--pill");
+      return "Perbaiki "+cost+" koin";
+    }
     C.properties.forEach(function(p,idx){
       var def=PROPERTY_CATALOG.find(function(x){return x.key===p.key;}); if(!def)return;
       rows.push("<div class='asset'><span class='assetico'>"+def.ico+"</span>"
         +"<div class='assetinfo'><div class='assetname'>"+def.name+"</div>"+condBar(p.cond)+"</div>"
-        +(p.cond<100?"<button class='upbtn' onclick='mtRepairProp("+idx+")'>🔧 "+propRepairCost(p)+"💰</button>":"<span style='font-size:10px;color:var(--good)'>PRIMA</span>")+"</div>");
+        +(p.cond<100?"<button class='upbtn' onclick='mtRepairProp("+idx+")'>"+repairLabel(propRepairCost(p))+"</button>":"<span style='font-size:10px;color:var(--good)'>PRIMA</span>")+"</div>");
     });
     C.businesses.forEach(function(b){
       var def=BUSINESS_TYPES.find(function(x){return x.id===b.id;}); if(!def)return;
       rows.push("<div class='asset'><span class='assetico'>"+def.ico+"</span>"
         +"<div class='assetinfo'><div class='assetname'>"+def.name+"</div>"+condBar(b.cond)+"</div>"
-        +(b.cond<100?"<button class='upbtn' onclick=\"mtRepairBiz('"+b.id+"')\">🔧 "+bizRepairCost(b)+"💰</button>":"<span style='font-size:10px;color:var(--good)'>PRIMA</span>")+"</div>");
+        +(b.cond<100?"<button class='upbtn' onclick=\"mtRepairBiz('"+b.id+"')\">"+repairLabel(bizRepairCost(b))+"</button>":"<span style='font-size:10px;color:var(--good)'>PRIMA</span>")+"</div>");
     });
     for(var cat in (C.gear||{})){
       var g=GEAR_CATALOG[cat]; if(!g)continue; if(g.arcane&&!C.isMage)continue;
       var cur=g.variants.find(function(v){return v.key===C.gear[cat];}); if(!cur)continue;
       if((cur.price||0)===0 && (C.gearCond[cat]||100)>=100) continue;
       (function(cat,cur){
-        rows.push("<div class='asset'><span class='assetico'>"+g.ico+"</span>"
+        rows.push("<div class='asset'><span class='assetico'>"+(typeof mantaraGearIcon==="function"?mantaraGearIcon(cat,cur.key):g.ico)+"</span>"
           +"<div class='assetinfo'><div class='assetname'>"+cur.name+"</div>"+condBar(C.gearCond[cat])+"</div>"
-          +((C.gearCond[cat]||100)<100?"<button class='upbtn' onclick=\"mtRepairGear('"+cat+"')\">🛠️ "+gearRepairCost(cat)+"💰</button>":"<span style='font-size:10px;color:var(--good)'>PRIMA</span>")+"</div>");
+          +((C.gearCond[cat]||100)<100?"<button class='upbtn' onclick=\"mtRepairGear('"+cat+"')\">"+repairLabel(gearRepairCost(cat))+"</button>":"<span style='font-size:10px;color:var(--good)'>PRIMA</span>")+"</div>");
       })(cat,cur);
     }
     if(!rows.length) return "";

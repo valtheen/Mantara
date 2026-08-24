@@ -81,7 +81,7 @@ function openConversation(relId){
   const r=C.relations.find(x=>x.id===relId);if(!r)return;
   const p=ensureProfile(r);
   const meter=r.role==="pengikut"?r.loyalty:r.bond;
-  openChoice({ico:r.ico,prompt:`Ngobrol dengan <b>${r.name}</b><br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">${r.role} · ${r.trait} · ikatan ${Math.round(meter)}</span><br><span style="font-size:10.5px;color:var(--gold);filter:brightness(1.1)">Pilih topik (info terbuka makin sering ngobrol)</span>`,
+  openChoice({ico:typeof npcAvatar==="function"?npcAvatar(r,relationAge(r),"npc-avatar--hero"):r.ico,prompt:`Ngobrol dengan <b>${r.name}</b><br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">${r.role} · ${r.trait} · ikatan ${Math.round(meter)}</span><br><span style="font-size:10.5px;color:var(--gold);filter:brightness(1.1)">Pilih topik (info terbuka makin sering ngobrol)</span>`,
     choices:CONVO_TOPICS.map(t=>{
       const locked=meter<t.minBond;
       return {label:`${t.ico} ${t.label}`,sub:locked?`🔒 butuh ikatan ${t.minBond}`:'',disabled:locked,
@@ -111,7 +111,7 @@ function openProfile(relId){
   if(known>=3){lines.push(`Status nikah: ${p.married?`menikah${p.children?`, ${p.children} anak`:""}`:"lajang"}`);}
   if(known>=4){lines.push(`Ambisi: ${p.ambition}`);}
   if(known>=6){lines.push(`<span style="color:var(--arcane-glow)">Rahasia: ${p.secret}</span>`);}
-  openChoice({ico:r.ico,prompt:`<div style="text-align:left;font-size:12.5px;line-height:1.7">${lines.join("<br>")}</div>`,
+  openChoice({ico:typeof npcAvatar==="function"?npcAvatar(r,relationAge(r),"npc-avatar--hero"):r.ico,prompt:`<div style="text-align:left;font-size:12.5px;line-height:1.7">${lines.join("<br>")}</div>`,
     choices:[
       {label:"💬 Ajak ngobrol",run:()=>{closeModal();setTimeout(()=>openConversation(relId),140);return null;}},
     ]});

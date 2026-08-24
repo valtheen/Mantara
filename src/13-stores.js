@@ -131,6 +131,16 @@ function storesInCity(){
   return STORES.filter(s=>s.city.includes("all")||s.city.includes(C.cityId));
 }
 
+// Kembali ke katalog toko dari tombol kontekstual di header. Tombol ini
+// adalah navigasi, bukan pengulangan transaksi/latihan terakhir.
+function revisitStore(storeId){
+  const s=STORES.find(x=>x.id===storeId);if(!s)return;
+  try{if(typeof closeModal==="function")closeModal();}catch(e){}
+  try{if(typeof mpCloseAll==="function")mpCloseAll();}catch(e){}
+  if(typeof switchTab==="function")switchTab("Toko");
+  setTimeout(()=>openStore(storeId),80);
+}
+
 // ---------- buka katalog toko ----------
 function openStore(storeId){
   const s=STORES.find(x=>x.id===storeId);if(!s)return;
@@ -142,7 +152,11 @@ function openStore(storeId){
       const locked=C.age<(it.minAge||0);
       const afford=it.price===0||C.coin>=it.price;
       return {label:it.label,sub:locked?`🔒 min ${it.minAge} th`:it.sub,disabled:locked||!afford,
-        run:()=>{closeModal();setTimeout(()=>{recordActivity&&recordActivity(`${s.name}: ${it.label}`,()=>{snapStats&&snapStats();it.run();});it.run();},120);return null;}};
+        run:()=>{closeModal();setTimeout(()=>{
+          if(typeof recordActivity==="function")recordActivity(`Kembali ke ${s.name}`,()=>revisitStore(s.id));
+          if(typeof snapStats==="function")snapStats();
+          it.run();
+        },120);return null;}};
     })});
 }
 

@@ -23,29 +23,29 @@ const AGING_EVENTS=[
       {label:'Mantra acak',sub:"aneh & magis",run:()=>{applyStats({mana:+4});return{t:"Kau menggumamkan kata yang tak dikenal — beraura arcane. Pertanda bakat sihir?",cls:"e-arcane"};}},
     ]})},
   // ---------- ANAK ----------
-  {id:"peer_friend",min:5,max:11,cond:c=>true,build:()=>{const female=chance(0.5);const nm=randName(female);
-    return {ico:"🧒",_npc:{name:nm,female},
+  {id:"peer_friend",min:5,max:11,cond:c=>true,build:()=>{const female=chance(0.5);const nm=randName(female);const npc={id:"anak-"+Math.random().toString(36).slice(2,8),name:nm,female,role:"teman",age:C.age};
+    return {ico:"🧒",_npc:npc,
     prompt:`Seorang anak sebaya bernama <b>${nm}</b> mengajakmu berteman di alun-alun.`,
     choices:[
-      {label:"Terima pertemanan",sub:"dapat teman baru",run:()=>{const r=addRel("teman",{name:nm,female,bond:ri(45,65)});applyStats({happy:+5});return{t:`Kau & ${nm} kini berteman akrab.`,cls:"e-good"};}},
+      {label:"Terima pertemanan",sub:"dapat teman baru",run:()=>{const r=addRel("teman",{id:npc.id,name:nm,female,bond:ri(45,65),appearance:npc.appearance});r.ageOffset=0;applyStats({happy:+5});return{t:`Kau & ${nm} kini berteman akrab.`,cls:"e-good"};}},
       {label:"Tolak — pemalu",sub:"Bahagia -",run:()=>{applyStats({happy:-4,mind:+1});return{t:`Kau menolak dengan malu. ${nm} pergi kecewa.`,cls:"e-bad"};}},
-      {label:"Ajak berkelahi dulu",sub:"uji nyali",run:()=>{if(chance(0.5)){const r=addRel("teman",{name:nm,female,bond:ri(50,70)});applyStats({might:+2});return{t:`Kalian berkelahi lalu malah jadi sahabat! Khas anak-anak.`,cls:"e-good"};}const r=addRel("musuh",{name:nm,female,bond:ri(15,30)});return{t:`Perkelahian bikin ${nm} membencimu sejak kecil.`,cls:"e-bad"};}},
+      {label:"Ajak berkelahi dulu",sub:"uji nyali",run:()=>{if(chance(0.5)){const r=addRel("teman",{id:npc.id,name:nm,female,bond:ri(50,70),appearance:npc.appearance});r.ageOffset=0;applyStats({might:+2});return{t:`Kalian berkelahi lalu malah jadi sahabat! Khas anak-anak.`,cls:"e-good"};}const r=addRel("musuh",{id:npc.id,name:nm,female,bond:ri(15,30),appearance:npc.appearance});r.ageOffset=0;return{t:`Perkelahian bikin ${nm} membencimu sejak kecil.`,cls:"e-bad"};}},
     ]};}},
-  {id:"school_bully",min:7,max:13,cond:c=>c.school&&c.school.enrolled,build:()=>{const nm=randName(chance(0.5));
-    return {ico:"😠",prompt:`<b>${nm}</b>, anak nakal di sekolah, merebut bekal makananmu.`,
+  {id:"school_bully",min:7,max:13,cond:c=>c.school&&c.school.enrolled,build:()=>{const female=chance(0.5);const nm=randName(female);const npc={id:"perundung-"+Math.random().toString(36).slice(2,8),name:nm,female,role:"perundung",age:C.age};
+    return {ico:"😠",_npc:npc,prompt:`<b>${nm}</b>, anak nakal di sekolah, merebut bekal makananmu.`,
     choices:[
       {label:"Lawan!",sub:"Kekuatan menentukan",run:()=>{if(C.stats.might>30||chance(0.5)){applyStats({might:+3,happy:+3});C.reputation+=2;return{t:`Kau melawan & menang! ${nm} tak berani lagi.`,cls:"e-good"};}applyStats({health:-8,happy:-5});return{t:`Kau dipukuli ${nm}. Hari yang menyakitkan.`,cls:"e-bad"};}},
       {label:"Lapor guru",sub:"aman tapi dicap pengadu",run:()=>{applyStats({happy:-2,mind:+2});return{t:`Guru menghukum ${nm}, tapi kau dicap pengadu.`,cls:""};}},
       {label:"Beri saja",sub:"hindari masalah",run:()=>{applyStats({happy:-4});return{t:`Kau menyerahkan bekalmu. ${nm} tertawa puas.`,cls:"e-bad"};}},
     ]};}},
   // ---------- REMAJA ----------
-  {id:"first_kiss",min:13,max:17,once:true,cond:c=>!c.flags.firstKiss,build:()=>{const female=!C.female;const nm=randName(female);
-    return {ico:"💗",_npc:{name:nm,female},
+  {id:"first_kiss",min:13,max:17,once:true,cond:c=>!c.flags.firstKiss,build:()=>{const female=!C.female;const nm=randName(female);const npc={id:"cinta-"+Math.random().toString(36).slice(2,8),name:nm,female,role:"teman",age:C.age};
+    return {ico:"💗",_npc:npc,
     prompt:`Di bawah pohon willow saat senja, <b>${nm}</b> menatapmu penuh arti. Momen pertama yang canggung & manis.`,
     choices:[
-      {label:"Beranikan diri, cium",sub:"first kiss!",run:()=>{C.flags.firstKiss=1;const r=addRel("teman",{name:nm,female,bond:ri(55,75)});applyStats({happy:+10,charm:+3});return{t:`Ciuman pertamamu dengan ${nm}! Jantungmu berdebar. (bisa dilanjut di tab Relasi)`,cls:"e-epic"};}},
+      {label:"Beranikan diri, cium",sub:"first kiss!",run:()=>{C.flags.firstKiss=1;const r=addRel("teman",{id:npc.id,name:nm,female,bond:ri(55,75),appearance:npc.appearance});r.ageOffset=0;applyStats({happy:+10,charm:+3});return{t:`Ciuman pertamamu dengan ${nm}! Jantungmu berdebar. (bisa dilanjut di tab Relasi)`,cls:"e-epic"};}},
       {label:"Gugup, mundur",sub:"momen berlalu",run:()=>{applyStats({happy:-3,charm:-1});return{t:`Kau terlalu gugup & menunduk. Momen itu berlalu begitu saja.`,cls:"e-bad"};}},
-      {label:"Bercanda cairkan suasana",sub:"jadi teman dekat",run:()=>{const r=addRel("teman",{name:nm,female,bond:ri(50,65)});applyStats({charm:+2,happy:+4});return{t:`Kau melempar candaan — kalian tertawa & jadi teman dekat.`,cls:"e-good"};}},
+      {label:"Bercanda cairkan suasana",sub:"jadi teman dekat",run:()=>{const r=addRel("teman",{id:npc.id,name:nm,female,bond:ri(50,65),appearance:npc.appearance});r.ageOffset=0;applyStats({charm:+2,happy:+4});return{t:`Kau melempar candaan — kalian tertawa & jadi teman dekat.`,cls:"e-good"};}},
     ]};}},
   {id:"rebel_phase",min:14,max:17,once:true,build:()=>({ico:"🔥",
     prompt:`Masa pemberontakan remaja! Kau ingin melakukan sesuatu yang nekat.`,
@@ -67,8 +67,8 @@ const AGING_EVENTS=[
       {label:"Minta yang lebih bagus",sub:"berisiko",run:()=>{if(chance(0.4)){const better={...g.perk};for(const k in better)better[k]*=2;applyStats(better);return{t:`Orang tuamu mengabulkan & memberi versi terbaik! Beruntung.`,cls:"e-epic"};}const fam=C.relations.filter(r=>r.role==="keluarga");fam.forEach(r=>r.bond=clamp(r.bond-ri(4,8)));applyStats({happy:-4});return{t:`Orang tuamu kecewa kau serakah. Kau tak dapat apa-apa.`,cls:"e-bad"};}},
     ]};}},
   // ---------- DEWASA: peluang & konflik ----------
-  {id:"stranger_deal",min:18,max:70,build:()=>{const nm=randName(chance(0.5));
-    return {ico:"🧳",prompt:`Orang asing misterius, <b>${nm}</b>, menawarkan kesepakatan dagang yang mencurigakan.`,
+  {id:"stranger_deal",min:18,max:70,build:()=>{const female=chance(0.5);const nm=randName(female);const npc={id:"pedagang-"+Math.random().toString(36).slice(2,8),name:nm,female,role:"pedagang misterius",age:ri(24,60)};
+    return {ico:"🧳",_npc:npc,prompt:`Orang asing misterius, <b>${nm}</b>, menawarkan kesepakatan dagang yang mencurigakan.`,
     choices:[
       {label:"Terima taruhan",sub:"untung/rugi besar",run:()=>{if(chance(0.5)){const g=ri(60,180);C.coin+=g;return{t:`Kesepakatan menguntungkan! +${g} keping.`,cls:"e-epic"};}const l=ri(30,90);C.coin=Math.max(0,C.coin-l);return{t:`Kau ditipu ${nm}! Rugi ${l} keping.`,cls:"e-bad"};}},
       {label:"Tolak baik-baik",sub:"aman",run:()=>{applyStats({mind:+2});return{t:`Kau menolak dengan bijak. Naluri menyelamatkanmu.`,cls:"e-good"};}},
@@ -111,7 +111,7 @@ function rollAgingEvent(){
   if(ev.once)C._agingDone[ev.id]=1;
   const data=ev.build();
   // bungkus choices supaya hasil tampil via result-style (log + render)
-  const wrapped={ico:data.ico,prompt:data.prompt,cancel:false,
+  const wrapped={ico:data._npc&&typeof npcAvatar==="function"?npcAvatar(data._npc,data._npc.age,"npc-avatar--hero"):data.ico,prompt:data.prompt,cancel:false,
     choices:data.choices.map(ch=>({label:ch.label,sub:ch.sub,cls:ch.cls,run:()=>{
       // v24 FIX: JANGAN log di sini. resolveChoice() sudah mencatat res.t.
       // Dulu keduanya mencatat -> 22% entri log duplikat.

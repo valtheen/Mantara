@@ -199,7 +199,8 @@
   // ---------- DATA ----------
   function newRuler(cityId){
     var arch=_rand(ARCH_KEYS); var a=ARCHES[arch];
-    return { name:_name(_ch(0.22)), dynasty:_rand((typeof DYNASTIES!=="undefined")?DYNASTIES:["Wangsa Aurelius"]),
+    var female=_ch(0.22);
+    return { id:"penguasa-"+cityId+"-"+Math.random().toString(36).slice(2,8),name:_name(female),female:female,role:CITY_RULER_TITLE[cityId]||"penguasa",dynasty:_rand((typeof DYNASTIES!=="undefined")?DYNASTIES:["Wangsa Aurelius"]),
       age:_ri(28,58), years:_ri(1,15), arch:arch, policy:_rand(a.policies), _kid:null };
   }
   function ensureRulers(){
@@ -220,6 +221,8 @@
       var wasFirst=(rl._kid==null);
       rl._kid=idn;
       rl.name=K.king.name||rl.name; rl.dynasty=K.king.dynasty||rl.dynasty;
+      if(typeof K.king.female==="boolean")rl.female=K.king.female;
+      if(K.king.appearance)rl.appearance=K.king.appearance;
       rl.age=K.king.age||rl.age; rl.years=K.king.years||1;
       rl.arch=_rand(ARCH_KEYS); rl.policy=_rand(ARCHES[rl.arch].policies);
       if(!wasFirst) announcePolicy("aetheria","natural");
@@ -326,7 +329,7 @@
       var title=CITY_RULER_TITLE[cityId]||"Penguasa";
       var here=(C.cityId===cityId);
       var h="<div class='pg-hero' style='text-align:center;padding:14px 12px;margin:2px 0 10px;background:linear-gradient(155deg,var(--card),var(--bg1));border:1px solid var(--line);border-radius:14px'>"
-        +"<div style='font-size:40px;line-height:1'>"+a.ico+"</div>"
+        +(typeof npcAvatar==="function"?npcAvatar(rl,rl.age,"npc-avatar--hero"):"<div style='font-size:40px;line-height:1'>"+a.ico+"</div>")
         +"<div style='font-size:16px;font-weight:700;color:var(--gold-bright);margin-top:6px'>"+title+" "+rl.name+"</div>"
         +"<div style='font-size:11px;color:var(--arcane-glow)'>"+rl.dynasty+" · "+c.ico+" "+c.name+"</div>"
         +"<div style='font-size:11px;color:var(--parchment);margin-top:6px'>Kepribadian: <b>"+a.name+"</b></div>"

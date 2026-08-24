@@ -128,9 +128,8 @@ function createFromDraft(){
   log(0,`${C.name} lahir sebagai ${o.name}. ${o.desc}`,"e-epic");
   // orang tua: nama depan acak + nama marga keluarga (surname karakter)
   const famSurname=C.name.split(" ").slice(1).join(" ")||rand(SURNAME);
-  const mom=makeRel("keluarga",{female:true,bond:ri(60,80)});mom.name=rand(FIRST_F)+" "+famSurname;mom.kin="Ibu";
-  const dad=makeRel("keluarga",{female:false,bond:ri(55,75)});dad.name=rand(FIRST_M)+" "+famSurname;dad.kin="Ayah";
-  C.relations.push(mom,dad);
+  const mom=makeRel("keluarga",{female:true,bond:ri(60,80)});mom.name=uniqueFamilyName(true,famSurname);mom.kin="Ibu";C.relations.push(mom);
+  const dad=makeRel("keluarga",{female:false,bond:ri(55,75)});dad.name=uniqueFamilyName(false,famSurname);dad.kin="Ayah";C.relations.push(dad);
 }
 
 // ---------- override buildAvatar usage di render ----------

@@ -78,8 +78,11 @@ function meMaxMana(){ return Math.round(26 + stat("mana")*0.8); }
 function startTacticalDuel(foe, opts){
   if(!alive()){ T("Perlu kehidupan aktif."); return; }
   opts=opts||{};
+  var isCreature=!!foe.creature||/naga|wyrm|iblis|golem|monster|bestia|griffon|serigala|troll|laba|ular|roh|hantu/i.test(foe.name||"");
+  var foeNpc=foe.npc||(!isCreature?{id:"arena-"+Math.random().toString(36).slice(2,9),name:foe.name,role:"petarung arena",age:foe.age||ri(18,52),female:foe.female}:null);
   BTL={
     foe:{ name:foe.name, ico:foe.ico||"🗡️", hp:foe.hp, maxHp:foe.hp,
+          avatar:foeNpc&&typeof npcAvatar==="function"?npcAvatar(foeNpc,foeNpc.age,"npc-avatar--battle"):null,
           atk:foe.atk||20, mag:foe.mag||0, guard:false, critNext:false,
           boss:!!foe.boss, chargeIn:foe.boss?3:0, charging:false, special:foe.special||"Napas Api" },
     me:{ hp:meMaxHp(), maxHp:meMaxHp(), sta:100, maxSta:100, mana:meMaxMana(), maxMana:meMaxMana(), guard:false, critNext:false },
@@ -131,7 +134,10 @@ function bar(id,fillId,numId,cur,max,txt){
 function renderDuel(){
   if(!BTL) return;
   document.getElementById("btlTitle").textContent="⚔️ "+BTL.title;
-  document.getElementById("btlFoeAva").textContent=BTL.foe.ico;
+  var foeAva=document.getElementById("btlFoeAva");
+  if(BTL.foe.avatar)foeAva.innerHTML=BTL.foe.avatar;else foeAva.textContent=BTL.foe.ico;
+  var meAva=document.getElementById("btlMeAva");
+  if(meAva&&typeof portraitEmoji==="function")meAva.innerHTML=portraitEmoji();
   document.getElementById("btlFoeName").textContent=BTL.foe.name+(BTL.foe.boss?" 🐉":"");
   bar(null,"btlFoeHp","btlFoeHpN",BTL.foe.hp,BTL.foe.maxHp);
   bar(null,"btlMeHp","btlMeHpN",BTL.me.hp,BTL.me.maxHp);
@@ -289,7 +295,7 @@ window.arenaDuelQuit=function(){
    ================================================================== */
 function rivalFoe(rv){
   var hp=Math.round(46 + rv.might*0.5 + (rv.level||1)*5);
-  return { name:rv.name, ico:rv.female?"🦹‍♀️":"🦹‍♂️", hp:hp, atk:rv.might*0.8+10, mag:rv.mana*0.6, special:"Amukan" };
+  return { name:rv.name, ico:rv.female?"🦹‍♀️":"🦹‍♂️", npc:rv, age:rv.age||Math.max(18,C.age),female:rv.female,hp:hp, atk:rv.might*0.8+10, mag:rv.mana*0.6, special:"Amukan" };
 }
 function startRivalDuel(wager){
   if(!alive() || !C._rival){ T("Kau tak punya rival."); return; }
@@ -346,7 +352,7 @@ function openRivalWager(){
   var opts=[ {label:"⚔️ Duel biasa", sub:"tanpa taruhan", run:function(){ startRivalDuel(0); return null; }} ];
   [100,300].forEach(function(b){ if((C.coin||0)>=b) opts.push({label:"💰 Taruhan "+b, sub:"menang +"+b+", kalah −"+b, run:function(){ startRivalDuel(b); return null; }}); });
   if((C.coin||0)>=600) opts.push({label:"🔥 All-in "+Math.min(1500,C.coin), sub:"pertaruhkan besar", cls:"danger", run:function(){ startRivalDuel(Math.min(1500,C.coin)); return null; }});
-  if(typeof openChoice==="function") openChoice({ico:"😤",cancel:true,prompt:"<b>Duel "+esc(C._rival.name)+"</b><br><span style='font-size:11px;color:var(--ink-soft);filter:brightness(1.6)'>Pilih taruhan sebelum bertarung:</span>",choices:opts});
+  if(typeof openChoice==="function") openChoice({ico:typeof npcAvatar==="function"?npcAvatar(C._rival,C._rival.age||Math.max(18,C.age),"npc-avatar--hero"):"😤",cancel:true,prompt:"<b>Duel "+esc(C._rival.name)+"</b><br><span style='font-size:11px;color:var(--ink-soft);filter:brightness(1.6)'>Pilih taruhan sebelum bertarung:</span>",choices:opts});
 }
 
 /* ==================================================================
@@ -355,7 +361,7 @@ function openRivalWager(){
 var GAUNTLET_FOES=[
   {name:"Bandit Jalanan",ico:"🦰"},{name:"Prajurit Sewaan",ico:"🪖"},{name:"Gladiator Veteran",ico:"🗡️"},
   {name:"Penyihir Kelana",ico:"🧙"},{name:"Ksatria Hitam",ico:"⚫"},{name:"Juara Bertahan",ico:"👑"},
-  {name:"Iblis Arena",ico:"👹"},{name:"Raja Gladiator",ico:"🛡️"}
+  {name:"Iblis Arena",ico:"👹",creature:true},{name:"Raja Gladiator",ico:"🛡️"}
 ];
 function startGauntlet(wave, purse){
   wave=wave||0; purse=purse||0;
@@ -363,7 +369,7 @@ function startGauntlet(wave, purse){
   var base=wave;
   var foeName=GAUNTLET_FOES[Math.min(wave,GAUNTLET_FOES.length-1)];
   var hp=Math.round(40 + wave*16 + stat("might")*0.2);
-  var foe={ name:foeName.name+" (Gel."+(wave+1)+")", ico:foeName.ico, hp:hp, atk:14+wave*4, mag:wave>2?(8+wave*3):0, special:"Hantaman" };
+  var foe={ name:foeName.name+" (Gel."+(wave+1)+")", ico:foeName.ico, creature:!!foeName.creature,hp:hp, atk:14+wave*4, mag:wave>2?(8+wave*3):0, special:"Hantaman" };
   var prize=30+wave*35;
   startTacticalDuel(foe, {
     title:"Arena Bertahan · Gelombang "+(wave+1),
@@ -741,7 +747,7 @@ function renderArena(){
 }
 function viewArenaDuel(){
   var h="<div class='exp-desc' style='margin:4px 2px 10px'>Pertarungan giliran: pilih Serang, Sihir, Bertahan, atau Tipu. Kelola stamina & mana, pancing kritikal, dan baca gerakan lawan.</div>";
-  if(C._rival){ h+="<div class='exp-sec'>Rivalmu</div>"+itemCard(C._rival.female?"🦹‍♀️":"🦹‍♂️","Duel "+esc(C._rival.name),"Tingkat "+(C._rival.level||1)+" · permusuhan "+(C._rival.hostility||0)+"% · bisa pasang taruhan","Duel","arenaClose();expDuelRival()"); }
+  if(C._rival){ h+="<div class='exp-sec'>Rivalmu</div>"+itemCard(typeof npcAvatar==="function"?npcAvatar(C._rival,C._rival.age||Math.max(18,C.age),"npc-avatar--inline"):(C._rival.female?"🦹‍♀️":"🦹‍♂️"),"Duel "+esc(C._rival.name),"Tingkat "+(C._rival.level||1)+" · permusuhan "+(C._rival.hostility||0)+"% · bisa pasang taruhan","Duel","arenaClose();expDuelRival()"); }
   else h+="<div class='exp-sec'>Rivalmu</div><div class='exp-card'><div class='exp-desc' style='text-align:center;padding:6px'>Belum ada rival. Jalani hidup — takdir akan menautkanmu.</div></div>";
   h+="<div class='exp-sec'>Arena Bertahan</div>"+itemCard("🏟️","Gauntlet Gelombang","Lawan gelombang demi gelombang, hadiah menumpuk. Kabur kapan saja untuk mengamankannya. (biaya masuk 20)","Masuk","arenaClose();arenaStartGauntlet()");
   var a=A(); if(a.gauntletBest) h+="<div class='exp-desc' style='text-align:center'>Rekor gelombang terjauh: <b>"+a.gauntletBest+"</b></div>";

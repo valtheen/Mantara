@@ -22,36 +22,36 @@ function trainSkillCourse(skillId,cost,stats,msg,cls){
   {id:"magetutor",ico:"🔮",name:"Sanggar Sihir",cat:"Bimbel",city:["aetheria","frostspire"],
     desc:"Bimbingan privat para guru arcane — pilih aliranmu.",
     build:()=>[
-      {label:`🔥 Aliran Api — Sihir Tempur`,sub:`Tk.${lvl('sorcery')}/5 → Mana+6 Kekuatan+2 · 💰${tarif(90,'sorcery')} (khusus penyihir)`,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("fireFlow"):"🔥",label:`Aliran Api — Sihir Tempur`,sub:`Tk.${lvl('sorcery')}/5 → Mana+6 Kekuatan+2 · 💰${tarif(90,'sorcery')} (khusus penyihir)`,
         price:tarif(90,'sorcery'),minAge:10,
         run:()=>{if(!C.isMage){toast("Hanya darah penyihir yang mampu menahan aliran api.");return;}
           trainSkillCourse('sorcery',tarif(90,'sorcery'),{mana:+6,might:+2},"Bola apimu meledak sempurna! Gurumu tersenyum bangga.","e-arcane");}},
-      {label:`💚 Aliran Penyembuhan`,sub:`Pengobatan Tk.${lvl('medicine')}/5 → Nyawa+5 Mana+3 · 💰${tarif(80,'medicine')}`,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("healingFlow"):"💚",label:`Aliran Penyembuhan`,sub:`Pengobatan Tk.${lvl('medicine')}/5 → Nyawa+5 Mana+3 · 💰${tarif(80,'medicine')}`,
         price:tarif(80,'medicine'),minAge:10,
         run:()=>trainSkillCourse('medicine',tarif(80,'medicine'),{health:+5,mana:+3},"Kau menutup luka dengan cahaya hangat. Ilmu penyembuhanmu bertambah.","e-arcane")},
-      {label:`🎭 Aliran Ilusi & Pikat`,sub:`Diplomasi Tk.${lvl('diplomacy')}/5 → Pesona+6 Mana+2 · 💰${tarif(85,'diplomacy')}`,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("illusionFlow"):"🎭",label:`Aliran Ilusi & Pikat`,sub:`Diplomasi Tk.${lvl('diplomacy')}/5 → Pesona+6 Mana+2 · 💰${tarif(85,'diplomacy')}`,
         price:tarif(85,'diplomacy'),minAge:12,
         run:()=>trainSkillCourse('diplomacy',tarif(85,'diplomacy'),{charm:+6,mana:+2},"Kata-katamu kini berkilau bagai mantra — sulit ditolak.","e-arcane")},
-      {label:`⚗️ Aliran Rune & Ramuan`,sub:`Alkimia Tk.${lvl('alchemy')}/5 → Akal+6 · 💰${tarif(85,'alchemy')}`,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("runeFlow"):"⚗️",label:`Aliran Rune & Ramuan`,sub:`Alkimia Tk.${lvl('alchemy')}/5 → Akal+6 · 💰${tarif(85,'alchemy')}`,
         price:tarif(85,'alchemy'),minAge:10,
         run:()=>trainSkillCourse('alchemy',tarif(85,'alchemy'),{mind:+6},"Rune yang kau ukir menyala biru — formulamu berhasil!","e-arcane")},
-      {label:"🧘 Meditasi Mana",sub:"Mana+8 · 💰40 (terbuka untuk semua)",price:40,minAge:8,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("manaMeditation"):"🧘",label:"Meditasi Mana",sub:"Mana+8 · 💰40 (terbuka untuk semua)",price:40,minAge:8,
         run:()=>storeService(40,{mana:+8},"Kau bermeditasi di lingkaran rune, energi mengalir tenang.","e-arcane")},
     ]},
   // ===== PERGURUAN BELA DIRI (martial arts per aliran) =====
   {id:"dojo",ico:"🥋",name:"Perguruan Bela Diri",cat:"Perguruan",city:["all"],
     desc:"Empat aliran bela diri legendaris — berlatih bersama master.",
     build:()=>[
-      {label:`🤺 Aliran Pedang Selatan`,sub:`Ilmu Pedang Tk.${lvl('swordsmanship')}/5 → Kekuatan+5 · 💰${tarif(75,'swordsmanship')}`,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("southSword"):"🤺",label:`Aliran Pedang Selatan`,sub:`Ilmu Pedang Tk.${lvl('swordsmanship')}/5 → Kekuatan+5 · 💰${tarif(75,'swordsmanship')}`,
         price:tarif(75,'swordsmanship'),minAge:12,
         run:()=>trainSkillCourse('swordsmanship',tarif(75,'swordsmanship'),{might:+5},"Master mengajarimu jurus Pedang Selatan yang mematikan.")},
-      {label:"🥊 Tinju Naga Besi",sub:"Kekuatan+6 Nyawa+2 · 💰60",price:60,minAge:10,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("ironFist"):"🥊",label:"Tinju Naga Besi",sub:"Kekuatan+6 Nyawa+2 · 💰60",price:60,minAge:10,
         run:()=>storeService(60,{might:+6,health:+2},"Kepalan tanganmu kini keras bagai besi tempa.")},
-      {label:"🤼 Gulat Beruang Utara",sub:"Kekuatan+4 Nyawa+4 · 💰55",price:55,minAge:10,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("bearGrapple"):"🤼",label:"Gulat Beruang Utara",sub:"Kekuatan+4 Nyawa+4 · 💰55",price:55,minAge:10,
         run:()=>storeService(55,{might:+4,health:+4},"Kuncian gulatmu membuat lawan menyerah sebelum bertarung.")},
-      {label:"🏹 Panahan Angin Timur",sub:"Kekuatan+3 Akal+4 · 💰65",price:65,minAge:10,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("windBow"):"🏹",label:"Panahan Angin Timur",sub:"Kekuatan+3 Akal+4 · 💰65",price:65,minAge:10,
         run:()=>storeService(65,{might:+3,mind:+4},"Anak panahmu membelah angin — tepat di pusat sasaran.")},
-      {label:"🧘 Meditasi Bela Diri",sub:"Bahagia+4 Nyawa+3 · 💰30",price:30,minAge:8,
+      {ico:typeof courseIconHTML==="function"?courseIconHTML("martialMeditation"):"🧘",label:"Meditasi Bela Diri",sub:"Bahagia+4 Nyawa+3 · 💰30",price:30,minAge:8,
         run:()=>storeService(30,{happy:+4,health:+3},"Napas & fokusmu selaras. Tubuh dan pikiran menyatu.")},
     ]}
   );
@@ -70,7 +70,8 @@ function wardrobeShopItem(slot,key,price,minAge){
   ensureWardrobe();
   const owned=(C.wardrobeOwned[slot]||[]).includes(key);
   const perks=Object.entries(v.perk||{}).map(([k,val])=>`${STAT_META[k]?STAT_META[k].name:k}+${val}`).join(" ")||"—";
-  return {label:`${cat.ico} ${v.name}${owned?' ✓':''}`,
+  const graphic=(typeof wardrobeIconHTML==="function")?wardrobeIconHTML(slot,key):(cat.graphic||cat.ico);
+  return {ico:graphic,label:`${v.name}${owned?' ✓':''}`,
     sub:owned?"sudah dimiliki · pakai di Aset → Wardrobe":`${cat.name} · ${perks}/th · 💰${price}`,
     price:owned?0:price,minAge:minAge||8,
     run:()=>{
@@ -178,13 +179,13 @@ function renderKarir(){
     const slInfo=(typeof slStatusLine==="function")?slStatusLine():"";
     html+=`<div class="sechead">🎓 Pendidikan</div>
       <div class="charcard" style="margin-bottom:10px"><div class="chartop">
-        <div class="portrait">${s.ico||"📖"}</div>
+        <div class="portrait">${typeof schoolCrestHTML==="function"?schoolCrestHTML(s.track,s.currentTier,null,nm):(s.ico||"📖")}</div>
         <div class="cinfo"><div class="cname">${nm}</div>
           <div class="ctitle">Jenjang ${lvl?lvl.name:"?"} · jalur ${s.track||"umum"}</div>
           <div class="cage">Kuis kenaikan tiap tahun — rajin belajar & jaga Akal!</div>
           ${slInfo}</div></div></div>
       <div class="tiles">
-        <div class="tile fullrow arcane" onclick="openSchoolLifePage()"><span class="ti">🏫</span><span class="tn">Kehidupan Sekolah ▸</span><span class="td">kelas & teman sekelas, guru, circle, ekstrakurikuler, panel akademik — jelajahi!</span></div>
+        <div class="tile fullrow arcane" onclick="openSchoolLifePage()"><span class="ti">${typeof schoolLifeIconHTML==="function"?schoolLifeIconHTML():"🏫"}</span><span class="tn">Kehidupan Sekolah ▸</span><span class="td">kelas & teman sekelas, guru, circle, ekstrakurikuler, panel akademik — jelajahi!</span></div>
       </div>`;
   }else if(s&&s.droppedOut){
     html+=`<div class="sechead">🎓 Pendidikan</div>
@@ -195,7 +196,7 @@ function renderKarir(){
   }else if(C.age>=5&&C.age<=20){
     html+=`<div class="sechead">🎓 Pendidikan</div>
       <div class="tiles" style="margin-bottom:4px"><div class="tile fullrow" onclick="openSchool()">
-        <span class="ti">🏫</span><span class="tn">Sekolah</span>
+        <span class="ti">${typeof schoolCrestHTML==="function"?schoolCrestHTML("umum",0,C.cityId,"Sekolah kota"):"🏫"}</span><span class="tn">Sekolah</span>
         <span class="td">Pendaftaran berjalan otomatis saat tahun berganti — ketuk untuk lihat panel sekolah kotamu</span></div></div>`;
   }
   // ===== PEKERJAAN (berubah: belum umur → lowongan → karir aktif) =====

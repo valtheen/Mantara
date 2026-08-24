@@ -656,13 +656,13 @@ if(typeof setupContinueButton==="function") setupContinueButton = _guard("setupC
   const GROUPS={
     Hidup: {sub:[{view:"Hidup", label:"Hidup", ico:"📜"}]},
     Dunia: {sub:[
-      {view:"Peta",      label:"Peta",  ico:"tab_peta",  emoji:"🗺️"},
-      {view:"Aktivitas", label:"Aksi",  ico:"tab_aksi", emoji:"⚔️"},
+      {view:"Peta",      label:"Peta",  ico:"mapNav",    emoji:"🗺️"},
+      {view:"Aktivitas", label:"Aksi",  ico:"actionNav", emoji:"⚔️"},
       {view:"Toko",      label:"Toko",  ico:"🛒"},
     ]},
     Diri:  {sub:[
       {view:"Karir",     label:"Karir",  ico:"💼"},
-      {view:"Relasi",    label:"Relasi", ico:"tab_relasi", emoji:"👥", dot:true},
+      {view:"Relasi",    label:"Relasi", ico:"relationship", dot:true},
       {view:"Aset",      label:"Aset",   ico:"🏰"},
       {view:"Inventory", label:"Tas",    ico:"🎒"},
     ]},
@@ -694,15 +694,16 @@ if(typeof setupContinueButton==="function") setupContinueButton = _guard("setupC
     applyTabImages();
   }
 
-  // ikon gambar kustom utk tab utama (kalau ada): Dunia pakai peta, Diri pakai orang
+  // ikon vektor tab utama dipasang oleh visual-ui; jangan kembali memakai
+  // aset ornamen lama yang membuat Dunia dan Diri tidak konsisten.
   function applyTabImages(){
-    if(typeof MANTARA_ASSETS==="undefined")return;
-    const map={Dunia:"tab_peta", Diri:"tab_relasi"};
+    if(typeof mantaraIcon!=="function")return;
+    const map={Hidup:"life",Dunia:"worldNav",Diri:"identityNav"};
     document.querySelectorAll(".tab3").forEach(t=>{
-      const g=t.dataset.group, a=map[g];
-      if(a&&MANTARA_ASSETS[a]){
+      const g=t.dataset.group, iconName=map[g];
+      if(iconName){
         const ico=t.querySelector(".tabi");
-        if(ico)ico.innerHTML=`<img src="${resolveAsset(MANTARA_ASSETS[a])}" style="width:30px;height:30px;object-fit:contain;filter:drop-shadow(0 0 4px rgba(240,192,64,.45))" alt="">`;
+        if(ico){ico.dataset.ficon=iconName;ico.innerHTML=mantaraIcon(iconName,"func-icon--nav");}
       }
     });
   }
@@ -717,6 +718,14 @@ if(typeof setupContinueButton==="function") setupContinueButton = _guard("setupC
       </button>`).join("")}</div>`;
   }
   function subIco(s){
+    if(s.ico==="relationship"&&typeof relationshipIconHTML==="function"){
+      return relationshipIconHTML("func-icon--relationship");
+    }
+    // Ikon navigasi semantik mengikuti sistem SVG visual-ui. Emoji hanya
+    // menjadi fallback bila modul visual belum selesai dimuat.
+    if((s.ico==="mapNav"||s.ico==="actionNav")&&typeof mantaraIcon==="function"){
+      return mantaraIcon(s.ico,"func-icon--pill");
+    }
     if(s.ico&&typeof MANTARA_ASSETS!=="undefined"&&MANTARA_ASSETS[s.ico]){
       return `<img src="${resolveAsset(MANTARA_ASSETS[s.ico])}" style="width:16px;height:16px;object-fit:contain;vertical-align:-2px" alt="">`;
     }

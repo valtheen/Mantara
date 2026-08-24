@@ -47,8 +47,7 @@
 function bornChild(parentRel){
   const female=chance(0.5);
   const surname=C.name.split(" ").slice(1).join(" ")||"";
-  const first=randName(female).split(" ")[0];
-  const childName=(first+" "+surname).trim();
+  const childName=typeof uniqueFamilyName==="function"?uniqueFamilyName(female,surname):randName(female);
   // anak warisi sebagian stat ortu (rata-rata + variasi)
   const inheritStat=k=>clamp(Math.round((C.stats[k]*0.4)+ri(5,20)));
   const ch=addRel("keluarga",{name:childName,female,bond:ri(70,90),isChild:true});

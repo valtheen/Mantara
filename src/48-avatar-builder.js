@@ -1,7 +1,7 @@
 // ============================================================
 //  MANTARA — SVG AVATAR BUILDER
 //  Wajah berlapis tanpa emoji: gender, wajah, kulit, rambut,
-//  mata, alis, janggut, dan kumis.
+//  mata, alis, kacamata, janggut, dan kumis.
 // ============================================================
 (function(){
   const FACE_SHAPES=[
@@ -68,9 +68,15 @@
     {key:"none",label:"Tanpa Kumis"},{key:"pencil",label:"Garis"},
     {key:"classic",label:"Klasik"},{key:"handlebar",label:"Melintir"}
   ];
+  const GLASSES_STYLES=[
+    {key:"none",label:"Tanpa Kacamata"},{key:"round",label:"Bulat Klasik"},
+    {key:"square",label:"Kotak Tipis"},{key:"half",label:"Setengah Bingkai"},
+    {key:"cat",label:"Cat Eye"},{key:"aviator",label:"Aviator"},
+    {key:"monocle",label:"Monokel"},{key:"arcane",label:"Lensa Arcane"}
+  ];
   const AVATAR_FOLDERS=[
     {key:"identity",label:"Identitas",desc:"Atur nama dan jenis kelamin karakter."},
-    {key:"face",label:"Wajah",desc:"Bentuk wajah, kulit, mata, dan alis."},
+    {key:"face",label:"Wajah",desc:"Bentuk wajah, kulit, mata, alis, dan kacamata."},
     {key:"hair",label:"Rambut",desc:"Gaya, warna, serta rambut wajah lelaki."},
     {key:"skills",label:"Keahlian",desc:"Bagikan poin kemampuan awal."},
     {key:"city",label:"Kota",desc:"Pilih kota tempat kisahmu dimulai."}
@@ -94,6 +100,7 @@
     if(!has(EYE_SHAPES,ap.eyeShape))ap.eyeShape="almond";
     if(!has(EYE_COLORS,ap.eyeColor))ap.eyeColor="brown";
     if(!has(BROW_STYLES,ap.brows))ap.brows="natural";
+    if(!has(GLASSES_STYLES,ap.glasses))ap.glasses="none";
     if(!has(BEARD_STYLES,ap.beard))ap.beard="none";
     if(!has(MUSTACHE_STYLES,ap.mustache))ap.mustache="none";
     if(ap.female){ap.beard="none";ap.mustache="none";}
@@ -201,6 +208,19 @@
     if(style==="handlebar")return `<path d="M60 77Q51 69 43 77Q37 82 34 76M60 77Q69 69 77 77Q83 82 86 76" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round"/>`;
     return "";
   }
+  function glasses(style){
+    if(!style||style==="none")return "";
+    const frame="#d3a83e",dark="#30262a",lens="rgba(154,191,214,.12)";
+    const arms=`<path d="M36 55 29 52M84 55l7-3" fill="none" stroke="${dark}" stroke-width="2.4" stroke-linecap="round"/>`;
+    if(style==="round")return `<g>${arms}<circle cx="45" cy="58" r="8" fill="${lens}" stroke="${frame}" stroke-width="2.2"/><circle cx="75" cy="58" r="8" fill="${lens}" stroke="${frame}" stroke-width="2.2"/><path d="M53 57q7-4 14 0" fill="none" stroke="${frame}" stroke-width="2"/></g>`;
+    if(style==="square")return `<g>${arms}<rect x="36" y="50" width="18" height="16" rx="3" fill="${lens}" stroke="${dark}" stroke-width="2.2"/><rect x="66" y="50" width="18" height="16" rx="3" fill="${lens}" stroke="${dark}" stroke-width="2.2"/><path d="M54 56h12" stroke="${dark}" stroke-width="2.2"/></g>`;
+    if(style==="half")return `<g>${arms}<path d="M36 58V53Q45 48 54 53M66 53Q75 48 84 53M54 54q6-3 12 0" fill="none" stroke="${frame}" stroke-width="2.5" stroke-linecap="round"/><path d="M37 58q8 7 16 0M67 58q8 7 16 0" fill="none" stroke="${dark}" stroke-width="1" opacity=".62"/></g>`;
+    if(style==="cat")return `<g>${arms}<path d="M35 51 55 54 52 65Q42 68 37 60ZM85 51 65 54 68 65Q78 68 83 60Z" fill="${lens}" stroke="${frame}" stroke-width="2" stroke-linejoin="round"/><path d="M54 56h12" stroke="${frame}" stroke-width="2"/></g>`;
+    if(style==="aviator")return `<g>${arms}<path d="M35 51Q45 47 55 52L52 65Q45 71 38 64Z" fill="${lens}" stroke="${dark}" stroke-width="2"/><path d="M85 51Q75 47 65 52L68 65Q75 71 82 64Z" fill="${lens}" stroke="${dark}" stroke-width="2"/><path d="M54 54q6-3 12 0" fill="none" stroke="${dark}" stroke-width="2"/></g>`;
+    if(style==="monocle")return `<g><circle cx="75" cy="58" r="9" fill="${lens}" stroke="${frame}" stroke-width="2.4"/><path d="M84 64q4 10 0 21q-2 6 3 11" fill="none" stroke="${frame}" stroke-width="1.5" stroke-dasharray="2 2"/><circle cx="87" cy="97" r="2" fill="none" stroke="${frame}" stroke-width="1.3"/></g>`;
+    if(style==="arcane")return `<g filter="drop-shadow(0 0 2px #8f75ce)">${arms}<path d="m45 48 10 6-3 11H39l-4-11Z" fill="rgba(143,117,206,.18)" stroke="#a98cff" stroke-width="2"/><path d="m75 48 10 6-4 11H68l-3-11Z" fill="rgba(143,117,206,.18)" stroke="#a98cff" stroke-width="2"/><path d="M54 55h12M45 51v13M75 51v13" fill="none" stroke="${frame}" stroke-width="1.4"/></g>`;
+    return "";
+  }
   function deadAvatar(){
     return `<svg class="avatar-svg" viewBox="0 0 120 120" role="img" aria-label="Karakter telah wafat"><circle cx="60" cy="60" r="56" fill="#17131d" stroke="#75627f" stroke-width="2"/><path d="M31 55c0-22 12-37 29-37s29 15 29 37c0 15-7 23-15 28v17H46V83c-8-5-15-13-15-28Z" fill="#d9d0bd"/><circle cx="47" cy="57" r="9" fill="#211b25"/><circle cx="73" cy="57" r="9" fill="#211b25"/><path d="m60 65-5 10h10Z" fill="#211b25"/><path d="M48 87h24M54 82v18M66 82v18" stroke="#211b25" stroke-width="4"/></svg>`;
   }
@@ -246,7 +266,7 @@
     const nose=child?`<path d="M59 59q-2 9 2 12" fill="none" stroke="#8a5140" stroke-width="1.2" stroke-linecap="round"/>`:`<path d="M59 57q-3 11 1 16l4 1" fill="none" stroke="#804a3b" stroke-width="1.55" stroke-linecap="round"/>`;
     const mouth=female?`<path d="M51 83Q60 88 69 83" fill="none" stroke="#a95761" stroke-width="1.8" stroke-linecap="round"/>`:`<path d="M51 84Q60 88 69 84" fill="none" stroke="#87444c" stroke-width="1.9" stroke-linecap="round"/>`;
     const facial=!teen&&!child&&age>=20&&ap.beard==="stubble"?beard("stubble",hair):"";
-    return wrap(`<g transform="${hairTransform}">${hairBack(ap.hair,hair,female)}</g>${shoulders}${neck}${ears}<path d="${facePath(faceShape,female)}" transform="${faceTransform}" fill="${skin}" stroke="#6b4033" stroke-width="${female?'1.2':'1.55'}"/><g transform="${hairTransform}">${hairFront(ap.hair,hair,female)}</g>${brows(ap.brows,hair,female)}${eyes(ap.eyeShape,eye,false,female)}${nose}${mouth}${facial}`);
+    return wrap(`<g transform="${hairTransform}">${hairBack(ap.hair,hair,female)}</g>${shoulders}${neck}${ears}<path d="${facePath(faceShape,female)}" transform="${faceTransform}" fill="${skin}" stroke="#6b4033" stroke-width="${female?'1.2':'1.55'}"/><g transform="${hairTransform}">${hairFront(ap.hair,hair,female)}</g>${brows(ap.brows,hair,female)}${eyes(ap.eyeShape,eye,false,female)}${glasses(ap.glasses)}${nose}${mouth}${facial}`);
   }
   function avatarSVG(ap,age,isMage,alive){
     if(alive===false)return deadAvatar();
@@ -282,7 +302,7 @@
       ${rune}${hairBack(ap.hair,hair,ap.female)}
       ${shoulders}${neck}${ears}
       <path d="${facePath(shape,ap.female)}" fill="${skin}" stroke="#6b4033" stroke-width="${ap.female?'1.25':'1.8'}"/>
-      ${genderDetails}${hairFront(ap.hair,hair,ap.female)}${brows(ap.brows,hair,ap.female)}${eyes(ap.eyeShape,eye,baby,ap.female)}
+      ${genderDetails}${hairFront(ap.hair,hair,ap.female)}${brows(ap.brows,hair,ap.female)}${eyes(ap.eyeShape,eye,baby,ap.female)}${glasses(ap.glasses)}
       ${nose}${mouth}${wrinkles}${beard(facial,hair)}${mustache(moustache,hair)}
       <circle cx="60" cy="60" r="56" fill="none" stroke="#f0bd3b" stroke-width="1" opacity=".18"/>
     </svg>`;
@@ -332,7 +352,7 @@
   function mountCustomizerFolders(wrap){
     const groups={
       identity:["Nama","Jenis Kelamin"],
-      face:["Warna Kulit","Bentuk Wajah","Bentuk Mata","Warna Mata","Bentuk Alis"],
+      face:["Warna Kulit","Bentuk Wajah","Bentuk Mata","Warna Mata","Bentuk Alis","Kacamata"],
       hair:["Gaya Rambut","Warna Rambut","Janggut","Kumis"],
       skills:["Alokasi Keahlian"],
       city:["Kota Awal"]
@@ -383,7 +403,8 @@
       colorChoices("Warna Rambut","hairColor",HAIR_COLORS)+
       visualChoices("Bentuk Mata","eyeShape",EYE_SHAPES)+
       colorChoices("Warna Mata","eyeColor",EYE_COLORS)+
-      visualChoices("Bentuk Alis","brows",BROW_STYLES);
+      visualChoices("Bentuk Alis","brows",BROW_STYLES)+
+      visualChoices("Kacamata","glasses",GLASSES_STYLES);
     if(!draft.female)html+=visualChoices("Janggut","beard",BEARD_STYLES)+visualChoices("Kumis","mustache",MUSTACHE_STYLES);
     skillField.insertAdjacentHTML("beforebegin",html);
     mountCustomizerFolders(wrap);
@@ -436,17 +457,88 @@
     Object.assign(draft.appearance,{
       faceShape:choose(FACE_SHAPES),skin:choose(AVATAR_SKINS),hair:choose(hairStylesFor(draft.female)),
       hairColor:choose(HAIR_COLORS),eyeShape:choose(EYE_SHAPES),eyeColor:choose(EYE_COLORS),
-      brows:choose(BROW_STYLES),beard:draft.female?"none":choose(BEARD_STYLES),
+      brows:choose(BROW_STYLES),glasses:choose(GLASSES_STYLES),beard:draft.female?"none":choose(BEARD_STYLES),
       mustache:draft.female?"none":choose(MUSTACHE_STYLES)
     });
     renderCustomize();
+  };
+
+  // ---------- AVATAR NPC ----------
+  // Penampilan dibuat deterministik dari identitas, kemudian disimpan pada
+  // objek NPC. Dengan begitu wajah tidak berubah saat halaman dibuka kembali
+  // dan kombinasi yang sudah dipakai tidak diberikan ke NPC lain.
+  const npcAvatarRegistry=new Map();
+  function avatarHash(value){
+    let h=2166136261;
+    const text=String(value||"");
+    for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}
+    return h>>>0;
+  }
+  function npcIdentity(npc){
+    if(npc.id)return String(npc.id);
+    if(npc._avatarId)return String(npc._avatarId);
+    const basis=[npc.name||"Tanpa Nama",npc.role||npc.kin||npc.job||npc.title||"npc",npc.female].join("|");
+    npc._avatarId="npc-"+avatarHash(basis).toString(36);
+    return npc._avatarId;
+  }
+  function npcFemale(npc,owner){
+    if(typeof npc.female==="boolean")return npc.female;
+    const first=String(npc.name||"").split(" ")[0];
+    if(typeof FIRST_F!=="undefined"&&FIRST_F.includes(first))return true;
+    if(typeof FIRST_M!=="undefined"&&FIRST_M.includes(first))return false;
+    npc.female=avatarHash(owner+"|gender")%2===0;
+    return npc.female;
+  }
+  function npcVisualSignature(ap){
+    return [ap.female,ap.faceShape,ap.skin,ap.hair,ap.hairColor,ap.eyeShape,ap.eyeColor,ap.brows,ap.glasses,ap.beard,ap.mustache].join("|");
+  }
+  function generatedNpcAppearance(npc,age,owner,salt){
+    const state={v:avatarHash(owner+"|"+(salt||0))||1};
+    const next=list=>{state.v=(Math.imul(state.v,1664525)+1013904223)>>>0;return list[state.v%list.length].key;};
+    const female=npcFemale(npc,owner);
+    const mature=age>=20;
+    const glassesRoll=(state.v>>>3)%100;
+    const glassesPool=glassesRoll<48?GLASSES_STYLES.slice(1):[GLASSES_STYLES[0]];
+    return normalizeAppearance({
+      female,
+      faceShape:next(FACE_SHAPES),skin:next(AVATAR_SKINS),hair:next(hairStylesFor(female)),
+      hairColor:next(HAIR_COLORS),eyeShape:next(EYE_SHAPES),eyeColor:next(EYE_COLORS),
+      brows:next(BROW_STYLES),glasses:next(glassesPool),
+      beard:female||!mature?"none":next(BEARD_STYLES),
+      mustache:female||!mature?"none":next(MUSTACHE_STYLES)
+    },female);
+  }
+  function ensureNpcAppearance(npc,age){
+    npc=npc||{};
+    const owner=npcIdentity(npc);
+    const resolvedAge=Number.isFinite(age)?age:(Number.isFinite(npc.age)?npc.age:(Number.isFinite(npc._avatarAge)?npc._avatarAge:28+avatarHash(owner+"|age")%34));
+    if(!Number.isFinite(npc._avatarAge))npc._avatarAge=resolvedAge;
+    let ap=npc.appearance?normalizeAppearance(npc.appearance,npcFemale(npc,owner)):null;
+    let salt=0,signature=ap?npcVisualSignature(ap):"";
+    while(!ap||(npcAvatarRegistry.has(signature)&&npcAvatarRegistry.get(signature)!==owner)){
+      ap=generatedNpcAppearance(npc,resolvedAge,owner,salt++);
+      signature=npcVisualSignature(ap);
+    }
+    npc.appearance=ap;
+    npcAvatarRegistry.set(signature,owner);
+    return ap;
+  }
+  function npcIsMage(npc){
+    if(npc&&npc.isMage!==undefined)return !!npc.isMage;
+    return /penyihir|sihir|mage|arcane|arcanum|magister|alkemis/i.test([npc&&npc.role,npc&&npc.job,npc&&npc.title,npc&&npc.background].join(" "));
+  }
+  window.npcAvatar=function(npc,age,options){
+    npc=npc||{};
+    const resolvedAge=Number.isFinite(age)?age:(Number.isFinite(npc.age)?npc.age:(Number.isFinite(npc._avatarAge)?npc._avatarAge:28));
+    const extra=typeof options==="string"?options:(options&&options.className||"");
+    return `<span class="npc-avatar ${extra}">${avatarSVG(ensureNpcAppearance(npc,resolvedAge),Math.max(0,resolvedAge),npcIsMage(npc),npc.alive!==false)}</span>`;
   };
 
   if(typeof M!=="undefined"&&M.on){
     M.on("save:read",()=>{if(C&&C.appearance)C.appearance=normalizeAppearance(C.appearance,C.female);});
     M.on("char:born",()=>{if(C)C.appearance=normalizeAppearance(C.appearance,C.female);});
   }
-  window.MantaraAvatar={render:avatarSVG,normalize:normalizeAppearance};
+  window.MantaraAvatar={render:avatarSVG,normalize:normalizeAppearance,npc:window.npcAvatar,ensureNpcAppearance};
 
   const css=document.createElement("style");
   css.id="mantara-avatar-styles";
@@ -456,6 +548,17 @@
     .cust-face{width:164px;height:164px;padding:5px;border-radius:38px;font-size:0;background:radial-gradient(circle at 50% 35%,#39291d,#120e13 72%);border-color:rgba(223,166,38,.58);box-shadow:0 8px 30px rgba(0,0,0,.5),0 0 22px rgba(190,132,21,.14)}
     .portrait{overflow:hidden;padding:2px;font-size:0}
     .portrait .avatar-svg{width:100%;height:100%}
+    .npc-avatar{display:inline-block;width:46px;height:46px;flex:0 0 46px;font-size:0;vertical-align:middle;overflow:visible}
+    .npc-avatar .avatar-svg{filter:drop-shadow(0 3px 5px rgba(0,0,0,.32))}
+    .npc-avatar--hero{width:94px;height:94px;margin:0 auto 7px}
+    .npc-avatar--inline{width:30px;height:30px;margin-right:5px}
+    .npc-avatar--battle{width:72px;height:72px;margin:auto}
+    .relav:has(.npc-avatar){width:54px;height:54px;padding:2px;font-size:0;border-radius:16px;background:radial-gradient(circle at 50% 35%,rgba(77,54,31,.9),rgba(20,15,18,.96));border:1px solid rgba(190,132,21,.4)}
+    .relav .npc-avatar{width:50px;height:50px}
+    .pg-ico:has(.npc-avatar){width:52px;min-width:52px;height:52px;font-size:0}
+    .pg-ico .npc-avatar{width:50px;height:50px}
+    .mico:has(.npc-avatar){width:86px;height:86px;font-size:0;margin-inline:auto}
+    .mico .npc-avatar{width:82px;height:82px}
     .avatar-random{display:flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;background:rgba(190,132,21,.09);border:1px solid rgba(223,166,38,.45);color:var(--gold-bright);font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.04em;cursor:pointer}
     .avatar-random-mark,.avatar-inline-icon{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center}
     .avatar-random-mark svg,.avatar-inline-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}

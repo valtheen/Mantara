@@ -172,7 +172,8 @@ function renderAset(){
     const g=GEAR_CATALOG[cat];if(g.arcane&&!C.isMage)continue;
     const cur=g.variants.find(v=>v.key===C.gear[cat]);
     const perkStr=Object.entries(cur.perk||{}).map(([k,v])=>`${STAT_META[k]?STAT_META[k].name:k} +${v}`).join(", ")||"—";
-    html+=`<div class="asset"><span class="assetico">${g.ico}</span>
+    const gearGraphic=typeof mantaraGearIcon==="function"?mantaraGearIcon(cat,cur.key):g.ico;
+    html+=`<div class="asset"><span class="assetico">${gearGraphic}</span>
       <div class="assetinfo"><div class="assetname">${cur.name}</div>
         <div class="assetlvl">${g.name} · ${perkStr}/th</div>
         <div class="assetdesc">${cur.desc}</div></div>
@@ -203,14 +204,27 @@ function renderAset(){
   // (Sanggar Sihir & Perguruan Bela Diri di Dunia → Toko)
   html+=`<div class="sechead">Keahlian</div>
     <p style="font-size:10.5px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 8px;line-height:1.5;">Latih keahlian di <b>Bimbel & Perguruan</b> kota (Dunia → Toko 🛒) — Sanggar Sihir 🔮 & Perguruan Bela Diri 🥋.</p>`;
-  SKILL_TYPES.filter(t=>!t.arcane||C.isMage).forEach(def=>{
-    const owned=C.skills.find(s=>s.id===def.id);const lvl=owned?owned.level:0;
-    html+=`<div class="asset" ${lvl<5?`onclick="switchTab('Toko')" style="cursor:pointer"`:''}><span class="assetico">${def.ico}</span>
-      <div class="assetinfo"><div class="assetname">${def.name}</div>
-        <div class="assetlvl">Tingkat ${lvl}/5</div>
-        <div class="assetdesc">${STAT_META[def.stat].name} +${lvl}/tahun pasif${lvl<5?' · ketuk untuk ke distrik toko':''}</div></div>
-      ${lvl>=5?`<span style="font-size:10px;color:var(--gold)">MAX</span>`:''}
-    </div>`;});
+  const skillGroups=[
+    {name:"Tempur",icon:"sword",ids:["swordsmanship"]},
+    {name:"Ilmu & Riset",icon:"alchemy",ids:["alchemy"]},
+    {name:"Sosial & Pemulihan",icon:"heart",ids:["diplomacy","medicine"]},
+    {name:"Arcane",icon:"magic",ids:["sorcery"]},
+  ];
+  skillGroups.forEach(group=>{
+    const skills=group.ids.map(id=>SKILL_TYPES.find(t=>t.id===id)).filter(def=>def&&(!def.arcane||C.isMage));
+    if(!skills.length)return;
+    html+=`<div class="skill-group-title">${typeof mantaraIcon==="function"?mantaraIcon(group.icon):""}${group.name}</div>`;
+    skills.forEach(def=>{
+      const owned=C.skills.find(s=>s.id===def.id);const lvl=owned?owned.level:0;
+      const skillGraphic=typeof skillIconHTML==="function"?skillIconHTML(def.id):def.ico;
+      html+=`<div class="asset" ${lvl<5?`onclick="switchTab('Toko')" style="cursor:pointer"`:''}><span class="assetico">${skillGraphic}</span>
+        <div class="assetinfo"><div class="assetname">${def.name}</div>
+          <div class="assetlvl">Tingkat ${lvl}/5</div>
+          <div class="assetdesc">${STAT_META[def.stat].name} +${lvl}/tahun pasif${lvl<5?' · ketuk untuk ke distrik toko':''}</div></div>
+        ${lvl>=5?`<span style="font-size:10px;color:var(--gold)">MAX</span>`:''}
+      </div>`;
+    });
+  });
   document.getElementById("viewAset").innerHTML=html;
 }
 
@@ -247,12 +261,12 @@ function managePropertyPopup(idx){
 // ---------- POPUP: pilih gear varian ----------
 function chooseGearPopup(cat){
   const g=GEAR_CATALOG[cat];
-  openChoice({ico:g.ico,prompt:`Pilih ${g.name}:`,
+  openChoice({ico:typeof mantaraGearIcon==="function"?mantaraGearIcon(cat,C.gear[cat]):g.ico,prompt:`Pilih ${g.name}:`,
     choices:g.variants.map(v=>{
       const owned=C.gear[cat]===v.key;
       const afford=v.price===0||C.coin>=v.price||owned;
       const perks=Object.entries(v.perk||{}).map(([k,val])=>`${STAT_META[k]?STAT_META[k].name:k}+${val}`).join(" ")||"—";
-      return {label:`${v.name}${owned?' ✓':''}`,sub:`${v.price>0?'💰'+v.price+' · ':''}${perks}`,hint:v.desc,
+      return {label:`${typeof mantaraGearIcon==="function"?mantaraGearIcon(cat,v.key):""} ${v.name}${owned?' ✓':''}`,sub:`${v.price>0?'💰'+v.price+' · ':''}${perks}`,hint:v.desc,
         disabled:owned||!afford,
         run:()=>{if(v.price>0)C.coin-=v.price;C.gear[cat]=v.key;
           return{t:`Kau kini memakai ${v.name}.`,cls:"e-good"};}};

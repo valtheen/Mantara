@@ -2,7 +2,7 @@
 //  TAKDIR v3 — UI / RENDER
 // ============================================================
 function toast(msg){
-  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  const t=document.getElementById("toast");t.textContent=typeof playerText==="function"?playerText(msg):String(msg).replace(/<[^>]*>/g,"");t.classList.add("show");
   clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove("show"),2200);
 }
 function log(yr,t,cls){if(!C._log)C._log=[];C._log.unshift({yr,t,cls});if(C._log.length>40)C._log.pop();}
@@ -41,7 +41,7 @@ function renderRelasi(){
     const origin=profile&&profile.origin?profile.origin:"Belum diketahui";
     return `<div class="relcard">
       <div class="reltop reltop-open" role="button" tabindex="0" aria-label="Buka profil ${r.name}" onclick="openOverview('${r.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openOverview('${r.id}')}" title="Ketuk untuk profil lengkap">
-        <div class="relav">${r.ico}</div>
+        <div class="relav">${typeof npcAvatar==="function"?npcAvatar(r,age):r.ico}</div>
         <div class="relinfo">
           <div class="relname">${r.name}</div>
           <div class="relrole role-${r.role}">${relLabel(r)} · ${r.trait}</div>

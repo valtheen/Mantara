@@ -244,9 +244,9 @@ function slClass(){
     const tf=chance(0.5);
     sl.klassTier=tier;
     sl.klass={
-      teacher:{name:randName(tf),female:tf,bond:ri(30,50)},
-      mates:Array.from({length:ri(6,8)},()=>{const f=chance(0.5);
-        return {name:randName(f),female:f,bond:ri(15,55),
+      teacher:{id:`guru-${tier}-${Math.random().toString(36).slice(2,8)}`,name:randName(tf),female:tf,bond:ri(30,50),age:ri(27,58),metAt:C.age,role:"guru"},
+      mates:Array.from({length:ri(6,8)},(_,i)=>{const f=chance(0.5);
+        return {id:`murid-${tier}-${i}-${Math.random().toString(36).slice(2,7)}`,name:randName(f),female:f,bond:ri(15,55),age:C.age,role:"murid",
           trait:rand(["ceria","pendiam","jahil","rajin","sok jago","penakut","baik hati","tukang gosip"]),friended:false};})
     };
   }
@@ -284,10 +284,11 @@ window.openClassPage=function(){
   pushPage({title:"Kelas",render:function(){
     const k=slClass();
     let h=pgSec("Wali Kelas");
-    h+=pgRow({ico:k.teacher.female?"👩‍🏫":"🧑‍🏫",title:`${k.teacher.name} (Guru)`,sub:k.teacher.bond>=70?"kau murid kesayangannya":"hubungan",bar:k.teacher.bond,barCls:"f-happy",chev:1,on:()=>openTeacherPage()});
+    const teacherAge=(k.teacher.age||30)+Math.max(0,C.age-(k.teacher.metAt||C.age));
+    h+=pgRow({ico:typeof npcAvatar==="function"?npcAvatar(k.teacher,teacherAge):k.teacher.female?"👩‍🏫":"🧑‍🏫",title:`${k.teacher.name} (Guru)`,sub:`usia ${teacherAge} · ${k.teacher.bond>=70?"kau murid kesayangannya":"hubungan"}`,bar:k.teacher.bond,barCls:"f-happy",chev:1,on:()=>openTeacherPage()});
     h+=pgSec(`Teman Sekelas · popularitasmu ${classPopularity()}%`);
     k.mates.forEach((m,i)=>{
-      h+=pgRow({ico:m.female?"👧":"👦",title:m.name+(m.friended?" 💛":""),sub:"si "+m.trait,bar:m.bond,barCls:m.bond>=60?"f-happy":"f-might",chev:1,on:()=>openMatePage(i)});
+      h+=pgRow({ico:typeof npcAvatar==="function"?npcAvatar(m,C.age):m.female?"👧":"👦",title:m.name+(m.friended?" 💛":""),sub:`usia ${C.age} · si ${m.trait}`,bar:m.bond,barCls:m.bond>=60?"f-happy":"f-might",chev:1,on:()=>openMatePage(i)});
     });
     return h;
   }});
@@ -296,7 +297,7 @@ window.openMatePage=function(i){
   pushPage({title:"Teman Sekelas",render:function(){
     const m=slClass().mates[i];
     let h=pgSec(m.name+" · si "+m.trait);
-    h+=pgRow({ico:m.female?"👧":"👦",title:m.name,sub:"hubungan kalian",bar:m.bond});
+    h+=pgRow({ico:typeof npcAvatar==="function"?npcAvatar(m,C.age):m.female?"👧":"👦",title:m.name,sub:`usia ${C.age} · hubungan kalian`,bar:m.bond});
     h+=pgSec("Aksi");
     h+=pgRow({ico:"🗣️",title:"Ngobrol",sub:"hubungan + · Bahagia +",on:pgDo(()=>{
       if(!spendAction())return null;m.bond=clamp(m.bond+ri(4,9));applyStats({happy:+3});
@@ -321,7 +322,7 @@ window.openMatePage=function(i){
       return{t:win?`Kau menang panco melawan ${m.name}! Anak-anak bersorak.`:`${m.name} menang panco — tapi kalian makin akrab.`};})});
     if(m.bond>=70&&!m.friended)
       h+=pgRow({ico:"💛",title:"Jadikan sahabat",sub:"masuk ke Relasi-mu (permanen)",on:pgDo(()=>{
-        m.friended=true;addRel("teman",{name:m.name,female:m.female,bond:m.bond});
+        m.friended=true;const rel=addRel("teman",{id:m.id,name:m.name,female:m.female,bond:m.bond,appearance:m.appearance});rel.ageOffset=0;
         return{t:`${m.name} kini sahabatmu! (lihat Diri → Relasi)`,cls:"e-epic"};})});
     return h;
   }});
@@ -329,8 +330,9 @@ window.openMatePage=function(i){
 window.openTeacherPage=function(){
   pushPage({title:"Guru",render:function(){
     const t=slClass().teacher;
+    const teacherAge=(t.age||30)+Math.max(0,C.age-(t.metAt||C.age));
     let h=pgSec("Wali Kelas "+t.name);
-    h+=pgRow({ico:t.female?"👩‍🏫":"🧑‍🏫",title:t.name,sub:t.bond>=70?"kau murid kesayangannya 🍎":"hubungan guru-murid",bar:t.bond});
+    h+=pgRow({ico:typeof npcAvatar==="function"?npcAvatar(t,teacherAge):t.female?"👩‍🏫":"🧑‍🏫",title:t.name,sub:`usia ${teacherAge} · ${t.bond>=70?"kau murid kesayangannya 🍎":"hubungan guru-murid"}`,bar:t.bond});
     h+=pgSec("Aksi");
     h+=pgRow({ico:"🍎",title:"Beri apel",sub:"hubungan + · Pesona +",on:pgDo(()=>{
       if(!spendAction())return null;t.bond=clamp(t.bond+ri(5,10));applyStats({charm:+2});

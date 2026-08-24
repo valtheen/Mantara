@@ -109,9 +109,16 @@ function imgIcon(name, fallbackEmoji, sizePx){
   const s=sizePx||"1em";
   return `<img src="${resolveAsset(src)}" class="m-ico" loading="lazy" decoding="async" style="width:${s};height:${s};vertical-align:middle;object-fit:contain" alt="">`;
 }
+// Ubah pesan sistem menjadi teks pemain yang bersih. Beberapa definisi ikon
+// internal berupa tag <img>; tag itu tidak boleh pernah bocor sebagai tulisan.
+function playerText(value){
+  const box=document.createElement("div");
+  box.innerHTML=String(value===undefined||value===null?"":value);
+  return (box.textContent||"").replace(/\s+/g," ").trim();
+}
 function setModalIco(el,ico){
   if(!el)return;
-  if(ico&&String(ico).includes("<img"))el.innerHTML=ico;
+  if(ico&&/<(?:img|svg|span)\b/i.test(String(ico)))el.innerHTML=ico;
   else el.textContent=ico||"❓";
 }// ============================================================
 //  TAKDIR v3 — Engine (bagian 1: inti + lokasi + perjumpaan)
@@ -144,7 +151,39 @@ const ORIGINS=[
 const FIRST_M=["Aldric","Garran","Roderic","Tobias","Cael","Bram","Edric","Ulric","Doran","Wystan","Kaelen","Sorin","Fenwick","Albon","Theron"];
 const FIRST_F=["Elara","Mirae","Seraphine","Rowena","Isolde","Brenna","Lyra","Maeve","Cassia","Wren","Nyssa","Thalia","Ondine","Verena","Sable"];
 const SURNAME=["Blackwood","Thornfield","Greymoor","Ravenhall","Ashford","Stormwind","Holloway","Duskbane","Eldridge","Vexley","Frostmere","Emberlyn","Wyndhollow","Marsh","Quill"];
-const randName=f=>rand(f?FIRST_F:FIRST_M)+" "+rand(SURNAME);
+function characterNamesInUse(){
+  const names=new Set();
+  try{
+    if(C&&C.name)names.add(C.name);
+    if(C&&Array.isArray(C.relations))C.relations.forEach(r=>r&&r.name&&names.add(r.name));
+    if(C&&C.schoolLife&&C.schoolLife.klass){
+      const k=C.schoolLife.klass;if(k.teacher&&k.teacher.name)names.add(k.teacher.name);
+      (k.mates||[]).forEach(r=>r&&r.name&&names.add(r.name));
+    }
+    if(C&&C.kingdom){
+      if(C.kingdom.king&&C.kingdom.king.name)names.add(C.kingdom.king.name);
+      if(C.kingdom.chancellor)names.add(C.kingdom.chancellor);
+      Object.values(C.kingdom.governors||{}).forEach(n=>names.add(n));
+    }
+    if(C&&C.rulers)Object.values(C.rulers).forEach(r=>r&&r.name&&names.add(r.name));
+  }catch(e){}
+  return names;
+}
+const randName=f=>{
+  const used=characterNamesInUse(),firsts=f?FIRST_F:FIRST_M;
+  for(let i=0;i<80;i++){const candidate=rand(firsts)+" "+rand(SURNAME);if(!used.has(candidate))return candidate;}
+  for(const first of firsts)for(const last of SURNAME){const candidate=first+" "+last;if(!used.has(candidate))return candidate;}
+  return rand(firsts)+" "+rand(SURNAME);
+};
+function uniqueFamilyName(female,surname){
+  const used=characterNamesInUse(),firsts=female?FIRST_F:FIRST_M;
+  const start=ri(0,firsts.length-1);
+  for(let i=0;i<firsts.length;i++){
+    const name=(firsts[(start+i)%firsts.length]+" "+surname).trim();
+    if(!used.has(name))return name;
+  }
+  return randName(female);
+}
 
 let C, currentTab="Hidup", pendingChoice=null;
 
@@ -166,13 +205,14 @@ function newChar(originId){
 function makeRel(role,opts={}){
   const female=opts.female!==undefined?opts.female:chance(0.5);
   return {
-    id:"r"+Math.random().toString(36).slice(2,8),
+    id:opts.id||("r"+Math.random().toString(36).slice(2,8)),
     name:opts.name||randName(female), female, role,
     bond:opts.bond!==undefined?opts.bond:ri(35,55),
     ico:opts.ico||relIcon(role,female),
     loyalty:opts.loyalty||50, met:C?C.age:0,
     trait:opts.trait||rand(["periang","pendiam","ambisius","setia","licik","pemberani","bijak"]),
     isChild:opts.isChild||false,
+    appearance:opts.appearance||null,
   };
 }
 function relIcon(role,female){

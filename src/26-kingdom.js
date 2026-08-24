@@ -38,7 +38,7 @@ window.openAssetMarketPage=function(){
           if(C.coin<price)return{t:"Koinmu belum cukup.",cls:"e-bad"};
           C.coin-=price;C.businesses.push({id:def.id,level:0});
           try{checkMissions();}catch(e){}
-          return{t:`${def.ico} Kau membuka ${def.name} di ${city.name}! Income +${def.income[0]}/th. Kelola & upgrade di Diri → Aset.`,cls:"e-epic"};})});
+          return{t:`Kau membuka ${def.name} di ${city.name}! Pendapatan +${def.income[0]}/tahun. Kelola dan tingkatkan di Diri → Aset.`,cls:"e-epic"};})});
     });
     h+=pgSec("Lainnya");
     h+=pgRow({ico:"🛒",title:"Distrik Toko "+city.name,sub:"barang, busana, perhiasan 💍, bimbel & perguruan",chev:1,on:()=>{mpCloseAll();switchTab("Toko");}});
@@ -99,8 +99,9 @@ const WORLD_NEWS_POOL=[
 function ensureKingdom(){
   if(C.kingdom)return C.kingdom;
   const dyn=rand(DYNASTIES);
+  const kingFemale=chance(0.25);
   C.kingdom={
-    king:{name:randName(chance(0.25)),age:ri(32,58),years:ri(2,18),dynasty:dyn,isPlayer:false},
+    king:{id:"raja-"+Math.random().toString(36).slice(2,8),name:randName(kingFemale),female:kingFemale,role:"raja",age:ri(32,58),years:ri(2,18),dynasty:dyn,isPlayer:false},
     chancellor:randName(chance(0.4)),
     governors:{aetheria:randName(chance(0.3)),thornvale:randName(chance(0.3)),saltmoor:randName(chance(0.3)),frostspire:randName(chance(0.3))},
     news:[{yr:C.age,t:"👑 "+dyn+" memerintah Aetheria dalam damai yang rapuh."}],
@@ -134,7 +135,8 @@ function polIsKing(){return polRole()==="raja";}
           kAddNews(coup
             ?`⚔️ GEMPAR! ${K.king.dynasty} digulingkan — ${newDyn} merebut takhta lewat kudeta berdarah!`
             :`⚰️ Raja ${K.king.name} wafat. Pewaris ${K.king.dynasty} naik takhta.`);
-          K.king={name:randName(chance(0.25)),age:ri(20,40),years:0,dynasty:newDyn,isPlayer:false};
+          const nextFemale=chance(0.25);
+          K.king={id:"raja-"+Math.random().toString(36).slice(2,8),name:randName(nextFemale),female:nextFemale,role:"raja",age:ri(20,40),years:0,dynasty:newDyn,isPlayer:false};
           if(polRole()&&chance(0.3)){
             kAddNews(`🏛️ Perombakan istana: ${C.name} kehilangan jabatannya.`);
             log(C.age,"Raja baru merombak istana — jabatan politikmu dicopot!","e-bad");
@@ -227,7 +229,7 @@ window.openKingdomPage=function(){
     const K=C.kingdom;
     let h=pgSec("Takhta Aetheria");
     if(K.king.isPlayer){
-      h+=pgRow({ico:"👑",title:`Raja ${C.name} — KAU!`,sub:`${K.king.dynasty} · bertakhta ${K.king.years} th · upeti +150/th`,bar:100,barCls:"f-happy"});
+      h+=pgRow({ico:typeof portraitEmoji==="function"?portraitEmoji():"👑",title:`Raja ${C.name} — KAU!`,sub:`${K.king.dynasty} · bertakhta ${K.king.years} th · upeti +150/th`,bar:100,barCls:"f-happy"});
       h+=pgRow({ico:"📯",title:"Keluarkan Dekrit",sub:"reputasi ++ · 💰100",on:pgDo(()=>{
         if(C.coin<100)return{t:"Kas pribadimu kurang.",cls:"e-bad"};
         if(!spendAction())return null;
@@ -241,13 +243,16 @@ window.openKingdomPage=function(){
         kAddNews(`🎪 Pesta rakyat digelar Raja ${C.name} — seluruh negeri bersuka!`);
         return{t:"Rakyat mengelu-elukan namamu!",cls:"e-epic"};})});
     }else{
-      h+=pgRow({ico:"👑",title:`Raja ${K.king.name}`,sub:`${K.king.dynasty} · usia ${K.king.age} · bertakhta ${K.king.years} th`,chev:0});
+      h+=pgRow({ico:typeof npcAvatar==="function"?npcAvatar(K.king,K.king.age):"👑",title:`Raja ${K.king.name}`,sub:`${K.king.dynasty} · usia ${K.king.age} · bertakhta ${K.king.years} th`,chev:0});
     }
-    h+=pgRow({ico:"🏛️",title:"Kanselir: "+(polRole()==="kanselir"?C.name+" (KAU)":K.chancellor),sub:"tangan kanan raja"});
+    const chancellorIsPlayer=polRole()==="kanselir";
+    const chancellorNpc={id:"kanselir-"+K.chancellor,name:K.chancellor,role:"kanselir",age:48};
+    h+=pgRow({ico:chancellorIsPlayer&&typeof portraitEmoji==="function"?portraitEmoji():(typeof npcAvatar==="function"?npcAvatar(chancellorNpc,48):"🏛️"),title:"Kanselir: "+(chancellorIsPlayer?C.name+" (KAU)":K.chancellor),sub:"tangan kanan raja"});
     h+=pgSec("Gubernur Kota");
     CITIES.forEach(c=>{
       const isMe=polRole()==="gubernur"&&C.polRole.city===c.id;
-      h+=pgRow({ico:c.ico,title:c.name,sub:"Gubernur: "+(isMe?C.name+" (KAU)":K.governors[c.id])});
+      const governorNpc={id:"gubernur-"+c.id+"-"+K.governors[c.id],name:K.governors[c.id],role:"gubernur",age:42};
+      h+=pgRow({ico:isMe&&typeof portraitEmoji==="function"?portraitEmoji():(typeof npcAvatar==="function"?npcAvatar(governorNpc,42):c.ico),title:c.name,sub:"Gubernur: "+(isMe?C.name+" (KAU)":K.governors[c.id])});
     });
     if(!K.king.isPlayer){
       h+=pgSec("Jalur Politik (18+)");
@@ -293,7 +298,7 @@ window.startCoup=function(){
        const K=ensureKingdom();
        if(res&&res.win){
          C.polRole={role:"raja"};
-         K.king={name:C.name,age:C.age,years:0,dynasty:"Wangsa "+(C.name.split(" ").pop()||C.name),isPlayer:true};
+         K.king={id:"pemain-raja",name:C.name,female:C.female,appearance:C.appearance,role:"raja",age:C.age,years:0,dynasty:"Wangsa "+(C.name.split(" ").pop()||C.name),isPlayer:true};
          K.chancellor=randName(chance(0.4));
          C.reputation+=40;applyStats({happy:+15});
          kAddNews(`👑 KUDETA BERHASIL! ${C.name} naik takhta — lahirlah ${K.king.dynasty}!`);

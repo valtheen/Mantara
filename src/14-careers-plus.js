@@ -182,13 +182,14 @@ function openEncounter(){
   const female=chance(0.5);
   const nm=randName(female);
   const job=rand(them.jobs);
+  const encountered={id:"jumpa-"+Math.random().toString(36).slice(2,9),name:nm,female,role:"kenalan",job,background:them.bg,age:Math.max(0,C.age+ri(-3,8)),isMage:/sihir|penyihir|arcane/i.test(job+" "+them.bg)};
   const dyn=encounterDynamic(myBg,them.bg);
   snapStats&&snapStats();
-  openChoice({ico:them.ico,prompt:`Kau bertemu <b>${nm}</b>, seorang ${job}.<br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">${dyn}</span>`,
+  openChoice({ico:typeof npcAvatar==="function"?npcAvatar(encountered,encountered.age,"npc-avatar--hero"):them.ico,prompt:`Kau bertemu <b>${nm}</b>, seorang ${job}.<br><span style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6)">${dyn}</span>`,
     cancel:true,
     choices:[
       {label:"🤝 Berkenalan",sub:"jadikan relasi",run:()=>{
-        const r=addRel("teman",{name:nm,female,bond:ri(35,55)});
+        const r=addRel("teman",{id:encountered.id,name:nm,female,bond:ri(35,55),appearance:encountered.appearance});r.ageOffset=encountered.age-C.age;
         // simpan latar utk profil
         if(typeof ensureProfile==="function"){const p=ensureProfile(r);p.job=job;p.background=them.bg;}
         applyStats({charm:+1,happy:+3});

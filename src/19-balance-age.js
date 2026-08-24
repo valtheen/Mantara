@@ -81,7 +81,7 @@
 // tiap kota: nama institusi, jurusan (major) dengan stat fokus & karir terkait
 const CITY_SCHOOLS={
   aetheria:{
-    name:"Kolese Tinggi Aurelia", ico:"👑", spec:"Bangsawan & Diplomasi",
+    name:"Kolese Tinggi Aurelia", ico:"👑", mark:"bangsawan", spec:"Bangsawan & Diplomasi",
     blurb:"Pusat pendidikan elit kerajaan. Tempat lahirnya diplomat, bangsawan, dan negarawan.",
     majors:[
       {id:"diplomacy", name:"Diplomasi & Tata Negara", ico:"🤝", stat:"charm",
@@ -93,7 +93,7 @@ const CITY_SCHOOLS={
     ],
   },
   saltmoor:{
-    name:"Guild Niaga Saltmoor", ico:"⚖️", spec:"Dagang & Pelayaran",
+    name:"Guild Niaga Saltmoor", ico:"⚖️", mark:"dagang", spec:"Dagang & Pelayaran",
     blurb:"Tempa saudagar ulung & nakhoda tangguh. Belajar dari denyut pelabuhan tersibuk.",
     majors:[
       {id:"trade", name:"Niaga & Akuntansi", ico:"💰", stat:"mind",
@@ -105,7 +105,7 @@ const CITY_SCHOOLS={
     ],
   },
   frostspire:{
-    name:"Akademi Arcanum Frostspire", ico:"🔮", spec:"Sihir & Arcane",
+    name:"Akademi Arcanum Frostspire", ico:"🔮", mark:"sihir", spec:"Sihir & Arcane",
     blurb:"Menara ilmu sihir paling disegani. Mana mengalir deras di udara beku.",
     majors:[
       {id:"elemental", name:"Sihir Elemental", ico:"🔥", stat:"mana",
@@ -117,7 +117,7 @@ const CITY_SCHOOLS={
     ],
   },
   thornvale:{
-    name:"Sanggar Rimba Whisperwood", ico:"🏹", spec:"Berburu & Survival",
+    name:"Sanggar Rimba Whisperwood", ico:"🏹", mark:"rimba", spec:"Berburu & Survival",
     blurb:"Sekolah alam liar. Bertahan hidup, berburu, & meramu obat dari hutan.",
     majors:[
       {id:"hunting", name:"Berburu & Memanah", ico:"🏹", stat:"might",
@@ -189,7 +189,8 @@ function openSchool(){
   // header + status (HTML utk prompt)
   const lvl=(typeof SCHOOL_LEVELS!=="undefined"&&tier>=0)?SCHOOL_LEVELS[tier]:null;
   const statusLine=s?`📚 ${tier<0?"Belum bersekolah":(lvl?`Jenjang ${lvl.name}`:"—")}${s.graduated&&s.graduated.length?` · lulus ${s.graduated.length} jenjang`:""}`:"";
-  let info=`<div class="sch-name">${sc.ico} ${sc.name}</div>
+  const schoolLogo=typeof schoolCrestHTML==="function"?schoolCrestHTML(sc.mark||"umum",2,C.cityId,sc.name):sc.ico;
+  let info=`<div class="sch-name">${schoolLogo} ${sc.name}</div>
     <div class="sch-spec">${sc.spec}</div>
     <div class="sch-blurb">${sc.blurb}</div>
     <div class="sch-status">${statusLine}</div>`;

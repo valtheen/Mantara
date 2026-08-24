@@ -283,7 +283,7 @@
       ensureRom(r); var st=stageOf(r);
       var chemLbl=r.chemistry>=70?"Menyala 🔥":r.chemistry>=45?"Hangat":"Datar";
       var h="<div class='pg-hero' style='text-align:center;padding:14px 12px;margin:2px 0 10px;background:linear-gradient(155deg,#2a1420,#16110c);border:1px solid #6e2a4a;border-radius:14px'>"
-        +"<div style='font-size:34px'>"+(r.female?"👰":"🤵")+"</div>"
+        +(typeof npcAvatar==="function"?npcAvatar(r,typeof relationAge==="function"?relationAge(r):Math.max(18,C.age),"npc-avatar--hero"):"<div style='font-size:34px'>"+(r.female?"👰":"🤵")+"</div>")
         +"<div style='font-size:16px;font-weight:700;color:#f0a0c0'>"+r.name+"</div>"
         +"<div style='font-size:11px;color:var(--arcane-glow)'>"+st.ico+" "+st.label+" · "+r.trait+"</div>"
         +"<div style='font-size:10.5px;color:var(--gold);margin-top:4px'>💘 Kimia: "+chemLbl+" ("+Math.round(r.chemistry)+")</div>"

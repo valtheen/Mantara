@@ -149,7 +149,7 @@
     var eff=effPerk(cat);
     var condCol=cond>=60?"var(--good)":(cond>=30?"var(--gold)":"var(--bad)");
     html+="<div class='pg-hero' style='text-align:center;padding:14px 12px;margin:2px 0 10px;background:linear-gradient(155deg,var(--card),var(--bg1));border:1px solid var(--line);border-radius:14px'>"
-      +"<div style='font-size:40px;line-height:1'>"+g.ico+"</div>"
+      +"<div style='font-size:40px;line-height:1'>"+(typeof mantaraGearIcon==="function"?mantaraGearIcon(cat,v?v.key:"none"):g.ico)+"</div>"
       +"<div style='font-size:16px;font-weight:700;color:var(--gold-bright);margin-top:6px'>"+(v?v.name:"—")+(plus>0?" <span style='color:var(--gold)'>+"+plus+"</span>":"")+"</div>"
       +(af?"<div style='font-size:11px;color:var(--arcane-glow)'>«"+af.name+"»</div>":"")
       +"<div style='font-size:11.5px;color:var(--parchment);margin-top:6px'>Stat: <b>"+perkStr(eff)+"</b>/tahun</div>"
@@ -184,7 +184,7 @@
       if(vr.key==="none") return;
       var isOwned=(C.gear[cat]===vr.key);
       var afford=(vr.price||0)===0||C.coin>=vr.price;
-      html+=pgRow({ico:g.ico,title:vr.name+(isOwned?" ✓":""),sub:(vr.price?"💰"+vr.price+" · ":"")+perkStr(vr.perk)+" · "+vr.desc,
+      html+=pgRow({ico:typeof mantaraGearIcon==="function"?mantaraGearIcon(cat,vr.key):g.ico,title:vr.name+(isOwned?" ✓":""),sub:(vr.price?"💰"+vr.price+" · ":"")+perkStr(vr.perk)+" · "+vr.desc,
         right:isOwned?"dipakai":(afford?"":"🔒"),
         dim:isOwned||!afford,
         on:(isOwned||!afford)?null:function(){ buyVariant(cat,vr.key); }});
@@ -202,7 +202,7 @@
     cats.forEach(function(cat){
       var g=GEAR_CATALOG[cat]; if(!g) return; if(g.arcane&&!C.isMage) return;
       var v=variantOf(cat); var plus=C.gearPlus[cat]||0; var af=C.gearAffix&&C.gearAffix[cat];
-      html+=pgRow({ico:g.ico,title:g.name,sub:(v?v.name:"—")+(plus>0?" +"+plus:"")+(af?" «"+af.name+"»":""),chev:true,
+      html+=pgRow({ico:typeof mantaraGearIcon==="function"?mantaraGearIcon(cat,v?v.key:"none"):g.ico,title:g.name,sub:(v?v.name:"—")+(plus>0?" +"+plus:"")+(af?" «"+af.name+"»":""),chev:true,
         right:"⚒️",on:function(){ if(typeof pushPage==="function") pushPage(gearSlotPage(cat)); }});
     });
     return html;
@@ -238,15 +238,29 @@
     items.forEach(function(it){
       var locked=C.age<(it.minAge||0);
       var afford=(it.price===0)||(C.coin>=it.price);
-      var parts=String(it.label||"").split(" ");
-      var ico=parts[0]; var title=parts.slice(1).join(" ")||it.label;
+      var ico=it.ico||"";var title=String(it.label||"");
+      if(!ico){
+        var probe=document.createElement("div");probe.innerHTML=title;
+        var first=probe.firstElementChild;
+        if(first&&first.matches("img,.func-icon,.glyph-icon,.m-ico,.wardrobe-glyph,.gear-variant-glyph,.school-crest")){
+          ico=first.outerHTML;first.remove();title=probe.innerHTML.trim();
+        }else{
+          var parts=title.split(" ");ico=parts.shift()||"";title=parts.join(" ")||String(it.label||"");
+        }
+      }
       html+=pgRow({ico:ico,title:title,sub:locked?("🔒 tersedia usia "+it.minAge+"+"):(it.sub||""),
         right:locked?"":(afford?"":"🔒"),
         dim:locked||!afford,
         on:(locked||!afford)?null:function(){
           try{ if(typeof snapStats==="function") snapStats(); }catch(e){}
           try{ it.run(); }catch(e2){}
-          try{ if(typeof recordActivity==="function") recordActivity(s.name+": "+it.label,function(){}); }catch(e3){}
+          try{
+            if(typeof recordActivity==="function"){
+              recordActivity("Kembali ke "+s.name,function(){
+                if(typeof openStore==="function")openStore(s.id);
+              });
+            }
+          }catch(e3){}
           setTimeout(refresh,60);
         }});
     });
