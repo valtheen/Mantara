@@ -2,7 +2,7 @@
   "name": "mantara",
   "version": "1.0.0",
   "private": true,
-  "description": "Mantara — Hikayat Dunia Sihir (iOS, Android, web). Sumber modular di src/, dibundel jadi satu file oleh scripts/bundle.js",
+  "description": "Mantara \u2014 Hikayat Dunia Sihir (iOS, Android, web). Sumber modular di src/, dibundel jadi satu file oleh scripts/bundle.js",
   "scripts": {
     "start": "npm run build && serve www -l 3000 --no-clipboard",
     "dev": "npm run build && serve www -l 3000 --no-clipboard",
@@ -18,7 +18,10 @@
     "release:check": "node scripts/release-check.js",
     "release:prepare": "bash scripts/prepare-release.sh",
     "bundle": "node scripts/bundle.js",
-    "bundle:check": "node scripts/bundle.js --check"
+    "bundle:check": "node scripts/bundle.js --check",
+    "qa": "node qa/1-smoke.js && node qa/4-saveload.js && node qa/5-a11y.js && node qa/6-lifespan.js && node qa/7-kota.js && node qa/8-world-regression.js",
+    "qa:full": "node qa/1-smoke.js && node qa/3-crawl.js && node qa/4-saveload.js && node qa/5-a11y.js && node qa/6-lifespan.js && node qa/2-soak.js 10 130 5 && node qa/7-kota.js && node qa/8-world-regression.js",
+    "qa:soak": "node qa/2-soak.js"
   },
   "dependencies": {
     "@capacitor/android": "^7.2.0",
@@ -32,7 +35,8 @@
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.2.0",
-    "serve": "^14.2.6"
+    "serve": "^14.2.6",
+    "playwright": "^1.49.0"
   },
   "capacitor": {
     "platforms": [

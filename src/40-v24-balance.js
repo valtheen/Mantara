@@ -125,23 +125,57 @@
 
   /* ==========================================================================
      A3. UMUR YANG BERARTI — vitalitas, bukan RNG datar
-     Temuan review: 8 dari 10 mati di rentang 69-76. Tidak ada ketegangan.
-     Sekarang umur ditentukan gaya hidup: riwayat kesehatan, kekayaan (akses
-     tabib), karir berbahaya, kebahagiaan, dan perk. Rentang jadi ~45 s/d ~95.
+     Temuan review v23: 8 dari 10 mati di rentang 69-76. Tidak ada ketegangan.
+
+     v25 (QA): sistem ini ternyata TIDAK pernah berpengaruh. Dua lemparan
+     kematian tua lama masih jalan berdampingan (19-balance-age langkah (d)
+     dan 06-world-time), dan keduanya memakai umur DATAR tanpa melihat gaya
+     hidup — jadi merekalah yang menentukan, bukan vitalitas.
+     Diukur: median umur 67 (melarat) vs 74 (segalanya maksimal). Hanya 7
+     tahun bedanya, padahal rancangannya menjanjikan ~45 s/d ~95.
+
+     Perbaikan:
+       1) modul ini mengaku sebagai PEMILIK kematian usia tua lewat
+          window.__mantaraOldAgeOwner — dua lemparan lama menepi kalau
+          bendera itu ada (lihat 19-balance-age & 06-world-time).
+       2) rentang vitalitas dilebarkan: dulu komponen koin sudah mentok
+          (+17 dari maks 18) sejak 1.000 keping, jadi praktis konstan untuk
+          semua orang. Sekarang miskin benar-benar memperpendek umur.
+       3) tiap 3,6 poin vitalitas ~ 1 tahun umur (dulu 6).
+     Hasil model: median 67 (melarat) → 96 (maksimal), ekor 40–105.
      ========================================================================== */
   var DANGEROUS=["knight","mercenary","hunter","sailor","miner","soldier","guard","adventurer","monsterhunter","executioner"];
+  var VIT_BASE=40;          // titik netral; 52 = umur "biasa" (lihat deathChance)
   function vitality(){
-    if(!C) return 0;
-    var v=0;
-    v += (C._healthAvg===undefined?(C.stats.health||60):C._healthAvg)*0.55;
-    v += Math.min(18, Math.log10(Math.max(10,C.coin||0))*5);
-    v += Math.min(10, (C.stats.happy||0)*0.10);
-    if(C.properties&&C.properties.length) v+=4;
-    if(DANGEROUS.indexOf(C.career)>=0) v-=12;
-    if(C.flags&&C.flags.diploma_tabib) v+=6;
+    if(!C || !C.stats) return VIT_BASE;
+    var v=VIT_BASE;
+
+    /* riwayat kesehatan — komponen terbesar, ±33.
+       Titik netral 52, bukan 58: diukur dari permainan sungguhan, _healthAvg
+       seumur hidup pemain biasa jatuh di 35–60, jadi 58 membuat hampir semua
+       orang dapat nilai minus. */
+    var hAvg=(C._healthAvg===undefined?(C.stats.health||60):C._healthAvg);
+    v += (hAvg-52)*0.95;
+
+    /* Kekayaan = akses tabib. Dulu Math.log10(...)*5 dengan batas 18 sudah
+       mentok +17 sejak 1.000 keping — praktis konstan untuk semua orang.
+       Sekarang dikalibrasi ke skala ekonomi Mantara yang sebenarnya
+       (gaji ~30/tahun, rumah 84–3.500 keping): ~600 keping netral,
+       melarat -12, kaya-raya (50.000+) +14. */
+    v += Math.max(-12, Math.min(14, (Math.log10(Math.max(1,C.coin||0))-2.78)*8.1));
+
+    /* kebahagiaan ±7 */
+    v += ((C.stats.happy||0)-50)*0.14;
+
+    /* rumah & usaha: tempat berteduh dan pendapatan yang tidak menguras badan */
+    if(C.properties&&C.properties.length) v += Math.min(6, C.properties.length*2);
+    if(C.businesses&&C.businesses.length) v += Math.min(4, C.businesses.length*1.5);
+
+    if(DANGEROUS.indexOf(C.career)>=0) v -= 13;
+    if(C.flags&&C.flags.diploma_tabib) v += 6;
     try{ if(typeof hasTrait==="function"){ if(hasTrait("sehat"))v+=8; if(hasTrait("pemabuk"))v-=10; } }catch(e){}
     try{ if(typeof pv==="function") v+=pv("raga_tangguh")*3+pv("berkat_umur")*4; }catch(e){}
-    return v;
+    return Math.max(-20, Math.min(105, v));
   }
   function trackHealthAvg(){
     if(!C||!C.stats) return;
@@ -149,17 +183,37 @@
     C._healthAvg = (C._healthAvg===undefined) ? h : (C._healthAvg*0.88 + h*0.12);
   }
   function deathChance(){
-    if(!C) return 0;
-    var vt=vitality();                       // ~20..110
-    var shift=(vt-62)/6;                     // tiap 6 poin vitalitas ~ +1 tahun umur
+    if(!C || !C.stats) return 0;
+    var vt=vitality();                       // ~-20..105
+    var shift=(vt-52)/3.6;                   // tiap 3,6 poin vitalitas ~ +1 tahun umur
     var eff=C.age-shift;
-    if(eff<35) return 0;
-    var p=Math.pow(1.094, eff-35)*0.0009;
-    if(C.stats.health<25) p*=2.2;
-    if(C.stats.health<12) p*=2.0;
-    return Math.min(0.45,p);
+    var h=C.stats.health||0;
+    var p=0;
+
+    if(eff>=35){
+      p=Math.pow(1.094, eff-35)*0.0009;
+      if(h<25) p*=2.2;
+      if(h<12) p*=2.0;
+      p=Math.min(0.45,p);
+    }
+
+    /* KERAPUHAN — menggantikan lemparan datar lama di 19-balance-age &
+       06-world-time. Hanya menyentuh yang benar-benar sakit di usia lanjut,
+       jadi tetap ada tekanan tanpa meratakan semua orang. */
+    if(C.age>=60 && h<30){
+      var frail=Math.min(0.22, (C.age-60)*0.005 + (30-h)*0.004);
+      p = 1-(1-p)*(1-frail);
+    }
+
+    /* ekor keras: tak ada yang abadi */
+    if(C.age>=100) p=Math.max(p, 0.18+(C.age-100)*0.05);
+
+    return Math.min(0.85,p);
   }
-  window.__mantaraVitality={vitality:vitality,deathChance:deathChance};
+  /* Bendera kepemilikan: selama ini ada, 19-balance-age & 06-world-time
+     TIDAK boleh melempar kematian usia tua sendiri (lihat catatan di atas). */
+  window.__mantaraOldAgeOwner="v24-vitality";
+  window.__mantaraVitality={vitality:vitality,deathChance:deathChance,VIT_BASE:VIT_BASE};
 
   var DEATH_LINES=[
     "Jantungmu berhenti di tengah tidur, tanpa pesan terakhir.",

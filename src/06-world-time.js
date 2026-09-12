@@ -212,7 +212,9 @@ function processYearly(){
   if(C._bizRisk)log(C.age,C._bizRisk,"e-bad");
   if(C.age>50)applyStats({health:-ri(1,3)});
   if(C.age>65)applyStats({health:-ri(3,6)});
-  if(C.age>60&&chance((C.age-60)*0.015)&&C.stats.health<35){die("Usia tua menjemputmu.");return;}
+  // Lemparan usia tua warisan v6. Menepi kalau sistem vitalitas aktif —
+  // kerapuhan sekarang ditangani deathChance() di 40-v24-balance (QA v25).
+  if(!window.__mantaraOldAgeOwner && C.age>60&&chance((C.age-60)*0.015)&&C.stats.health<35){die("Usia tua menjemputmu.");return;}
   if(typeof processActiveRentals==="function")C._rentQueue=processActiveRentals();
 }
 

@@ -34,10 +34,10 @@
       var(--bg0);
     color:var(--parchment);
     font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-    height:100vh;display:flex;justify-content:center;overflow:hidden;
+    height:100vh;height:100dvh;display:flex;justify-content:center;overflow:hidden;
   }
   .phone{
-    width:100%;max-width:430px;height:100vh;
+    width:100%;max-width:430px;height:100vh;height:100dvh;
     display:flex;flex-direction:column;position:relative;z-index:1;
   }
   .ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
@@ -112,8 +112,13 @@
   .tile:active{transform:scale(.97);}
   .tile:hover{border-color:var(--gold);}
   .tile .ti{font-size:24px;display:block;margin-bottom:6px;}
-  .tile .tn{font-size:13px;font-weight:600;}
-  .tile .td{font-size:9.5px;color:var(--ink-soft);filter:brightness(1.7);margin-top:3px;line-height:1.35;}
+  /* QA v25: .tn & .td dulu INLINE — judul dan keterangan menyambung jadi satu
+     baris ("Wabah PesHarga naik, nyawa terancam"), dan margin-top pada .td
+     tidak berpengaruh sama sekali. Tersembunyi selama ini karena di tile
+     2 kolom judul panjang kebetulan memenuhi barisnya; baru kelihatan jelas
+     di tile .fullrow dan saat judulnya pendek. */
+  .tile .tn{display:block;font-size:13px;font-weight:600;line-height:1.32;}
+  .tile .td{display:block;font-size:9.5px;color:var(--ink-soft);filter:brightness(1.7);margin-top:4px;line-height:1.45;}
   .tile.locked{opacity:.45;}
   .tile.arcane{border-color:var(--line2);}
   .tile.arcane:hover{border-color:var(--arcane);}
@@ -187,7 +192,7 @@
   .mico{font-size:28px;text-align:center;display:block;margin-bottom:10px;}
   .mprompt{font-size:14.5px;line-height:1.55;margin-bottom:15px;text-align:center;}
   .mchoices{display:flex;flex-direction:column;gap:8px;}
-  .mchoice{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:11px;
+  .mchoice{min-height:44px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:11px;
     padding:12px 13px;text-align:left;cursor:pointer;color:var(--parchment);font-family:inherit;
     font-size:13px;transition:transform .1s,background .15s,border-color .15s;}
   .mchoice:active{transform:scale(.98);}
@@ -421,7 +426,8 @@
   .continue-btn{background:linear-gradient(135deg,#2e7d52,#1a5e3a)!important;
     border:1px solid rgba(120,220,160,.4)!important;margin-bottom:14px;}
   .save-row{display:flex;gap:8px;margin:10px 2px 0;}
-  .save-btn{flex:1;background:rgba(91,110,225,.12);border:1px solid var(--line2);
+  /* QA v25: ambang sentuh minimum 44px (pedoman iOS/Android). */
+  .save-btn{flex:1;min-height:44px;background:rgba(91,110,225,.12);border:1px solid var(--line2);
     border-radius:10px;padding:9px;color:var(--arcane-glow);font-family:inherit;font-size:12px;
     font-weight:600;cursor:pointer;transition:transform .1s;}
   .save-btn:active{transform:scale(.96);}
@@ -561,8 +567,11 @@
     width:calc(100% - 32px);max-width:398px;z-index:45;
     background:linear-gradient(160deg,#2f2744,#1c1626 75%);border:1px solid rgba(139,156,255,.4);
     border-radius:16px;padding:13px 14px;box-shadow:0 14px 44px rgba(0,0,0,.6);
-    opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;}
-  .guide-pop.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+    /* QA v25: dulu hanya opacity:0 — elemennya tetap ada di pohon
+       aksesibilitas, jadi pembaca layar membacakan panduan yang tak terlihat.
+       visibility:hidden menyembunyikannya sungguhan. */
+    opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s,transform .35s,visibility .35s;}
+  .guide-pop.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);pointer-events:auto;}
   .gp-head{display:flex;align-items:center;gap:9px;margin-bottom:6px;}
   .gp-ico{font-size:24px;filter:drop-shadow(0 0 7px rgba(240,192,64,.5));}
   .gp-title{font-size:13.5px;font-weight:700;color:var(--gold-bright);}
@@ -571,9 +580,9 @@
   .gp-btns{display:flex;gap:8px;margin-top:10px;}
   .gp-ok{flex:1.6;padding:9px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--arcane),#3f4da8);
     color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
-  .gp-off{flex:1;padding:9px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid var(--line);
+  .gp-off{flex:1;min-height:44px;padding:9px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid var(--line);
     color:var(--ink-soft);filter:brightness(1.6);font-family:inherit;font-size:10.5px;cursor:pointer;}
-  .tut-help{position:absolute;left:14px;top:calc(var(--app-safe-top) + 10px);width:34px;height:34px;border-radius:50%;
+  .tut-help{position:absolute;left:14px;top:calc(var(--app-safe-top) + 10px);width:44px;height:44px;border-radius:50%;
     background:rgba(184,134,11,.14);border:1px solid rgba(240,192,64,.35);color:var(--gold-bright);font-size:17px;cursor:pointer;
     display:flex;align-items:center;justify-content:center;transition:transform .1s,box-shadow .15s;}
   .tut-help:active{transform:scale(.92);}
@@ -700,6 +709,13 @@
   /* Arena kini lokasi dunia (Colosseum Aurelia) — FAB arena disembunyikan. */
   #arenaFab{display:none !important;}
 
+  /* Readable character details and consistent keyboard focus. */
+  .charcard .portrait{width:66px;height:66px;border-radius:18px;}
+  .cname{overflow-wrap:anywhere;line-height:1.3;}
+  .view{min-height:0;overscroll-behavior-y:contain;}
+  button:focus-visible,select:focus-visible,[tabindex]:focus-visible{
+    outline:2px solid #c8a1ef;outline-offset:3px;
+  }
 </style>
 <!-- MANTARA_MOBILE_PACK -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -2422,7 +2438,9 @@ function processYearly(){
   if(C._bizRisk)log(C.age,C._bizRisk,"e-bad");
   if(C.age>50)applyStats({health:-ri(1,3)});
   if(C.age>65)applyStats({health:-ri(3,6)});
-  if(C.age>60&&chance((C.age-60)*0.015)&&C.stats.health<35){die("Usia tua menjemputmu.");return;}
+  // Lemparan usia tua warisan v6. Menepi kalau sistem vitalitas aktif —
+  // kerapuhan sekarang ditangani deathChance() di 40-v24-balance (QA v25).
+  if(!window.__mantaraOldAgeOwner && C.age>60&&chance((C.age-60)*0.015)&&C.stats.health<35){die("Usia tua menjemputmu.");return;}
   if(typeof processActiveRentals==="function")C._rentQueue=processActiveRentals();
 }
 
@@ -5226,8 +5244,15 @@ function confirmDeleteSave(){
     if(C.age<13 && C.stats.health<35)C.stats.health=35;
     else if(C.age<18 && C.stats.health<15)C.stats.health=15;
 
-    // (d) KEMATIAN USIA TUA realistis & bertahap (mulai relevan ~65+)
-    if(C.age>=65){
+    // (d) KEMATIAN USIA TUA — hanya dipakai kalau tidak ada sistem vitalitas.
+    //
+    // QA v25: lemparan ini memakai umur DATAR, tanpa melihat kesehatan,
+    // kekayaan, atau pilihan hidup. Karena ia berjalan berdampingan dengan
+    // sistem vitalitas v24, dialah yang praktis menentukan umur semua orang —
+    // dan itulah sebabnya median umur melarat (67) hampir sama dengan median
+    // umur kaya-raya (74). Sekarang ia menepi kalau 40-v24-balance memasang
+    // bendera kepemilikannya. Tetap ada sebagai jaring pengaman.
+    if(C.age>=65 && !window.__mantaraOldAgeOwner){
       let p=(C.age-65)*0.012;          // 65→0% naik ke ~30% di usia 90
       if(C.age>=85)p+=0.05;
       if(C.stats.health<25)p+=0.10;    // sakit mempercepat
@@ -8537,7 +8562,8 @@ function renderKarir(){
     html+=`<div class="sechead">📋 Lowongan Kerja</div>
       <p style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 10px;line-height:1.5;">Tiap profesi punya jenjang pangkat & <b>keahlian profesinya sendiri</b> untuk dilatih. Stat & ijazah membuka lowongan lebih baik.</p>
       <div class="tiles">`;
-    CAREERS.filter(c=>!c.arcane||C.isMage).forEach(c=>{
+    /* v25: Jalan Langka (c.rare) tidak pernah tampil di daftar biasa. */
+    CAREERS.filter(c=>(!c.arcane||C.isMage)&&!c.rare).forEach(c=>{
       const ok=c.req(C);
       html+=`<div class="tile ${ok?'':'locked'} ${c.arcane?'arcane':''}" ${ok?`onclick="applyCareer('${c.id}');renderKarir()"`:''}>
         <span class="ti">${c.ico}</span><span class="tn">${c.name}${c.shady?' 🕶️':''}</span>
@@ -8582,7 +8608,7 @@ window.jobAskPromotion=function(){
   }
 };
 window.jobOpenListings=function(){
-  const eligible=CAREERS.filter(c=>(!c.arcane||C.isMage)&&c.id!==C.career);
+  const eligible=CAREERS.filter(c=>(!c.arcane||C.isMage)&&!c.rare&&c.id!==C.career);
   openChoice({ico:"📋",prompt:"<b>Lowongan Kerja</b><br><span style='font-size:11px;color:var(--ink-soft);filter:brightness(1.6)'>Pindah karir me-reset jenjang & keahlian profesi.</span>",
     choices:eligible.map(c=>{
       const ok=c.req(C);
@@ -9283,7 +9309,7 @@ window.jobOpenListings=function(){
     let h=pgNote("Tiap profesi punya jenjang pangkat, gaya & keahlian sendiri. Pindah karir me-reset jenjangmu.");
     const groups=[["⚔️ Jalur Tempur","combat"],["🔮 Jalur Arcane","arcane"],["🎭 Jalur Sosial","social"],["🌾 Jalur Kriya","labor"]];
     groups.forEach(g=>{
-      const list=CAREERS.filter(c=>(!c.arcane||C.isMage)&&c.id!==C.career&&(typeof jobClassOf==="function"?jobClassOf(c.id)===g[1]:true));
+      const list=CAREERS.filter(c=>(!c.arcane||C.isMage)&&!c.rare&&c.id!==C.career&&(typeof jobClassOf==="function"?jobClassOf(c.id)===g[1]:true));
       if(!list.length)return;
       h+=pgSec(g[0]);
       list.forEach(c=>{
@@ -9982,7 +10008,10 @@ window.openTraitsPage=function(){
       const el=document.querySelector("#viewHidup .charcard .cinfo");
       if(el&&!el.querySelector(".trait-chips")){
         const chips=C.traits.map(id=>{const t=traitOf(id);return t?`${t.ico} ${t.name}`:"";}).join(" · ");
-        el.insertAdjacentHTML("beforeend",`<div class="cage trait-chips" onclick="openTraitsPage()" style="color:var(--gold);cursor:pointer">${chips} ›</div>`);
+        /* QA v25: dulu barisnya cuma setinggi 13px — jauh di bawah ambang
+           sentuh 44px, sulit ditekan di ponsel. Sekarang dibuat tombol
+           sungguhan dengan tinggi minimum & area sentuh layak. */
+        el.insertAdjacentHTML("beforeend",`<button type="button" class="cage trait-chips" onclick="openTraitsPage()" aria-label="Lihat semua perangai" style="display:flex;align-items:center;justify-content:flex-start;gap:4px;width:100%;min-height:44px;padding:6px 8px;margin-top:2px;background:none;border:0;text-align:left;color:var(--gold);cursor:pointer;font:inherit">${chips} ›</button>`);
       }
     }catch(e){}
   };
@@ -11218,7 +11247,34 @@ function afterLoad(){
 }
 if(typeof loadSlot==="function"){var _tutLS=loadSlot;loadSlot=function(){var r=_tutLS.apply(this,arguments);try{afterLoad();}catch(e){}return r;};}
 if(typeof loadGame==="function"){var _tutLG=loadGame;loadGame=function(){var r=_tutLG.apply(this,arguments);try{afterLoad();}catch(e){}return r;};}
-if(typeof restart==="function"){var _tutRS=restart;restart=function(){try{hideGuide();}catch(e){}return _tutRS.apply(this,arguments);};}
+if(typeof restart==="function"){var _tutRS=restart;restart=function(){try{hideAllTut();}catch(e){}return _tutRS.apply(this,arguments);};}
+
+/* QA v25: kalau pemain mati saat popup "Tahap Hidup" atau kartu tur masih
+   terbuka, keduanya menumpuk di atas layar epitaf — dan bertahan sampai
+   layar mulai baru. Ditemukan lewat uji otomatis (die() pada usia 27:
+   teks "Masa Bayi (0-5)" ikut muncul di batu nisan).
+   Sekarang kematian menutup semua lapisan panduan. */
+function hideAllTut(){
+  try{hideGuide();}catch(e){}
+  try{ active=false; if(ov)ov.classList.remove("show"); }catch(e){}
+}
+window.__mantaraHideTut=hideAllTut;
+
+/* Semua lapisan yang boleh menutupi batu nisan disapu di satu tempat.
+   Selain panduan, modal kejadian juga ikut: die() sering dipanggil DARI
+   dalam resolusi pilihan (mis. "Aktivitas berakibat fatal"), sehingga
+   modalnya masih terbuka saat layar kematian dilukis di belakangnya. */
+function clearOverlaysForDeath(){
+  hideAllTut();
+  try{ if(typeof mpCloseAll==="function") mpCloseAll(); }catch(e){}
+  try{
+    var m=document.getElementById("modal");
+    if(m) m.classList.remove("show");
+    if(typeof pendingChoice!=="undefined") pendingChoice=null;
+  }catch(e){}
+  try{ for(var i=0;i<8;i++){ if(typeof popPage==="function") popPage(); else break; } }catch(e){}
+}
+if(typeof die==="function"){var _tutDie=die;window.die=die=function(){try{clearOverlaysForDeath();}catch(e){}return _tutDie.apply(this,arguments);};}
 
 // tiap tahun berlalu -> cek tahap hidup baru (di-defer agar membungkus patch lain)
 function hookYear(){
@@ -14362,7 +14418,20 @@ else document.addEventListener("DOMContentLoaded",function(){setTimeout(boot,250
   window.openRomance=function(relId){
     if(typeof pushPage!=="function") return;
     pushPage({title:"Hubungan", render:function(){
-      var r=relById(relId); if(!r) return pgNote("Hubungan berakhir.");
+      /* QA v25: dulu ini menghasilkan halaman kosong tanpa jalan keluar
+         selain panah kembali — misalnya kalau pasangan wafat sementara
+         halamannya masih terbuka. Sekarang keadaan kosongnya menjelaskan
+         apa yang terjadi dan menawarkan langkah berikutnya. */
+      var r=relById(relId);
+      if(!r){
+        return "<div style='text-align:center;padding:26px 18px'>"
+          +"<div style='font-size:34px;opacity:.55'>🕯️</div>"
+          +"<div style='font-size:14px;font-weight:700;margin-top:8px'>Hubungan ini sudah berakhir</div>"
+          +"<div style='font-size:11.5px;color:var(--ink-soft);filter:brightness(1.7);margin-top:6px;line-height:1.7'>"
+          +"Ia tidak lagi ada dalam hidupmu — wafat, pergi, atau kalian berpisah.</div>"
+          +"<button class='mchoice' style='margin-top:16px' onclick=\"try{popPage();}catch(e){};try{switchTab('Relasi');}catch(e){}\">"
+          +"↩ Kembali ke Relasi</button></div>";
+      }
       ensureRom(r); var st=stageOf(r);
       var chemLbl=r.chemistry>=70?"Menyala 🔥":r.chemistry>=45?"Hangat":"Datar";
       var h="<div class='pg-hero' style='text-align:center;padding:14px 12px;margin:2px 0 10px;background:linear-gradient(155deg,#2a1420,#16110c);border:1px solid #6e2a4a;border-radius:14px'>"
@@ -14563,23 +14632,57 @@ else document.addEventListener("DOMContentLoaded",function(){setTimeout(boot,250
 
   /* ==========================================================================
      A3. UMUR YANG BERARTI — vitalitas, bukan RNG datar
-     Temuan review: 8 dari 10 mati di rentang 69-76. Tidak ada ketegangan.
-     Sekarang umur ditentukan gaya hidup: riwayat kesehatan, kekayaan (akses
-     tabib), karir berbahaya, kebahagiaan, dan perk. Rentang jadi ~45 s/d ~95.
+     Temuan review v23: 8 dari 10 mati di rentang 69-76. Tidak ada ketegangan.
+
+     v25 (QA): sistem ini ternyata TIDAK pernah berpengaruh. Dua lemparan
+     kematian tua lama masih jalan berdampingan (19-balance-age langkah (d)
+     dan 06-world-time), dan keduanya memakai umur DATAR tanpa melihat gaya
+     hidup — jadi merekalah yang menentukan, bukan vitalitas.
+     Diukur: median umur 67 (melarat) vs 74 (segalanya maksimal). Hanya 7
+     tahun bedanya, padahal rancangannya menjanjikan ~45 s/d ~95.
+
+     Perbaikan:
+       1) modul ini mengaku sebagai PEMILIK kematian usia tua lewat
+          window.__mantaraOldAgeOwner — dua lemparan lama menepi kalau
+          bendera itu ada (lihat 19-balance-age & 06-world-time).
+       2) rentang vitalitas dilebarkan: dulu komponen koin sudah mentok
+          (+17 dari maks 18) sejak 1.000 keping, jadi praktis konstan untuk
+          semua orang. Sekarang miskin benar-benar memperpendek umur.
+       3) tiap 3,6 poin vitalitas ~ 1 tahun umur (dulu 6).
+     Hasil model: median 67 (melarat) → 96 (maksimal), ekor 40–105.
      ========================================================================== */
   var DANGEROUS=["knight","mercenary","hunter","sailor","miner","soldier","guard","adventurer","monsterhunter","executioner"];
+  var VIT_BASE=40;          // titik netral; 52 = umur "biasa" (lihat deathChance)
   function vitality(){
-    if(!C) return 0;
-    var v=0;
-    v += (C._healthAvg===undefined?(C.stats.health||60):C._healthAvg)*0.55;
-    v += Math.min(18, Math.log10(Math.max(10,C.coin||0))*5);
-    v += Math.min(10, (C.stats.happy||0)*0.10);
-    if(C.properties&&C.properties.length) v+=4;
-    if(DANGEROUS.indexOf(C.career)>=0) v-=12;
-    if(C.flags&&C.flags.diploma_tabib) v+=6;
+    if(!C || !C.stats) return VIT_BASE;
+    var v=VIT_BASE;
+
+    /* riwayat kesehatan — komponen terbesar, ±33.
+       Titik netral 52, bukan 58: diukur dari permainan sungguhan, _healthAvg
+       seumur hidup pemain biasa jatuh di 35–60, jadi 58 membuat hampir semua
+       orang dapat nilai minus. */
+    var hAvg=(C._healthAvg===undefined?(C.stats.health||60):C._healthAvg);
+    v += (hAvg-52)*0.95;
+
+    /* Kekayaan = akses tabib. Dulu Math.log10(...)*5 dengan batas 18 sudah
+       mentok +17 sejak 1.000 keping — praktis konstan untuk semua orang.
+       Sekarang dikalibrasi ke skala ekonomi Mantara yang sebenarnya
+       (gaji ~30/tahun, rumah 84–3.500 keping): ~600 keping netral,
+       melarat -12, kaya-raya (50.000+) +14. */
+    v += Math.max(-12, Math.min(14, (Math.log10(Math.max(1,C.coin||0))-2.78)*8.1));
+
+    /* kebahagiaan ±7 */
+    v += ((C.stats.happy||0)-50)*0.14;
+
+    /* rumah & usaha: tempat berteduh dan pendapatan yang tidak menguras badan */
+    if(C.properties&&C.properties.length) v += Math.min(6, C.properties.length*2);
+    if(C.businesses&&C.businesses.length) v += Math.min(4, C.businesses.length*1.5);
+
+    if(DANGEROUS.indexOf(C.career)>=0) v -= 13;
+    if(C.flags&&C.flags.diploma_tabib) v += 6;
     try{ if(typeof hasTrait==="function"){ if(hasTrait("sehat"))v+=8; if(hasTrait("pemabuk"))v-=10; } }catch(e){}
     try{ if(typeof pv==="function") v+=pv("raga_tangguh")*3+pv("berkat_umur")*4; }catch(e){}
-    return v;
+    return Math.max(-20, Math.min(105, v));
   }
   function trackHealthAvg(){
     if(!C||!C.stats) return;
@@ -14587,17 +14690,37 @@ else document.addEventListener("DOMContentLoaded",function(){setTimeout(boot,250
     C._healthAvg = (C._healthAvg===undefined) ? h : (C._healthAvg*0.88 + h*0.12);
   }
   function deathChance(){
-    if(!C) return 0;
-    var vt=vitality();                       // ~20..110
-    var shift=(vt-62)/6;                     // tiap 6 poin vitalitas ~ +1 tahun umur
+    if(!C || !C.stats) return 0;
+    var vt=vitality();                       // ~-20..105
+    var shift=(vt-52)/3.6;                   // tiap 3,6 poin vitalitas ~ +1 tahun umur
     var eff=C.age-shift;
-    if(eff<35) return 0;
-    var p=Math.pow(1.094, eff-35)*0.0009;
-    if(C.stats.health<25) p*=2.2;
-    if(C.stats.health<12) p*=2.0;
-    return Math.min(0.45,p);
+    var h=C.stats.health||0;
+    var p=0;
+
+    if(eff>=35){
+      p=Math.pow(1.094, eff-35)*0.0009;
+      if(h<25) p*=2.2;
+      if(h<12) p*=2.0;
+      p=Math.min(0.45,p);
+    }
+
+    /* KERAPUHAN — menggantikan lemparan datar lama di 19-balance-age &
+       06-world-time. Hanya menyentuh yang benar-benar sakit di usia lanjut,
+       jadi tetap ada tekanan tanpa meratakan semua orang. */
+    if(C.age>=60 && h<30){
+      var frail=Math.min(0.22, (C.age-60)*0.005 + (30-h)*0.004);
+      p = 1-(1-p)*(1-frail);
+    }
+
+    /* ekor keras: tak ada yang abadi */
+    if(C.age>=100) p=Math.max(p, 0.18+(C.age-100)*0.05);
+
+    return Math.min(0.85,p);
   }
-  window.__mantaraVitality={vitality:vitality,deathChance:deathChance};
+  /* Bendera kepemilikan: selama ini ada, 19-balance-age & 06-world-time
+     TIDAK boleh melempar kematian usia tua sendiri (lihat catatan di atas). */
+  window.__mantaraOldAgeOwner="v24-vitality";
+  window.__mantaraVitality={vitality:vitality,deathChance:deathChance,VIT_BASE:VIT_BASE};
 
   var DEATH_LINES=[
     "Jantungmu berhenti di tengah tidur, tanpa pesan terakhir.",
@@ -16129,11 +16252,17 @@ Mantara.module("bestia", function(M){
     var tahap = TAHAP[p.level-1] || "?";
     U.anim("win", {text:"TINGKAT "+p.level});
     U.music("triumph");
-    var buka = "";
-    if(p.level===m.ride)      buka = " — kini bisa <b>ditunggangi</b>!";
-    else if(p.level===3)      buka = " — kini <b>ikut bertarung</b> bersamamu!";
-    else if(p.level===m.fly)  buka = " — kini bisa <b>TERBANG</b>!";
-    else if(p.level===5)      buka = " — kini bergelar <b>"+m.gelar+"</b>, dan akan diingat wangsamu.";
+    /* QA v25: dulu rantai else-if ini menelan kemampuan yang terbuka
+       bersamaan. Naga & phoenix (ride:3) yang mencapai tingkat 3 hanya
+       diberi tahu "bisa ditunggangi" — padahal ia juga mulai ikut bertarung.
+       Tingkat 2 mereka bahkan tidak mengumumkan apa pun. Sekarang semua
+       yang terbuka pada tingkat itu disebutkan. */
+    var buka_ = [];
+    if(p.level===m.ride)  buka_.push("bisa <b>ditunggangi</b>");
+    if(p.level===3)       buka_.push("<b>ikut bertarung</b> bersamamu");
+    if(p.level===m.fly)   buka_.push("bisa <b>TERBANG</b>");
+    if(p.level===5)       buka_.push("bergelar <b>"+m.gelar+"</b> dan akan diingat wangsamu");
+    var buka = buka_.length ? (" — kini " + buka_.join(", ") + "!") : "";
     U.log("🐾 "+def.ico+" "+p.name+" tumbuh jadi "+tahap+buka, "e-epic");
     if(p.level===5){ p.gelar = m.gelar; if(!C._bestiaLegends) C._bestiaLegends=[]; }
   }
@@ -16962,7 +17091,7 @@ Mantara.module("langit", function(M){
       .course-glyph,.business-glyph{width:48px;height:48px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;color:#f0c64f;background:linear-gradient(145deg,rgba(55,41,27,.98),rgba(24,19,27,.98));border:1px solid rgba(240,192,64,.46);box-shadow:inset 0 0 14px rgba(240,192,64,.07),0 4px 12px rgba(0,0,0,.2)}.course-glyph .func-icon--course,.business-glyph .func-icon--business{width:31px;height:31px;filter:drop-shadow(0 0 4px currentColor)}.course-glyph--ironFist{color:#e09465}.course-glyph--bearGrapple{color:#c5a36d}.course-glyph--windBow{color:#83c7d0}.course-glyph--martialMeditation,.course-glyph--manaMeditation{color:#aaa6f4}.course-glyph--fireFlow{color:#ee856c}.course-glyph--healingFlow{color:#84cda0}.course-glyph--illusionFlow{color:#dc91bd}.course-glyph--runeFlow{color:#8faeff}.business-glyph--cattle{color:#d3a66f}.business-glyph--farm{color:#8fc878}.business-glyph--shop{color:#efc64f}.business-glyph--tavern{color:#da9a68}.business-glyph--caravan{color:#8fc8d4}.assetico>.business-glyph{width:48px;height:48px}.pg-ico>.course-glyph{width:42px;height:42px}.pg-ico>.course-glyph .func-icon--course{width:27px;height:27px}.subpill-ico .func-icon--relationship{width:20px;height:20px;color:#e2a2c2;filter:drop-shadow(0 0 4px rgba(226,130,178,.36))}\
       @media(max-width:390px){.course-glyph,.business-glyph{width:44px;height:44px}.course-glyph .func-icon--course,.business-glyph .func-icon--business{width:28px;height:28px}}';
     st.textContent+='\
-      .topbar{padding:calc(10px + var(--app-safe-top)) 14px 11px;min-height:calc(var(--app-safe-top) + 98px)}.topbar .game-title{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:50px;font-size:18px;line-height:1.2;white-space:nowrap}.topbar .logo-mark{display:inline-flex;align-items:center;justify-content:center;margin-right:0}.topbar .logo-mark img{height:1.3em!important;width:auto}.topbar .game-sub{margin-top:5px;line-height:1.3;letter-spacing:.22em}.topbar .tut-help{top:calc(var(--app-safe-top) + 8px);left:calc(50% - 66px);width:40px;height:40px;font-size:19px;box-shadow:inset 0 0 12px rgba(240,192,64,.06)}.topbar .tut-help.tut-exit{left:calc(50% - 20px);font-size:17px}.topbar #musicBtn{left:calc(50% + 26px)!important}.topbar .back-btn{position:relative;top:auto;right:auto;z-index:12;max-width:calc(100% - 24px);min-height:38px;margin:10px auto 0;padding:8px 14px;justify-content:center;pointer-events:auto;box-shadow:0 5px 14px rgba(0,0,0,.22),inset 0 0 10px rgba(139,156,255,.07)}.topbar .back-btn .bb-label{max-width:290px}\
+      .topbar{padding:calc(10px + var(--app-safe-top)) 14px 11px;min-height:calc(var(--app-safe-top) + 98px)}.topbar .game-title{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:50px;font-size:18px;line-height:1.2;white-space:nowrap}.topbar .logo-mark{display:inline-flex;align-items:center;justify-content:center;margin-right:0}.topbar .logo-mark img{height:1.3em!important;width:auto}.topbar .game-sub{margin-top:5px;line-height:1.3;letter-spacing:.22em}.topbar .tut-help{top:calc(var(--app-safe-top) + 8px);left:calc(50% - 68px);width:44px;height:44px;font-size:19px;box-shadow:inset 0 0 12px rgba(240,192,64,.06)}.topbar .tut-help.tut-exit{left:calc(50% - 22px);font-size:17px}.topbar #musicBtn{left:calc(50% + 24px)!important}.topbar .back-btn{position:relative;top:auto;right:auto;z-index:12;max-width:calc(100% - 24px);min-height:38px;margin:10px auto 0;padding:8px 14px;justify-content:center;pointer-events:auto;box-shadow:0 5px 14px rgba(0,0,0,.22),inset 0 0 10px rgba(139,156,255,.07)}.topbar .back-btn .bb-label{max-width:290px}\
       @media(max-width:350px){.topbar .game-title{font-size:16.5px;letter-spacing:.15em}.topbar .game-sub{font-size:8px}}';
     document.head.appendChild(st);
   }
@@ -17871,6 +18000,1613 @@ Mantara.module("langit", function(M){
 
   window.MantaraLivingWorld={ensure:ensure,mountWorld:mountWorld,mountBusiness:mountBusiness,questDefs:QUESTS,encounterDefs:ENCOUNTERS};
 })();
+
+/* ==================================================================
+   MANTARA v25 — PILAR 3: JALAN LANGKA
+   ------------------------------------------------------------------
+   Masalah yang diperbaiki (dari Rencana Fitur v25):
+   Ada 11 karir, semuanya duniawi — petani, penjaga, pandai besi, tabib,
+   bard, pencuri. Syarat tertingginya cuma `might>=65 && reputation>=10`.
+   Tidak ada satu pun karir yang terasa seperti PENCAPAIAN, dan tidak ada
+   tujuan jangka panjang yang menarik pemain melewati usia 30.
+
+   Delapan Jalan Langka duduk sebagai tingkat kedua di atas CAREERS.
+   Tiga aturan yang membuatnya bekerja:
+
+     1. DIUNDANG, BUKAN DILAMAR. Syarat terpenuhi -> seseorang mendatangimu.
+        Jalan Langka sengaja TIDAK muncul di daftar lowongan (ditandai
+        `rare:true`; tiga penyaring daftar kerja lama melewatinya).
+     2. SATU JALAN PER NYAWA. Memilih satu menutup semua yang lain sampai
+        kau mati. Itu yang membuat pilihannya berat — dan nyawa berikutnya
+        terasa berbeda.
+     3. ADA HARGANYA. Tiap jalan punya risiko tahunan sungguhan, bukan
+        sekadar gaji lebih besar. Penjaga Krip diburu Inkuisisi; Pemburu
+        Naga bisa mati tiap kontrak; Tangan Kiri Raja jatuh bersama rajanya.
+
+   Yang dicatat wangsa: jalan yang pernah ditempuh leluhur tersimpan di
+   `mantara_jalan_langka_v1` dan memberi keturunanmu keuntungan kecil —
+   sambungan ke Kronik Wangsa nanti.
+
+   Ditulis sebagai modul bus: tidak menimpa satu fungsi global pun kecuali
+   menambah entri ke CAREERS (supaya gaji, promosi, jenjang, dan seluruh
+   UI karir lama bekerja tanpa diubah).
+   ================================================================== */
+Mantara.module("jalanlangka", function(M){
+  "use strict";
+  var U = M.u;
+
+  function st(){
+    if(!U.alive()) return null;
+    if(!C._jalan) C._jalan = {taken:null, offered:[], declined:[], since:0, tally:{}};
+    if(!C._jalan.tally) C._jalan.tally = {};
+    return C._jalan;
+  }
+
+  /* ---------- pembacaan keadaan yang dipakai syarat ---------- */
+  function flyLv(){ try{ return (typeof mantaraFlyLevel==="function") ? (mantaraFlyLevel()||0) : 0; }catch(e){ return 0; } }
+  function petsBonded(min){
+    try{ return (C.pets||[]).filter(function(p){ return (p.bond||0)>=min; }).length; }catch(e){ return 0; }
+  }
+  function propheciesDone(){ try{ return (C.prophecy && C.prophecy.resolved) || 0; }catch(e){ return 0; } }
+  function gearPlusMax(){
+    try{ var g=C.gearPlus||{}, m=0; for(var k in g) if(g[k]>m) m=g[k]; return m; }catch(e){ return 0; }
+  }
+  function wasPolitician(){
+    try{ return !!(C.polRole && C.polRole.role) || !!(C._jalan && C._jalan.tally.politik); }catch(e){ return false; }
+  }
+
+  /* ==================================================================
+     DELAPAN JALAN
+     Bentuknya sengaja sama dengan CAREERS (id/ico/name/basepay/ranks/
+     statGain) supaya processCareer, promosi, Gaya Profesi, dan halaman
+     Karir lama memperlakukannya seperti karir biasa.
+     ================================================================== */
+  var PATHS = [
+    {
+      id:"skyrider", ico:"🌀", name:"Penunggang Langit", basepay:95,
+      ranks:["Kurir Angin","Penunggang Langit","Pengintai Awan","Panglima Langit"],
+      statGain:{charm:+2, might:+1},
+      needText:"tunggangan terbang tingkat 2+ · Pesona 60",
+      need:function(){ return flyLv()>=2 && (C.stats.charm||0)>=60; },
+      hook:"Seorang perempuan berjubah kulit mendarat di halamanmu tanpa suara. "
+          +"“Kami melihat caramu terbang,” katanya. “Kami butuh yang begitu.”",
+      harga:"Langit tidak mengampuni kesalahan. Tiap tahun ada risiko jatuh.",
+      /* biaya: jatuh dari ketinggian */
+      yearly:function(){
+        var lv=flyLv();
+        if(lv<=0){ U.log("🌀 Tanpa tunggangan terbang, tugasmu sebagai Penunggang Langit mandek. Gaji dipotong.","e-bad"); U.coin(-40); return; }
+        var p = lv>=3 ? 0.05 : (lv>=2 ? 0.09 : 0.14);
+        if(U.chance(p)){
+          U.stats({health:-U.ri(10,26)});
+          U.log("🌀 Angin geser merenggut kendalimu di atas jurang. Kau selamat — nyaris.","e-bad");
+          if((C.stats.health||0)<=0 && typeof die==="function") die("Kau jatuh dari langit Aetheria.");
+        }else if(U.chance(0.22)){
+          var upah=U.ri(40,120);
+          U.coin(upah); C.reputation=(C.reputation||0)+2;
+          U.log("🌀 Kau mengantar titah mendesak lintas kota dalam satu malam. +"+U.money(upah)+" keping.","e-good");
+        }
+      }
+    },
+    {
+      id:"beastmaster", ico:"🦄", name:"Penjinak Bestia", basepay:85,
+      ranks:["Perawat Kandang","Penjinak","Empu Bestia","Penutur Bestia"],
+      statGain:{charm:+3, health:+1},
+      needText:"3 bestia dengan ikatan 80+",
+      need:function(){ return petsBonded(80)>=3; },
+      hook:"Seorang tua berbau jerami dan belerang mengamati kandangmu lama sekali. "
+          +"“Mereka mendengarkanmu,” katanya. “Itu tidak bisa diajarkan.”",
+      harga:"Kandangmu jadi tanggung jawab, bukan hiasan — biaya rawat naik.",
+      yearly:function(){
+        var n=(C.pets||[]).length;
+        var rawat=n*U.ri(4,9);
+        if(rawat) U.coin(-rawat);
+        /* satu-satunya jalan mendapat telur naga */
+        if(U.chance(0.10) && n < 6){
+          U.log("🥚 Salah satu bestiamu bertelur. Kau merawatnya diam-diam.","e-epic");
+          if(!C._jalan.tally.telur) C._jalan.tally.telur=0;
+          C._jalan.tally.telur++;
+        }
+        if(U.chance(0.20)){
+          var jual=U.ri(50,150)+n*8;
+          U.coin(jual);
+          U.log("🦄 Kau membiakkan dan menjual seekor bestia terlatih. +"+U.money(jual)+" keping.","e-good");
+        }
+      }
+    },
+    {
+      id:"dragonhunter", ico:"🐉", name:"Pemburu Naga", basepay:110,
+      ranks:["Pemikul Tombak","Pemburu Naga","Pemburu Ulung","Pembunuh Wyrm"],
+      statGain:{might:+4, health:-2}, dangerous:true,
+      needText:"Kekuatan 80 · pernah menaklukkan bestia tingkat 4",
+      need:function(){
+        if((C.stats.might||0)<80) return false;
+        try{ if((C.pets||[]).some(function(p){ return (p.level||1)>=4; })) return true; }catch(e){}
+        return (C._jalan && C._jalan.tally.bestiaBesar)>=1;
+      },
+      hook:"Kontrak berpaku di pintu kedai, ditulis dengan tangan gemetar. "
+          +"Angkanya cukup untuk hidup setahun. Yang meminta tidak menyebut nama.",
+      harga:"Tiap kontrak bisa jadi kontrak terakhirmu.",
+      yearly:function(){
+        if(!U.chance(0.55)) return;
+        var kuat=(C.stats.might||0) + ((C.gearPlus&&C.gearPlus.weapon||0)*4);
+        var berat=U.ri(55,115);
+        /* QA: dengan Kekuatan 99 + senjata +5 (kuat 119) kontrak dulu TIDAK
+           PERNAH gagal — risiko yang cuma jadi hiasan. 8% nasib buruk tidak
+           bisa dibeli dengan angka, jadi tiap kontrak tetap taruhan. */
+        if(kuat >= berat && !U.chance(0.08)){
+          var bayar=U.ri(120,320);
+          U.coin(bayar); C.reputation=(C.reputation||0)+4;
+          U.stats({might:+1});
+          C._jalan.tally.naga=(C._jalan.tally.naga||0)+1;
+          U.log("🐉 Kontrak tuntas. Kepalanya kau serahkan, bayarannya kau bawa pulang. +"+U.money(bayar)+" keping.","e-epic");
+        }else{
+          var luka=U.ri(14,34);
+          U.stats({health:-luka});
+          U.log("🐉 Ia lebih besar dari yang tertulis di kontrak. Kau pulang berdarah.","e-bad");
+          if((C.stats.health||0)<=0 && typeof die==="function") die("Kontrak terakhirmu ternyata benar-benar yang terakhir.");
+        }
+      }
+    },
+    {
+      id:"seer", ico:"🕯️", name:"Pembaca Nubuat", basepay:90,
+      ranks:["Pembaca Tanda","Pembaca Nubuat","Penafsir Agung","Suara Takdir"],
+      statGain:{mind:+3, mana:+2},
+      needText:"tuntaskan 2 ramalan seumur hidup",
+      need:function(){ return propheciesDone()>=2; },
+      hook:"Perempuan bermata putih menunggumu di ambang pintu. “Kau sudah dua kali "
+          +"menepati yang tertulis,” katanya. “Sekarang bacakan untuk orang lain.”",
+      harga:"Yang kau lihat tidak selalu ingin kau lihat.",
+      yearly:function(){
+        if(U.chance(0.35)){
+          var upah=U.ri(35,105)+propheciesDone()*15;
+          U.coin(upah); C.reputation=(C.reputation||0)+2;
+          U.log("🕯️ Kau membacakan takdir seorang bangsawan. Ia membayar mahal untuk tidur nyenyak. +"+U.money(upah)+" keping.","e-good");
+        }
+        if(U.chance(0.12)){
+          U.stats({happy:-U.ri(4,11)});
+          U.log("🕯️ Kau melihat akhir hidup seseorang yang kau sayangi — dan tidak boleh mengatakannya.","e-bad");
+        }
+      }
+    },
+    {
+      id:"lefthand", ico:"🗝️", name:"Tangan Kiri Raja", basepay:105,
+      ranks:["Telinga di Dinding","Tangan Kiri","Kepala Bayangan","Bayangan Takhta"],
+      statGain:{mind:+3, charm:+2},
+      needText:"Reputasi 90 · pernah menjabat di jalur politik",
+      need:function(){ return (C.reputation||0)>=90 && wasPolitician(); },
+      hook:"Sepucuk surat tanpa segel. Isinya satu kalimat: “Raja tidak butuh pedang lagi. "
+          +"Ia butuh seseorang yang tahu siapa yang berbisik.”",
+      harga:"Kau jatuh bersama rajamu.",
+      yearly:function(){
+        if(U.chance(0.30)){
+          var suap=U.ri(55,175);
+          U.coin(suap);
+          U.log("🗝️ Sebuah rahasia berpindah tangan. Kau tidak bertanya untuk apa. +"+U.money(suap)+" keping.","e-good");
+        }
+        /* jaringan mata-mata: bisa menjatuhkan penguasa kota */
+        if(U.chance(0.08)){
+          C._jalan.tally.jatuh=(C._jalan.tally.jatuh||0)+1;
+          C.reputation=(C.reputation||0)+6;
+          U.log("🗝️ Seorang gubernur turun dari kursinya pagi ini. Tidak ada yang tahu sebabnya. Kau tahu.","e-epic");
+        }
+        if(U.chance(0.07)){
+          C.reputation=Math.max(0,(C.reputation||0)-U.ri(10,22));
+          U.stats({happy:-U.ri(3,9)});
+          U.log("🗝️ Rajamu goyah — dan semua yang berdiri di bayangannya ikut goyah.","e-bad");
+        }
+      }
+    },
+    {
+      id:"relicsmith", ico:"⚗️", name:"Empu Pusaka", basepay:100,
+      ranks:["Penempa Nama","Empu Pusaka","Empu Wangsa","Empu Legenda"],
+      statGain:{might:+2, mind:+2},
+      needText:"Pandai Besi jenjang tertinggi · satu pusaka +5",
+      need:function(){
+        var maxRank = (C.career==="blacksmith" && (C.careerLevel||0)>=3);
+        return (maxRank || (C._jalan && C._jalan.tally.empu)) && gearPlusMax()>=5;
+      },
+      hook:"Palumu berhenti sendiri di tengah ayunan. Seorang empu tua yang kau kira sudah mati "
+          +"berdiri di ambang bengkel. “Yang kau tempa tadi punya nama,” katanya.",
+      harga:"Karya seumur hidup butuh bahan seumur hidup — biayanya besar.",
+      yearly:function(){
+        var bahan=U.ri(30,90);
+        U.coin(-bahan);
+        if(U.chance(0.28)){
+          var bayar=U.ri(130,360);
+          U.coin(bayar); C.reputation=(C.reputation||0)+3;
+          C._jalan.tally.pusaka=(C._jalan.tally.pusaka||0)+1;
+          U.log("⚗️ Sebuah wangsa memesan pusaka bernama darimu. Ia akan diwariskan lebih lama dari kita berdua. +"+U.money(bayar)+" keping.","e-epic");
+        }
+      }
+    },
+    {
+      id:"cryptkeeper", ico:"🌑", name:"Penjaga Krip", basepay:115,
+      ranks:["Penjaga Pintu","Penjaga Krip","Pewaris Bisikan","Suara di Bawah"],
+      statGain:{mana:+4, happy:-2}, shady:true,
+      needText:"Mana 75 · Reputasi di bawah 20",
+      need:function(){ return (C.stats.mana||0)>=75 && (C.reputation||0)<20; },
+      hook:"Tidak ada yang mengetuk. Pintumu hanya terbuka, dan sebuah kunci besi dingin "
+          +"tergeletak di lantai. Kau tahu krip mana yang dibukanya.",
+      harga:"Inkuisisi memburu. Keluargamu menjauh.",
+      yearly:function(){
+        var bayar=U.ri(85,230);
+        U.coin(bayar);
+        if(U.chance(0.30)){
+          C.reputation=Math.max(0,(C.reputation||0)-U.ri(4,10));
+          U.log("🌑 Desas-desus soal apa yang kau simpan di bawah tanah menyebar.","e-bad");
+        }
+        if(U.chance(0.13)){
+          U.stats({health:-U.ri(8,20), happy:-U.ri(5,12)});
+          U.log("🌑 Inkuisisi menggeledah rumahmu. Kau lolos — kali ini.","e-bad");
+        }
+        /* keluarga menjauh: ikatan relasi terkikis */
+        if(U.chance(0.25)){
+          try{
+            var fam=(C.relations||[]).filter(function(r){ return r.role==="keluarga"; });
+            if(fam.length){ var r=U.pick(fam); r.bond=Math.max(0,(r.bond||50)-U.ri(4,11)); }
+          }catch(e){}
+        }
+      }
+    },
+    {
+      id:"plaguedoctor", ico:"⚕️", name:"Tabib Wabah", basepay:95,
+      ranks:["Pembawa Kapur","Tabib Wabah","Tabib Kota","Tabib Agung Wabah"],
+      statGain:{mind:+3, health:+1},
+      needText:"ijazah tabib · selamat dari satu tahun wabah",
+      need:function(){
+        var ijazah=!!(C.flags && (C.flags.diploma_tabib || C.flags.diploma_healer));
+        return (ijazah || C.career==="healer") && !!(C.flags && C.flags.plagueImmune);
+      },
+      hook:"Topeng berparuh panjang tergeletak di meja periksamu, entah oleh siapa. "
+          +"Di dalamnya sepucuk daftar: nama-nama kota yang belum punya siapa pun.",
+      harga:"Dipuja saat krisis, dicurigai saat damai.",
+      yearly:function(){
+        if(!C.flags) C.flags={};
+        C.flags.plagueImmune=1;                    /* kebal wabah, selamanya */
+        if(U.chance(0.30)){
+          var upah=U.ri(45,140);
+          U.coin(upah); C.reputation=(C.reputation||0)+5;
+          U.log("⚕️ Kau menahan wabah di satu distrik sebelum menyebar. Kota mengingatnya. +"+U.money(upah)+" keping.","e-good");
+        }else if(U.chance(0.18)){
+          C.reputation=Math.max(0,(C.reputation||0)-U.ri(2,6));
+          U.log("⚕️ Damai membuat orang lupa. Topengmu kini hanya menakutkan anak-anak.","e-bad");
+        }
+      }
+    }
+  ];
+
+  function pathOf(id){ for(var i=0;i<PATHS.length;i++) if(PATHS[i].id===id) return PATHS[i]; return null; }
+  M.PATHS = PATHS;
+
+  /* ---------------------------------------------------------------
+     Didaftarkan ke CAREERS supaya seluruh mesin karir lama (gaji,
+     jenjang, promosi, Gaya Profesi, halaman Karir) bekerja apa adanya.
+     `rare:true` menandai agar TIDAK muncul di daftar lowongan —
+     tiga penyaring lama sudah diajari melewatinya.
+     `req` selalu false: satu-satunya pintu masuk adalah undangan.
+     --------------------------------------------------------------- */
+  M.on("boot", function(){
+    try{
+      if(typeof CAREERS==="undefined" || !Array.isArray(CAREERS)) return;
+      PATHS.forEach(function(p){
+        if(CAREERS.some(function(c){ return c.id===p.id; })) return;
+        CAREERS.push((function(pid){
+          return {
+            id:p.id, ico:p.ico, name:p.name, basepay:p.basepay,
+            ranks:p.ranks, statGain:p.statGain, rare:true, shady:!!p.shady,
+            /* Satu-satunya pintu masuk adalah undangan: applyCareer() lama
+               menolak kalau req() gagal, jadi req di sini hanya lulus ketika
+               modul ini menaruh tiket sekali pakai di C._jalan.grantId. */
+            req:function(c){ try{ return !!(c && c._jalan && c._jalan.grantId===pid); }catch(e){ return false; } }
+          };
+        })(p.id));
+      });
+    }catch(e){}
+  }, 10);
+
+  /* ---------------------------------------------------------------
+     UNDANGAN — satu tawaran per tahun, maksimal; ditolak boleh datang lagi
+     --------------------------------------------------------------- */
+  function eligible(){
+    var s=st(); if(!s) return [];
+    return PATHS.filter(function(p){
+      if(s.taken) return false;
+      try{ return !!p.need(); }catch(e){ return false; }
+    });
+  }
+
+  function invite(p){
+    var s=st(); if(!s) return;
+    s.offered.push(p.id);
+    U.music("ceremony");
+    U.ask({
+      ico:p.ico, cancel:false,
+      prompt:"<b>Jalan Langka — "+p.name+"</b><br>"
+        +"<span style='font-size:12px;line-height:1.65;color:var(--ink-soft);filter:brightness(1.6)'>"+p.hook+"</span>"
+        +"<div style='margin-top:9px;font-size:11px;color:var(--gold)'>Harganya: "+p.harga+"</div>"
+        +"<div style='margin-top:5px;font-size:10.5px;color:var(--ink-soft);filter:brightness(1.5)'>"
+        +"Menerima satu Jalan Langka menutup tujuh sisanya sampai akhir hayatmu.</div>",
+      choices:[
+        {label:"Terima "+p.ico+" "+p.name, cls:"", run:function(){
+          take(p);
+          return {t:p.ico+" Kau menempuh Jalan Langka: <b>"+p.name+"</b>.", cls:"e-epic"};
+        }},
+        {label:"Belum — aku punya jalanku sendiri", cls:"danger", run:function(){
+          s.declined.push(p.id);
+          return {t:"Kau menolak. Tawaran seperti itu jarang datang dua kali — tapi bukan tidak pernah.", cls:""};
+        }}
+      ]
+    });
+  }
+
+  function take(p){
+    var s=st(); if(!s) return;
+    s.taken=p.id; s.since=C.age;
+    s.grantId=p.id;                                   /* tiket sekali pakai */
+    try{ if(typeof applyCareer==="function") applyCareer(p.id); }catch(e){}
+    s.grantId=null;
+    U.anim("win", {text:"JALAN LANGKA"});
+    U.sfx("levelup");
+    rememberPath(p);
+  }
+
+  function rememberPath(p){
+    try{
+      var raw=localStorage.getItem("mantara_jalan_langka_v1");
+      var arr=raw?JSON.parse(raw):[];
+      arr.unshift({id:p.id, name:p.name, ico:p.ico, by:C.name, age:C.age});
+      if(arr.length>12) arr.pop();
+      localStorage.setItem("mantara_jalan_langka_v1", JSON.stringify(arr));
+    }catch(e){}
+  }
+  function ancestorPaths(){
+    try{ var raw=localStorage.getItem("mantara_jalan_langka_v1"); return raw?JSON.parse(raw):[]; }catch(e){ return []; }
+  }
+  M.ancestorPaths = ancestorPaths;
+
+  /* ---------------------------------------------------------------
+     SIKLUS TAHUNAN
+     --------------------------------------------------------------- */
+  M.on("year:end", function(){
+    var s=st(); if(!s) return;
+
+    /* jejak untuk syarat yang butuh riwayat, bukan keadaan saat ini */
+    try{
+      if(C.polRole && C.polRole.role) s.tally.politik=1;
+      if(C.career==="blacksmith" && (C.careerLevel||0)>=3) s.tally.empu=1;
+      if((C.pets||[]).some(function(p){ return (p.level||1)>=4; })) s.tally.bestiaBesar=1;
+    }catch(e){}
+
+    /* harga tahunan dari jalan yang sedang ditempuh */
+    if(s.taken){
+      if(C.career!==s.taken){
+        /* keluar dari Jalan Langka = keluar untuk selamanya (sekali catat) */
+        var lepas=pathOf(s.taken);
+        U.log("Kau meninggalkan Jalan "+(lepas?lepas.name:"Langka")+". Pintu itu tidak terbuka dua kali.","e-bad");
+        s.taken="__lepas";
+      }else{
+        var p=pathOf(s.taken);
+        if(p && p.yearly){ try{ p.yearly(); }catch(e){} }
+      }
+      return;
+    }
+    if(s.taken==="__lepas") return;
+
+    /* undangan: butuh usia kerja, dan tidak menimpa modal lain */
+    if(C.age < 18) return;
+    var kandidat = eligible();
+    if(!kandidat.length) return;
+    /* yang belum pernah ditawarkan didahulukan; yang ditolak menunggu 4 tahun */
+    var baru = kandidat.filter(function(p){ return s.offered.indexOf(p.id)<0; });
+    var pilih = baru.length ? U.pick(baru)
+              : (U.chance(0.25) ? U.pick(kandidat) : null);
+    if(!pilih) return;
+    setTimeout(function(){ try{ if(U.alive() && !st().taken) invite(pilih); }catch(e){} }, 900);
+  }, -20);
+
+  /* ---------------------------------------------------------------
+     WARISAN — jalan leluhur memberi keturunan awal yang sedikit lebih baik
+     --------------------------------------------------------------- */
+  M.on("char:born", function(ctx){
+    if(!ctx.heir || !U.alive()) return;
+    var arr=ancestorPaths(); if(!arr.length) return;
+    var leluhur=arr[0];
+    setTimeout(function(){
+      try{
+        if(!U.alive()) return;
+        var bonus="";
+        if(leluhur.id==="beastmaster"){ C._jalan=st(); C._jalan.tally.bestiaMurah=1; bonus="Pedagang bestia mengenali nama keluargamu — harganya lebih lunak."; }
+        else if(leluhur.id==="dragonhunter"){ U.stats({might:+3}); bonus="Darah pemburu mengalir. Kekuatan +3."; }
+        else if(leluhur.id==="seer"){ U.stats({mana:+3}); bonus="Mata leluhurmu ikut terbuka. Mana +3."; }
+        else if(leluhur.id==="relicsmith"){ U.stats({might:+2, mind:+2}); bonus="Tangan empu diwariskan. Kekuatan & Akal +2."; }
+        else if(leluhur.id==="lefthand"){ C.reputation=(C.reputation||0)+12; bonus="Jaringan lama masih mengingat wangsamu. Reputasi +12."; }
+        else if(leluhur.id==="cryptkeeper"){ U.stats({mana:+4}); C.reputation=Math.max(0,(C.reputation||0)-8); bonus="Sesuatu di bawah tanah masih mengenalmu. Mana +4, Reputasi -8."; }
+        else if(leluhur.id==="plaguedoctor"){ if(!C.flags)C.flags={}; C.flags.plagueImmune=1; bonus="Kau lahir kebal wabah."; }
+        else if(leluhur.id==="skyrider"){ U.stats({charm:+3}); bonus="Nama keluargamu masih disebut di pos-pos langit. Pesona +3."; }
+        if(bonus) U.log(leluhur.ico+" Leluhurmu <b>"+U.esc(leluhur.by||"")+"</b> menempuh Jalan "+leluhur.name+". "+bonus, "e-epic");
+      }catch(e){}
+    }, 2400);
+  });
+
+  /* ---------------------------------------------------------------
+     PANEL DI TAB HIDUP
+     --------------------------------------------------------------- */
+  M.on("hidup:render", function(ctx){
+    var s=st(); if(!s) return;
+    if(!s.taken || s.taken==="__lepas"){
+      /* tampilkan progres hanya kalau ada yang sudah hampir tercapai */
+      if(C.age<18) return;
+      var dekat=PATHS.filter(function(p){ try{ return p.need(); }catch(e){ return false; } });
+      if(!dekat.length) return;
+      ctx.blocks.push(
+        "<div class='jl-box'><div class='jl-head'>✦ Jalan Langka</div>"
+        + "<div class='jl-sub'>Syaratmu sudah terpenuhi untuk "+dekat.length+" jalan. Seseorang akan datang.</div>"
+        + dekat.map(function(p){ return "<div class='jl-row'><span class='jl-ico'>"+p.ico+"</span><span><b>"+p.name+"</b><span class='jl-need'>"+p.needText+"</span></span></div>"; }).join("")
+        + "</div>");
+      return;
+    }
+    var p=pathOf(s.taken); if(!p) return;
+    var rank=(p.ranks[C.careerLevel||0])||p.ranks[0];
+    ctx.blocks.push(
+      "<div class='jl-box on'><div class='jl-head'>"+p.ico+" Jalan Langka · "+p.name+"</div>"
+      + "<div class='jl-sub'><b>"+rank+"</b> · sejak usia "+s.since+"</div>"
+      + "<div class='jl-need' style='margin-top:5px'>"+p.harga+"</div></div>");
+  });
+
+  /* gaya */
+  M.on("boot", function(){
+    if(document.getElementById("jalanStyle")) return;
+    var el=document.createElement("style"); el.id="jalanStyle";
+    el.textContent =
+      ".jl-box{margin:8px 4px 10px;padding:9px 11px;border:1px solid rgba(240,192,64,.22);border-radius:12px;"
+     +"background:linear-gradient(160deg,rgba(46,34,18,.8),rgba(22,17,12,.8))}"
+     +".jl-box.on{border-color:rgba(240,192,64,.5);box-shadow:inset 0 0 22px rgba(240,192,64,.05)}"
+     +".jl-head{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-bright);margin-bottom:5px}"
+     +".jl-sub{font-size:11.5px;color:var(--parchment)}"
+     +".jl-need{display:block;font-size:10px;color:var(--ink-soft);filter:brightness(1.7);margin-top:1px}"
+     +".jl-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11.5px}"
+     +".jl-ico{font-size:16px;width:20px;text-align:center}";
+    document.head.appendChild(el);
+  });
+
+  return {PATHS:PATHS, state:st, ancestorPaths:ancestorPaths};
+});
+
+/* ==================================================================
+   MANTARA v25 — BESTIARIUM
+   ------------------------------------------------------------------
+   Dari Rencana Fitur v25: "koleksi yang mengisi dirinya sendiri".
+
+   Masalah yang diselesaikan: pemain yang sudah puluhan jam bermain tidak
+   punya alasan memasuki dungeon yang sudah mereka kuasai. Semua imbalannya
+   habis dalam satu nyawa, dan mati bersama karakternya.
+
+   Bestiarium adalah milik WANGSA, bukan karakter. Ia disimpan di
+   localStorage (`mantara_bestiarium_v1`) dan bertahan melewati kematian,
+   pergantian ahli waris, bahkan mulai-baru. Tiap makhluk yang kau temui —
+   dungeon, bestia peliharaan, boss arena — membuka satu entri: nama,
+   asal, kelemahan, berapa kali kau temui, berapa kali kau taklukkan,
+   dan siapa leluhur yang pertama kali mencatatnya.
+
+   Yang belum ditemui tampil sebagai siluet. Itulah tujuan koleksinya:
+   "masih ada 6 entri kosong."
+
+   Ditulis sebagai modul bus. Dua fungsi dungeon lama dibungkus untuk
+   mencatat perjumpaan — dibungkus DI SINI supaya jelas siapa penyadapnya
+   (aturan 44-bus-hooks).
+   ================================================================== */
+Mantara.module("bestiarium", function(M){
+  "use strict";
+  var U = M.u;
+  var KEY = "mantara_bestiarium_v1";
+
+  /* ---------------------------------------------------------------
+     KATALOG — sumbernya makhluk yang MEMANG sudah ada di game
+     (DUNGEONS boss, PET_SPECIES, lawan arena), bukan konten karangan baru.
+     --------------------------------------------------------------- */
+  var CATALOG = [
+    /* --- boss dungeon --- */
+    {id:"goblin_chief", ico:"👺", name:"Kepala Suku Goblin", asal:"Gua Goblin",       tier:0, kelemahan:"Kekuatan mentah — ia mengandalkan jumlah, bukan keahlian."},
+    {id:"guard_golem",  ico:"🗿", name:"Golem Penjaga",      asal:"Reruntuhan Kuno",  tier:1, kelemahan:"Sendi batunya retak oleh pukulan berat berulang."},
+    {id:"spider_queen", ico:"🕷️", name:"Ratu Laba-laba",     asal:"Sarang Laba-laba", tier:2, kelemahan:"Api membakar sutranya; bisanya dinetralkan tabib."},
+    {id:"lich_king",    ico:"⚰️", name:"Raja Lich",          asal:"Kripta Terkutuk",  tier:3, kelemahan:"Terikat pada jimat jiwanya. Mana tinggi mematahkannya."},
+    {id:"red_dragon",   ico:"🐉", name:"Naga Merah",         asal:"Liang Naga",       tier:4, kelemahan:"Sisik perutnya lunak — dan ia terlalu percaya diri."},
+    {id:"void_warlock", ico:"🌌", name:"Penyihir Kehampaan", asal:"Menara Kehampaan", tier:5, kelemahan:"Realita di sekitarnya rapuh. Akal jernih menembusnya."},
+    /* --- bestia yang bisa diikat (PET_SPECIES) --- */
+    {id:"moon_cat",   ico:"🐈", name:"Kucing Bulan",   asal:"Atap kota, malam hari",   tier:0, kelemahan:"Tak melawan — ia memilih siapa yang ia ikuti.", pet:true},
+    {id:"slime",      ico:"🟢", name:"Slime",           asal:"Selokan & gudang lembap", tier:0, kelemahan:"Terbelah kalau dipukul, tapi tidak berbahaya.", pet:true},
+    {id:"war_hawk",   ico:"🦅", name:"Elang Perang",    asal:"Tebing Frostspire",       tier:1, kelemahan:"Sulit dijinakkan sebelum tahun keduanya.", pet:true},
+    {id:"dire_wolf",  ico:"🐺", name:"Serigala Dire",   asal:"Rimba utara Thornvale",   tier:2, kelemahan:"Setia sampai ikatannya runtuh — lalu berbalik.", pet:true},
+    {id:"war_boar",   ico:"🐗", name:"Babi Perang",     asal:"Ladang berlumpur",        tier:2, kelemahan:"Menyerang lurus. Bisa dihindari, sulit dihentikan.", pet:true},
+    {id:"spirit_owl", ico:"🦉", name:"Burung Hantu Roh",asal:"Perpustakaan terlarang",  tier:3, kelemahan:"Hanya menampakkan diri pada yang bermana tinggi.", pet:true},
+    {id:"unicorn",    ico:"🦄", name:"Unicorn",         asal:"Rimba Cahaya",            tier:3, kelemahan:"Menolak siapa pun yang tangannya berlumur darah.", pet:true},
+    {id:"gryphon",    ico:"🦁", name:"Gryphon",         asal:"Sarang puncak batu",      tier:4, kelemahan:"Bangga. Ikatan yang retak membuatnya liar.", pet:true},
+    {id:"drakeling",  ico:"🐲", name:"Naga Kecil",      asal:"Telur curian dari liang", tier:4, kelemahan:"Tumbuh 210 tahun — melampaui tuannya.", pet:true},
+    {id:"phoenix",    ico:"🔥", name:"Phoenix",         asal:"Abu yang tak pernah dingin", tier:5, kelemahan:"Tidak punya. Ia hanya bangkit kembali.", pet:true},
+    /* --- makhluk arena / perjumpaan --- */
+    {id:"storm_beast", ico:"🌩️", name:"Makhluk Badai", asal:"Pusaran mana Frostspire", tier:3, kelemahan:"Padam kalau badainya reda."},
+    {id:"revenant",    ico:"👻", name:"Roh Penunggu",  asal:"Reruntuhan & kripta",     tier:2, kelemahan:"Terikat pada satu tempat. Tinggalkan, ia tak mengejar."},
+    {id:"demon",       ico:"👹", name:"Iblis Kontrak", asal:"Ritual yang gagal",       tier:4, kelemahan:"Terikat kata-katanya sendiri."}
+  ];
+  function defOf(id){ for(var i=0;i<CATALOG.length;i++) if(CATALOG[i].id===id) return CATALOG[i]; return null; }
+  M.CATALOG = CATALOG;
+
+  /* ---------------------------------------------------------------
+     PENYIMPANAN — milik wangsa, bertahan melewati kematian
+     --------------------------------------------------------------- */
+  function load(){
+    try{ var raw=localStorage.getItem(KEY); return raw?JSON.parse(raw):{}; }catch(e){ return {}; }
+  }
+  function save(db){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} }
+
+  /* Catat perjumpaan. kind: "temu" (bertemu) atau "takluk" (mengalahkan). */
+  function record(id, kind){
+    var d=defOf(id); if(!d) return false;
+    var db=load(), baru=!db[id];
+    var e = db[id] || {temu:0, takluk:0, oleh:null, usia:null, pertama:null};
+    e.temu++;
+    if(kind==="takluk") e.takluk++;
+    if(baru){
+      try{ e.oleh = C && C.name; e.usia = C && C.age; e.pertama = Date.now(); }catch(x){}
+    }
+    db[id]=e; save(db);
+    if(baru){
+      U.sfx("confirm");
+      U.log("📖 <b>Bestiarium</b>: entri baru terbuka — "+d.ico+" "+d.name+".","e-epic");
+      U.toast("📖 Bestiarium: "+d.name);
+    }
+    return baru;
+  }
+  window.mantaraBestiaryRecord = record;
+  M.record = record;
+
+  function stats(){
+    var db=load(), known=0, killed=0;
+    for(var i=0;i<CATALOG.length;i++){
+      var e=db[CATALOG[i].id];
+      if(e){ known++; if(e.takluk>0) killed++; }
+    }
+    return {known:known, total:CATALOG.length, killed:killed, db:db};
+  }
+  M.stats = stats;
+
+  /* ---------------------------------------------------------------
+     PENGISI OTOMATIS
+     --------------------------------------------------------------- */
+  /* 1) bestia yang kau ikat */
+  M.on("year:end", function(){
+    if(!U.alive()) return;
+    try{
+      (C.pets||[]).forEach(function(p){ if(defOf(p.key)) record(p.key, "temu"); });
+    }catch(e){}
+  }, -30);
+
+  /* 2) dungeon — masuk = bertemu bossnya; clearedBoss = menaklukkan.
+        Dua fungsi lama dibungkus, DI SINI, supaya penyadapnya jelas. */
+  var DUN_BOSS = {
+    goblin_cave:"goblin_chief", old_ruins:"guard_golem", spider_nest:"spider_queen",
+    cursed_crypt:"lich_king", dragon_lair:"red_dragon", void_tower:"void_warlock"
+  };
+  M.on("boot", function(){
+    try{
+      if(typeof window.enterDungeon==="function"){
+        var _ed = window.enterDungeon;
+        window.enterDungeon = function(id){
+          var r=_ed.apply(this, arguments);
+          try{ if(DUN_BOSS[id]) record(DUN_BOSS[id], "temu"); }catch(e){}
+          return r;
+        };
+      }
+      if(typeof window.dunAct==="function"){
+        var _da = window.dunAct;
+        window.dunAct = function(){
+          var r=_da.apply(this, arguments);
+          try{
+            var st=window.__mantaraDungeon && window.__mantaraDungeon.state && window.__mantaraDungeon.state();
+            if(st && st.clearedBoss && !st._bstLogged){
+              st._bstLogged=true;
+              var bid=DUN_BOSS[st.def && st.def.id];
+              if(bid) record(bid, "takluk");
+            }
+          }catch(e){}
+          return r;
+        };
+      }
+    }catch(e){}
+  }, -50);
+
+  /* 3) lawan bertipe makhluk di arena/duel */
+  M.on("boot", function(){
+    try{
+      if(typeof window.arenaAct!=="function") return;
+      var seen={};
+      var _aa = window.arenaAct;
+      window.arenaAct = function(){
+        var r=_aa.apply(this, arguments);
+        try{
+          var txt=(document.body.innerText||"");
+          var map=[[/naga|wyrm/i,"red_dragon"],[/badai|storm/i,"storm_beast"],
+                   [/roh|hantu|penunggu|arwah/i,"revenant"],[/golem/i,"guard_golem"],
+                   [/laba-laba/i,"spider_queen"],[/iblis|demon/i,"demon"]];
+          for(var i=0;i<map.length;i++){
+            if(map[i][0].test(txt) && !seen[map[i][1]]){ seen[map[i][1]]=1; record(map[i][1], "temu"); break; }
+          }
+        }catch(e){}
+        return r;
+      };
+    }catch(e){}
+  }, -50);
+
+  /* ---------------------------------------------------------------
+     HALAMAN
+     --------------------------------------------------------------- */
+  window.openBestiarium = function(){
+    if(typeof pushPage!=="function") return;
+    pushPage({title:"Bestiarium", render:function(){
+      var s=stats();
+      var h="<div class='bstr-hero'>"
+        +"<div class='bstr-count'>"+s.known+" <span>/ "+s.total+"</span></div>"
+        +"<div class='bstr-cap'>entri terbuka · "+s.killed+" ditaklukkan</div>"
+        +"<div class='bstr-bar'><div style='width:"+Math.round(s.known/s.total*100)+"%'></div></div>"
+        +"<div class='bstr-note'>Bestiarium milik wangsamu. Ia tidak ikut mati bersamamu.</div></div>";
+
+      var tiers=[[0,"Makhluk Kecil"],[1,"Makhluk Liar"],[2,"Makhluk Berbahaya"],[3,"Makhluk Arcane"],[4,"Makhluk Agung"],[5,"Legenda"]];
+      tiers.forEach(function(t){
+        var list=CATALOG.filter(function(c){ return c.tier===t[0]; });
+        if(!list.length) return;
+        h+="<div class='pg-sec'>"+t[1]+"</div>";
+        list.forEach(function(c){
+          var e=s.db[c.id];
+          if(!e){
+            h+="<div class='bstr-row unknown'><div class='bstr-ico'>?</div>"
+              /* QA: dulu memakai asal.toLowerCase() sehingga nama tempat ikut
+                 turun huruf ("tebing frostspire"). Sekarang kalimatnya dibentuk
+                 tanpa merusak nama diri. */
+              +"<div class='bstr-mid'><b>Belum ditemui</b>"
+              +"<span class='bstr-sub'>Konon ada sesuatu di "+U.esc(c.asal)+".</span></div></div>";
+          }else{
+            h+="<div class='bstr-row'><div class='bstr-ico'>"+c.ico+"</div>"
+              +"<div class='bstr-mid'><b>"+U.esc(c.name)+"</b>"
+              +"<span class='bstr-sub'>"+U.esc(c.asal)+"</span>"
+              +"<span class='bstr-weak'>Kelemahan: "+U.esc(c.kelemahan)+"</span>"
+              +"<span class='bstr-tally'>ditemui "+e.temu+"×"+(e.takluk?" · ditaklukkan "+e.takluk+"×":"")
+              +(e.oleh?" · pertama dicatat "+U.esc(e.oleh)+" (usia "+e.usia+")":"")+"</span>"
+              +"</div></div>";
+          }
+        });
+      });
+      return h;
+    }});
+  };
+
+  /* pintu masuk di tab Hidup */
+  M.on("hidup:render", function(ctx){
+    if(!U.alive()) return;
+    var s=stats(); if(!s.known) return;
+    ctx.blocks.push(
+      "<div class='bstr-box' onclick=\"openBestiarium()\" role='button' tabindex='0'>"
+      +"<div class='bstr-head'>📖 Bestiarium <span class='bstr-chev'>›</span></div>"
+      +"<div class='bstr-line'>"+s.known+" dari "+s.total+" entri terbuka"
+      +(s.known<s.total?(" · masih ada "+(s.total-s.known)+" yang belum kau temui"):" · lengkap")+"</div>"
+      +"<div class='bstr-bar'><div style='width:"+Math.round(s.known/s.total*100)+"%'></div></div></div>");
+  });
+
+  M.on("boot", function(){
+    if(document.getElementById("bestiariumStyle")) return;
+    var el=document.createElement("style"); el.id="bestiariumStyle";
+    el.textContent =
+      ".bstr-box{margin:8px 4px 10px;padding:9px 11px;border:1px solid rgba(139,156,255,.22);border-radius:12px;"
+     +"background:linear-gradient(160deg,rgba(20,24,44,.8),rgba(12,14,24,.8));cursor:pointer;min-height:44px}"
+     +".bstr-head{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--arcane-glow);"
+     +"display:flex;justify-content:space-between;align-items:center}"
+     +".bstr-chev{font-size:15px;opacity:.6}"
+     +".bstr-line{font-size:11px;color:var(--ink-soft);filter:brightness(1.7);margin-top:3px}"
+     +".bstr-bar{height:4px;border-radius:3px;background:rgba(255,255,255,.07);margin-top:6px;overflow:hidden}"
+     +".bstr-bar>div{height:100%;background:linear-gradient(90deg,var(--arcane),var(--gold));border-radius:3px}"
+     +".bstr-hero{text-align:center;padding:16px 12px 14px;margin:2px 0 10px;border-radius:14px;"
+     +"background:linear-gradient(155deg,#1a2036,#12100c);border:1px solid rgba(139,156,255,.3)}"
+     +".bstr-count{font-size:30px;font-weight:700;color:var(--gold-bright);line-height:1}"
+     +".bstr-count span{font-size:15px;color:var(--ink-soft);filter:brightness(1.7)}"
+     +".bstr-cap{font-size:11px;color:var(--arcane-glow);margin-top:4px}"
+     +".bstr-hero .bstr-bar{margin:10px 4px 0}"
+     +".bstr-note{font-size:10px;color:var(--ink-soft);filter:brightness(1.6);margin-top:8px;line-height:1.6}"
+     +".bstr-row{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;margin:5px 0;border-radius:11px;"
+     +"background:rgba(255,255,255,.03);border:1px solid var(--line)}"
+     +".bstr-row.unknown{opacity:.45;border-style:dashed}"
+     +".bstr-ico{font-size:22px;width:30px;text-align:center;flex:none}"
+     +".bstr-mid{display:flex;flex-direction:column;gap:1px;font-size:12.5px;min-width:0}"
+     +".bstr-sub{font-size:10.5px;color:var(--arcane-glow)}"
+     +".bstr-weak{font-size:10.5px;color:var(--ink-soft);filter:brightness(1.7);line-height:1.5;margin-top:2px}"
+     +".bstr-tally{font-size:10px;color:var(--gold);margin-top:3px}";
+    document.head.appendChild(el);
+  });
+
+  return {CATALOG:CATALOG, record:record, stats:stats, open:function(){ window.openBestiarium(); }};
+});
+
+/* ==================================================================
+   MANTARA v25 — KOTA BERJALAN (peta 2D yang bisa dijalani)
+   ------------------------------------------------------------------
+   Masalah yang diperbaiki:
+   Tab Peta dan tab Aksi sampai v25 melakukan hal yang sama persis —
+   menampilkan daftar sub-lokasi sebagai kotak, lalu kau menekannya.
+   Petanya cuma gambar; tidak ada bedanya menekan "Istana Aurelia" di
+   Peta atau di Aksi. Jadi salah satu dari dua tab itu mubazir.
+
+   Sekarang kota adalah tempat, bukan daftar. Karaktermu — avatar yang
+   kau bangun sendiri — berdiri di jalanan kota dan berjalan ke mana
+   pun. Bangunan adalah sub-lokasi yang SUDAH ADA; berdiri di pintunya
+   memunculkan tombol masuk, dan masuk memanggil gotoSubloc() +
+   openSublocPage() yang lama. Nol perubahan pada sistem aksi.
+
+   Tata letak tiap kota disusun dari city.sublocs yang ada — tidak ada
+   data lokasi baru yang perlu dijaga sinkron. Menambah sub-lokasi di
+   06-world-time.js otomatis menambah bangunan di peta.
+
+   Kendali: stik virtual (kiri bawah) + ketuk untuk jalan otomatis.
+   Keduanya hidup bersamaan — yang santai cukup mengetuk, yang mau
+   menjelajah bisa jalan sendiri.
+
+   Catatan performa: gelung render hanya hidup saat tab Peta terlihat.
+   Berhenti saat tab pindah, halaman disembunyikan, modal terbuka,
+   atau karakter wafat.
+   ================================================================== */
+Mantara.module("kotajalan", function(M){
+  "use strict";
+  var U = M.u;
+
+  /* ---------------- dunia ---------------- */
+  var W = 2000, H = 1440;              // satuan dunia
+  var PLAZA = {x:1000, y:690};         // pusat kota — pintu selalu menghadap ke sini
+  var PR = 11;                        // jari-jari tabrakan pemain
+  var SPEED = 190;                    // satuan per detik
+  /* Skala menjaga avatar terbaca; minimap menyediakan orientasi kota. */
+  var ZOOM = 0.82;
+  var reducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
+  var cleanupInput=null;
+
+  /* Slot bangunan mengelilingi alun-alun. Sub-lokasi diisi berurutan,
+     jadi kota dengan 4 sub-lokasi memakai 4 slot pertama. */
+  var SLOTS = [
+    {x:110, y: 95, w:215, h:135},
+    {x:625, y: 85, w:245, h:145},
+    {x: 95, y:450, w:225, h:145},
+    {x:645, y:460, w:235, h:150},
+    {x:385, y: 55, w:215, h:120},
+    {x:395, y:530, w:205, h:120}
+  ];
+
+  /* Palet & watak tiap kota. Warnanya mengikuti CITY_THEME yang sudah
+     dipakai peta SVG lama, supaya dua peta terasa satu dunia. */
+  var SKIN = {
+    aetheria:  {ground:"#2b2117", road:"#3d3121", wall:"#4a3a24", roof:"#6d5324",
+                accent:"#e8c05a", trim:"#b8860b", decor:"pillar", sky:"#1a1410"},
+    thornvale: {ground:"#1e2a18", road:"#33291a", wall:"#3b3122", roof:"#4a6a34",
+                accent:"#8fd07a", trim:"#5f8a3a", decor:"tree",   sky:"#121a10"},
+    saltmoor:  {ground:"#232a30", road:"#333a3e", wall:"#3a4149", roof:"#3f6f86",
+                accent:"#7fd0e8", trim:"#3a8fb0", decor:"water",  sky:"#101619"},
+    frostspire:{ground:"#28303a", road:"#3b4450", wall:"#414c5b", roof:"#5a7ba6",
+                accent:"#bfe0ff", trim:"#7aa6d6", decor:"ice",    sky:"#141a22"}
+  };
+  function skin(){ var c=cityId(); return SKIN[c]||SKIN.aetheria; }
+  function cityId(){ try{ return C.cityId || C.location || "aetheria"; }catch(e){ return "aetheria"; } }
+  function cityObj(){ try{ return (typeof currentCity==="function") ? currentCity() : null; }catch(e){ return null; } }
+
+  /* acak stabil — dekorasi tidak boleh loncat-loncat tiap frame */
+  function seeded(seed){
+    var a = 0; seed=String(seed);
+    for(var i=0;i<seed.length;i++){ a = (a*31 + seed.charCodeAt(i))|0; }
+    return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a);
+      t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+  }
+
+  /* ---------------- keadaan ---------------- */
+  var S = null;    // keadaan peta aktif
+  var canvas=null, ctx=null, raf=0, lastT=0;
+  var avatarImg=null, avatarKey="";
+
+  function buildings(){
+    var city=cityObj(); if(!city||!city.sublocs) return [];
+    return city.sublocs.map(function(s, i){
+      var slot=SLOTS[i%SLOTS.length];
+      var sl={x:slot.x*2, y:slot.y*2, w:slot.w, h:slot.h};
+      if(i>=SLOTS.length){ sl.x=70+(i-SLOTS.length)%6*310; sl.y=H-190-Math.floor((i-SLOTS.length)/6)*180; }
+      var b={id:s.id, name:s.name, ico:s.ico, desc:s.desc,
+             x:sl.x, y:sl.y, w:sl.w, h:sl.h};
+      /* pintu = titik di tepi bangunan yang paling dekat alun-alun */
+      var cx=b.x+b.w/2, cy=b.y+b.h/2;
+      var dx=PLAZA.x-cx, dy=PLAZA.y-cy;
+      if(Math.abs(dx)/b.w > Math.abs(dy)/b.h){
+        b.door = {x: dx>0 ? b.x+b.w : b.x, y: cy, side: dx>0?"e":"w"};
+      }else{
+        b.door = {x: cx, y: dy>0 ? b.y+b.h : b.y, side: dy>0?"s":"n"};
+      }
+      /* titik berdiri di depan pintu */
+      b.stand = {x: b.door.x + (b.door.side==="e"?22:b.door.side==="w"?-22:0),
+                 y: b.door.y + (b.door.side==="s"?22:b.door.side==="n"?-22:0)};
+      return b;
+    });
+  }
+
+  function decorFor(id){
+    var rnd=seeded("decor-"+id), out=[], i;
+    for(i=0;i<140;i++){
+      var x=40+rnd()*(W-80), y=40+rnd()*(H-80);
+      /* jangan menaruh dekorasi di jalan utama atau alun-alun */
+      if(Math.abs(y-PLAZA.y)<70 || Math.abs(x-PLAZA.x)<70) continue;
+      out.push({x:x, y:y, s:0.6+rnd()*0.8, r:rnd()});
+    }
+    return out;
+  }
+
+  /* Titik yang tidak berada di dalam bangunan mana pun. Dipakai untuk
+     melahirkan NPC dan memilih tujuan jalan mereka — tanpa ini NPC bisa
+     lahir di dalam tembok lalu terjebak selamanya di sana. */
+  function freeSpot(rnd, bl, pad){
+    pad = pad || 14;
+    for(var tries=0; tries<40; tries++){
+      var x=70+rnd()*(W-140), y=70+rnd()*(H-140), ok=true;
+      for(var i=0;i<bl.length;i++){
+        var b=bl[i];
+        if(x>b.x-pad && x<b.x+b.w+pad && y>b.y-pad && y<b.y+b.h+pad){ ok=false; break; }
+      }
+      if(ok) return {x:x, y:y};
+    }
+    return {x:PLAZA.x, y:PLAZA.y+90};
+  }
+
+  function makeNPCs(bl){
+    var rnd=seeded("npc-"+cityId()+"-"+(C&&C.age||0)), out=[], i;
+    var rels=[];
+    try{
+      rels=(C.relations||[]).filter(function(r){ return r.alive!==false && r.name; }).slice(0,3);
+    }catch(e){}
+    for(i=0;i<9;i++){
+      var rel = rels[i] || null;
+      var p = freeSpot(rnd, bl);
+      out.push({
+        x:p.x, y:p.y, tx:p.x, ty:p.y,
+        spd: 26+rnd()*22, hue: rnd(),
+        rel: rel, name: rel?rel.name:null, wait: rnd()*3
+      });
+    }
+    return out;
+  }
+
+  function reset(){
+    var b=buildings();
+    S = {
+      city: cityId(),
+      bl: b,
+      decor: decorFor(cityId()).filter(function(d){ return !b.some(function(v){ return d.x>v.x-25&&d.x<v.x+v.w+25&&d.y>v.y-35&&d.y<v.y+v.h+25; }); }),
+      npc: makeNPCs(b),
+      px: PLAZA.x, py: PLAZA.y+70,
+      vx: 0, vy: 0, face: 1, walk: 0,
+      target: null,           // {x,y} tujuan ketuk
+      near: null,             // bangunan yang pintunya terjangkau
+      stick: null,            // {ox,oy,dx,dy,id}
+      cam: {x:0, y:0}, cameraReady:false, route:[]
+    };
+  }
+
+  /* ---------------- avatar pemain sebagai sprite ---------------- */
+  function avatarSprite(){
+    if(!U.alive()) return null;
+    var key = JSON.stringify(C.appearance||{}) + "|" + (C.age|0) + "|" + (C.isMage?1:0);
+    if(avatarImg && avatarKey===key) return avatarImg.complete ? avatarImg : null;
+    try{
+      if(!window.MantaraAvatar || !MantaraAvatar.render) return null;
+      var svg = MantaraAvatar.render(C.appearance, C.age, C.isMage, true);
+      /* MantaraAvatar.render menghasilkan SVG untuk ditempel INLINE di HTML.
+         Dimuat lewat <img> ia harus jadi dokumen yang berdiri sendiri:
+         - tanpa xmlns, gambarnya gagal dimuat sama sekali (onerror);
+         - tanpa width/height, drawImage menggambarnya 0x0.
+         Keduanya disuntikkan di sini, bukan diubah di modul avatar,
+         supaya pemakaian inline yang lama tidak tersentuh. */
+      if(svg.indexOf("xmlns=")<0)
+        svg = svg.replace("<svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"");
+      if(!/<svg[^>]*\swidth=/.test(svg))
+        svg = svg.replace("<svg", "<svg width=\"120\" height=\"120\"");
+      var img = new Image();
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+      avatarImg = img; avatarKey = key;
+      return null;   // dipakai frame berikutnya setelah termuat
+    }catch(e){ return null; }
+  }
+
+  /* ---------------- tabrakan ---------------- */
+  function collide(nx, ny){
+    var i, b;
+    for(i=0;i<S.bl.length;i++){
+      b=S.bl[i];
+      var cx=Math.max(b.x, Math.min(nx, b.x+b.w));
+      var cy=Math.max(b.y, Math.min(ny, b.y+b.h));
+      var dx=nx-cx, dy=ny-cy, d2=dx*dx+dy*dy;
+      if(d2 < PR*PR){
+        if(d2===0){
+          var edges=[{d:nx-b.x,x:b.x-PR,y:ny},{d:b.x+b.w-nx,x:b.x+b.w+PR,y:ny},{d:ny-b.y,x:nx,y:b.y-PR},{d:b.y+b.h-ny,x:nx,y:b.y+b.h+PR}];
+          edges.sort(function(a,b){return a.d-b.d;}); nx=edges[0].x; ny=edges[0].y; continue;
+        }
+        var d=Math.sqrt(d2);
+        nx = cx + dx/d*PR; ny = cy + dy/d*PR;
+      }
+    }
+    return {x: Math.max(PR, Math.min(W-PR, nx)), y: Math.max(PR, Math.min(H-PR, ny))};
+  }
+
+  /* Visibility graph: routes pass outside inflated building corners. */
+  function clearPath(a,b){
+    return !S.bl.some(function(v){
+      var pad=PR+3, lo=0, hi=1;
+      var axes=[[a.x,b.x-a.x,v.x-pad,v.x+v.w+pad],[a.y,b.y-a.y,v.y-pad,v.y+v.h+pad]];
+      for(var i=0;i<2;i++){
+        var q=axes[i];
+        if(Math.abs(q[1])<1e-8){ if(q[0]<q[2]||q[0]>q[3]) return false; }
+        else { var t1=(q[2]-q[0])/q[1], t2=(q[3]-q[0])/q[1];
+          lo=Math.max(lo,Math.min(t1,t2)); hi=Math.min(hi,Math.max(t1,t2)); }
+      }
+      return lo<=hi;
+    });
+  }
+  function navigate(point){
+    if(!S) return;
+    var end=collide(Math.max(PR,Math.min(W-PR,point.x)),Math.max(PR,Math.min(H-PR,point.y)));
+    var origin={x:S.px,y:S.py}, safe={x:S.px,y:S.py}, pad=PR+5;
+    // Manual movement can stop against a wall, inside routing clearance.
+    // First step out of that margin so the graph can find an onward route.
+    S.bl.forEach(function(b){
+      if(safe.x>b.x-pad&&safe.x<b.x+b.w+pad&&safe.y>b.y-pad&&safe.y<b.y+b.h+pad){
+        var exits=[{x:b.x-pad,y:safe.y},{x:b.x+b.w+pad,y:safe.y},{x:safe.x,y:b.y-pad},{x:safe.x,y:b.y+b.h+pad}];
+        exits.sort(function(a,b){return Math.hypot(a.x-safe.x,a.y-safe.y)-Math.hypot(b.x-safe.x,b.y-safe.y);});
+        safe=exits[0];
+      }
+    });
+    var nodes=[safe,end];
+    S.bl.forEach(function(b){
+      [b.x-pad,b.x+b.w+pad].forEach(function(x){
+        [b.y-pad,b.y+b.h+pad].forEach(function(y){nodes.push({x:x,y:y});});
+      });
+    });
+    var dist=nodes.map(function(){return Infinity;}), prev=[], done=[]; dist[0]=0;
+    for(var k=0;k<nodes.length;k++){
+      var u=-1;
+      for(var i=0;i<nodes.length;i++) if(!done[i]&&(u<0||dist[i]<dist[u])) u=i;
+      if(u<0||!isFinite(dist[u])||u===1) break;
+      done[u]=true;
+      for(var j=0;j<nodes.length;j++) if(!done[j]&&clearPath(nodes[u],nodes[j])){
+        var d=dist[u]+Math.hypot(nodes[u].x-nodes[j].x,nodes[u].y-nodes[j].y);
+        if(d<dist[j]){dist[j]=d;prev[j]=u;}
+      }
+    }
+    S.route=[]; S.target=null;
+    if(!isFinite(dist[1])){ U.toast("Tujuan belum dapat dijangkau."); return; }
+    for(var n=1;n!==0;n=prev[n]) S.route.unshift(nodes[n]);
+    if(Math.hypot(origin.x-safe.x,origin.y-safe.y)>0.1) S.route.unshift(safe);
+    S.target=S.route.shift(); S.ping={x:end.x,y:end.y,t:1};
+  }
+  window.kjNavigate=function(id){
+    if(!S) return;
+    var b=S.bl.find(function(v){return v.id===id;});
+    if(b) navigate(b.stand);
+  };
+
+  /* ---------------- langkah simulasi ---------------- */
+  function step(dt){
+    var ax=0, ay=0;
+    if(S.stick){
+      ax=S.stick.dx; ay=S.stick.dy;
+      var m=Math.hypot(ax,ay); if(m>1){ ax/=m; ay/=m; }
+      S.target=null; S.route=[];
+    } else if(S.target){
+      var tdx=S.target.x-S.px, tdy=S.target.y-S.py, td=Math.hypot(tdx,tdy);
+      if(td<3){ S.target=S.route.shift()||null; }
+      else { ax=tdx/td; ay=tdy/td; }
+    }
+
+    var moving = (ax||ay);
+    if(moving){
+      var travel=S.target?Math.min(SPEED*dt,td):SPEED*dt;
+      var np=collide(S.px + ax*travel, S.py + ay*travel);
+      /* kalau auto-jalan mentok bangunan, batalkan supaya tidak macet */
+      if(S.target && Math.hypot(np.x-S.px, np.y-S.py) < SPEED*dt*0.25) S.target=null;
+      S.walk += Math.hypot(np.x-S.px,np.y-S.py)*0.09;
+      S.px=np.x; S.py=np.y;
+      if(ax) S.face = ax>0 ? 1 : -1;
+    } else {
+      S.walk = 0;
+    }
+
+    /* pintu terdekat */
+    S.near=null;
+    var best=1e9;
+    for(var i=0;i<S.bl.length;i++){
+      var b=S.bl[i], d=Math.hypot(S.px-b.stand.x, S.py-b.stand.y);
+      if(d<44 && d<best){ best=d; S.near=b; }
+    }
+
+    /* NPC berkeliaran */
+    for(var k=0;k<S.npc.length;k++){
+      var n=S.npc[k];
+      n.wait-=dt;
+      if(n.wait<=0){
+        var sp=freeSpot(Math.random, S.bl);
+        n.tx=sp.x; n.ty=sp.y;
+        n.wait = 3 + Math.random()*5;
+      }
+      var ndx=n.tx-n.x, ndy=n.ty-n.y, nd=Math.hypot(ndx,ndy);
+      if(nd>3){
+        var nn=n.spd*dt/nd;
+        var cand={x:n.x+ndx*nn, y:n.y+ndy*nn};
+        /* NPC juga tidak menembus bangunan */
+        var blocked=false;
+        for(var j=0;j<S.bl.length;j++){
+          var bb=S.bl[j];
+          if(cand.x>bb.x-8&&cand.x<bb.x+bb.w+8&&cand.y>bb.y-8&&cand.y<bb.y+bb.h+8){ blocked=true; break; }
+        }
+        if(blocked){ n.wait=0; } else { n.x=cand.x; n.y=cand.y; }
+      }
+    }
+
+    if(S.ping && S.ping.t>0) S.ping.t=Math.max(0, S.ping.t-dt*1.6);
+
+    /* kamera mengikuti, ditahan di tepi dunia (dalam satuan dunia) */
+    var vw=canvas.clientWidth/ZOOM, vh=canvas.clientHeight/ZOOM;
+    var oldX=S.cam.x, oldY=S.cam.y;
+    S.cam.x = Math.max(0, Math.min(W-vw, S.px - vw/2));
+    /* pemain ditaruh sedikit di atas tengah: tombol "Masuk" menempati
+       tepi bawah kanvas dan akan menutupi karakter kalau ia pas di tengah */
+    S.cam.y = Math.max(0, Math.min(H-vh, S.py - vh*0.42));
+    if(W<vw) S.cam.x=(W-vw)/2;
+    if(H<vh) S.cam.y=(H-vh)/2;
+    if(S.cameraReady&&!reducedMotion.matches){var blend=1-Math.exp(-dt*10); S.cam.x=oldX+(S.cam.x-oldX)*blend; S.cam.y=oldY+(S.cam.y-oldY)*blend;}
+    S.cameraReady=true;
+  }
+
+  /* ---------------- gambar ---------------- */
+  function draw(){
+    var sk=skin(), vw=canvas.clientWidth, vh=canvas.clientHeight;
+    var dpr=Math.min(2, window.devicePixelRatio||1);
+    if(canvas.width!==Math.round(vw*dpr) || canvas.height!==Math.round(vh*dpr)){
+      canvas.width=Math.round(vw*dpr); canvas.height=Math.round(vh*dpr);
+    }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,vw,vh);
+    ctx.save();
+    ctx.scale(ZOOM, ZOOM);
+    ctx.translate(-S.cam.x, -S.cam.y);
+
+    /* tanah */
+    ctx.fillStyle=sk.ground; ctx.fillRect(0,0,W,H);
+
+    /* jalan: salib besar + cincin alun-alun */
+    ctx.fillStyle=sk.road;
+    S.bl.forEach(function(b){
+      ctx.strokeStyle=sk.road; ctx.lineWidth=42; ctx.lineJoin="round";
+      ctx.beginPath();ctx.moveTo(b.stand.x,b.stand.y);ctx.lineTo(b.stand.x,PLAZA.y);ctx.lineTo(PLAZA.x,PLAZA.y);ctx.stroke();
+    });
+    ctx.fillRect(0, PLAZA.y-46, W, 92);
+    ctx.fillRect(PLAZA.x-46, 0, 92, H);
+    ctx.beginPath(); ctx.arc(PLAZA.x, PLAZA.y, 118, 0, 6.2832); ctx.fill();
+
+    /* garis tepi jalan */
+    ctx.strokeStyle="rgba(255,255,255,.05)"; ctx.lineWidth=2;
+    ctx.strokeRect(0.5, PLAZA.y-46.5, W, 92);
+    ctx.strokeRect(PLAZA.x-46.5, 0.5, 92, H);
+
+    /* Batu jalan dan taman memakai koordinat tetap, tanpa kedip acak. */
+    ctx.strokeStyle="rgba(235,220,195,.07)";ctx.lineWidth=1;
+    for(var tile=0;tile<W;tile+=48){
+      ctx.beginPath();ctx.moveTo(tile,PLAZA.y-40);ctx.lineTo(tile+20,PLAZA.y+40);ctx.stroke();
+    }
+    ctx.strokeStyle=sk.trim;ctx.globalAlpha=.25;ctx.lineWidth=4;
+    ctx.strokeRect(28,28,W-56,H-56);ctx.globalAlpha=1;
+
+    /* dekorasi khas kota */
+    drawDecor(sk);
+
+    /* penanda alun-alun */
+    ctx.save();
+    ctx.globalAlpha=.5; ctx.strokeStyle=sk.trim; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(PLAZA.x, PLAZA.y, 34, 0, 6.2832); ctx.stroke();
+    ctx.globalAlpha=.25;
+    ctx.beginPath(); ctx.arc(PLAZA.x, PLAZA.y, 20, 0, 6.2832); ctx.fillStyle=sk.accent; ctx.fill();
+    ctx.restore();
+
+    ctx.fillStyle=sk.wall;ctx.beginPath();ctx.ellipse(PLAZA.x,PLAZA.y,46,28,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=sk.trim;ctx.lineWidth=4;ctx.stroke();
+    ctx.fillStyle=sk.accent;ctx.globalAlpha=.35;
+    ctx.beginPath();ctx.ellipse(PLAZA.x,PLAZA.y-3,36,19,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    ctx.fillStyle=sk.roof;ctx.fillRect(PLAZA.x-6,PLAZA.y-35,12,34);
+    ctx.fillStyle=sk.accent;ctx.beginPath();ctx.arc(PLAZA.x,PLAZA.y-37,7,0,Math.PI*2);ctx.fill();
+    if(S.target){
+      ctx.save();ctx.strokeStyle=sk.accent;ctx.globalAlpha=.55;ctx.lineWidth=2;ctx.setLineDash([5,8]);
+      ctx.beginPath();ctx.moveTo(S.px,S.py);ctx.lineTo(S.target.x,S.target.y);
+      S.route.forEach(function(p){ctx.lineTo(p.x,p.y);});ctx.stroke();ctx.restore();
+    }
+
+    /* bangunan (urut y supaya yang depan menimpa yang belakang) */
+
+
+    /* penanda tujuan: tanpa ini ketukan terasa tidak terbaca sama sekali */
+    if(S.ping && S.ping.t>0){
+      var pr=(1-S.ping.t)*26+8;
+      ctx.strokeStyle=sk.accent; ctx.globalAlpha=S.ping.t*0.9; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.arc(S.ping.x, S.ping.y, pr, 0, 6.2832); ctx.stroke();
+      ctx.globalAlpha=S.ping.t*0.5;
+      ctx.beginPath(); ctx.arc(S.ping.x, S.ping.y, 3.5, 0, 6.2832); ctx.fillStyle=sk.accent; ctx.fill();
+      ctx.globalAlpha=1;
+    }
+
+    /* NPC & pemain, juga urut y */
+    var actors=S.npc.map(function(n){ return {y:n.y, f:function(){ drawNPC(n, sk); }}; });
+    S.bl.forEach(function(b){if(inView(b.x,b.y,b.w,b.h))actors.push({y:b.y+b.h,f:function(){drawBuilding(b,sk);}});});
+    actors.push({y:S.py, f:function(){ drawPlayer(sk); }});
+    actors.sort(function(a,b){ return a.y-b.y; }).forEach(function(a){ a.f(); });
+
+    ctx.restore();
+
+    /* vignette supaya fokus ke tengah */
+    var g=ctx.createRadialGradient(vw/2,vh/2,vh*0.35, vw/2,vh/2,vh*0.95);
+    g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,.45)");
+    ctx.fillStyle=g; ctx.fillRect(0,0,vw,vh);
+
+    drawStick(vw,vh);
+    var mw=100, mh=72, mx=vw-mw-12, my=12;
+    ctx.fillStyle="rgba(15,12,22,.88)"; roundRect(mx-5,my-5,mw+10,mh+10,9);ctx.fill();
+    ctx.fillStyle=sk.road;ctx.fillRect(mx,my,mw,mh);
+    ctx.fillStyle=sk.trim; S.bl.forEach(function(b){ctx.fillRect(mx+b.x/W*mw,my+b.y/H*mh,b.w/W*mw,b.h/H*mh);});
+    ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=1;
+    ctx.strokeRect(mx+S.cam.x/W*mw,my+S.cam.y/H*mh,Math.min(W,vw/ZOOM)/W*mw,Math.min(H,vh/ZOOM)/H*mh);
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(mx+S.px/W*mw,my+S.py/H*mh,3,0,Math.PI*2);ctx.fill();
+  }
+
+  function inView(x,y,w,h){
+    return x+w>S.cam.x-80&&x<S.cam.x+canvas.clientWidth/ZOOM+80&&y+h>S.cam.y-80&&y<S.cam.y+canvas.clientHeight/ZOOM+80;
+  }
+  function drawDecor(sk){
+    S.decor.forEach(function(d){
+      if(!inView(d.x,d.y,30,30))return;
+      ctx.save(); ctx.translate(d.x, d.y); ctx.scale(d.s, d.s);
+      if(sk.decor==="tree"){
+        ctx.fillStyle="rgba(0,0,0,.28)"; ctx.beginPath(); ctx.ellipse(0,4,13,5,0,0,6.2832); ctx.fill();
+        ctx.fillStyle="#3a2c1c"; ctx.fillRect(-2.5,-6,5,10);
+        ctx.fillStyle=sk.roof; ctx.beginPath(); ctx.arc(0,-14,13,0,6.2832); ctx.fill();
+        ctx.fillStyle="rgba(255,255,255,.06)"; ctx.beginPath(); ctx.arc(-4,-18,6,0,6.2832); ctx.fill();
+      } else if(sk.decor==="pillar"){
+        ctx.fillStyle="rgba(0,0,0,.3)"; ctx.beginPath(); ctx.ellipse(0,4,9,4,0,0,6.2832); ctx.fill();
+        ctx.fillStyle=sk.wall; ctx.fillRect(-5,-22,10,26);
+        ctx.fillStyle=sk.accent; ctx.globalAlpha=.55; ctx.fillRect(-7,-25,14,4); ctx.fillRect(-7,2,14,3);
+      } else if(sk.decor==="water"){
+        ctx.fillStyle="rgba(70,140,170,.16)"; ctx.beginPath(); ctx.ellipse(0,0,16,7,0,0,6.2832); ctx.fill();
+        ctx.strokeStyle="rgba(160,220,240,.22)"; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(-10,0); ctx.quadraticCurveTo(0,-4,10,0); ctx.stroke();
+      } else {
+        ctx.fillStyle="rgba(200,225,255,.14)";
+        ctx.beginPath(); ctx.moveTo(0,-13); ctx.lineTo(9,5); ctx.lineTo(-9,5); ctx.closePath(); ctx.fill();
+        ctx.fillStyle="rgba(255,255,255,.2)";
+        ctx.beginPath(); ctx.moveTo(0,-13); ctx.lineTo(4,-2); ctx.lineTo(-4,-2); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    });
+  }
+
+  /* Sebagian ico sub-lokasi BUKAN emoji: 37-city-identity & 25-school-life
+     menggantinya dengan markup SVG untuk dipakai di HTML (lambang sekolah,
+     misalnya, panjangnya 463 karakter). fillText() menggambar markup itu
+     apa adanya — sumber SVG-nya muncul sebagai teks raksasa di tengah peta.
+     Di kanvas kita hanya menerima emoji; sisanya diganti lambang yang
+     ditebak dari namanya. */
+  function plainIco(b){
+    var ico=String(b.ico||"");
+    if(ico && ico.indexOf("<")<0 && ico.length<=6) return ico;
+    var n=String(b.name||"");
+    if(/kolese|akademi|sekolah|balai sihir/i.test(n)) return "🎓";
+    if(/colosseum|arena|laga/i.test(n))               return "⚔️";
+    if(/pasar|toko|dagang/i.test(n))                  return "🏪";
+    if(/istana|puri|takhta/i.test(n))                 return "👑";
+    if(/menara|arcanum/i.test(n))                     return "🗼";
+    if(/hutan|rimba|kebun/i.test(n))                  return "🌲";
+    if(/dermaga|pelabuhan|kapal/i.test(n))            return "⚓";
+    return "🏛️";
+  }
+  function plainText(v){ return String(v==null?"":v).replace(/<[^>]*>/g,"").trim(); }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+  }
+
+  function drawBuilding(b, sk){
+    var here = (C.subloc===b.id);
+    /* bayangan */
+    ctx.fillStyle="rgba(0,0,0,.35)";
+    ctx.fillRect(b.x+5, b.y+9, b.w, b.h);
+    /* badan */
+    var g=ctx.createLinearGradient(b.x, b.y, b.x, b.y+b.h);
+    g.addColorStop(0, sk.roof); g.addColorStop(0.42, sk.wall); g.addColorStop(1, sk.ground);
+    ctx.fillStyle=g; ctx.fillRect(b.x, b.y, b.w, b.h);
+    /* atap */
+    ctx.fillStyle=sk.roof;
+    ctx.beginPath();ctx.moveTo(b.x-7,b.y+24);ctx.lineTo(b.x+20,b.y-7);
+    ctx.lineTo(b.x+b.w-20,b.y-7);ctx.lineTo(b.x+b.w+7,b.y+24);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=sk.trim;ctx.lineWidth=2;ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.09)";ctx.lineWidth=1;
+    for(var rib=28;rib<b.w-15;rib+=24){ctx.beginPath();ctx.moveTo(b.x+rib,b.y-3);ctx.lineTo(b.x+rib-10,b.y+20);ctx.stroke();}
+    /* garis tepi */
+    ctx.strokeStyle = (S.near===b||here) ? sk.accent : "rgba(0,0,0,.45)";
+    ctx.lineWidth = (S.near===b||here) ? 2.5 : 1.5;
+    ctx.strokeRect(b.x+0.5, b.y+0.5, b.w-1, b.h-1);
+    /* jendela */
+    ctx.fillStyle="rgba(255,220,150,.32)";
+    for(var r=0;r<2;r++) for(var c2=0;c2<3;c2++)
+      ctx.fillRect(b.x+18+c2*(b.w-46)/2.4, b.y+34+r*32, 16, 18);
+    /* pintu */
+    var d=b.door;
+    ctx.fillStyle= S.near===b ? sk.accent : sk.trim;
+    if(d.side==="n"||d.side==="s") ctx.fillRect(d.x-15, d.y-5, 30, 10);
+    else ctx.fillRect(d.x-5, d.y-15, 10, 30);
+    /* papan nama di atap — di tengah badan bangunan ia bertabrakan
+       dengan NPC yang lewat di depannya */
+    ctx.font="700 13px -apple-system,system-ui,sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    var label=plainText(b.name);
+    var tw=ctx.measureText(label).width;
+    var by=b.y-15;
+    ctx.fillStyle="rgba(12,9,6,.9)";
+    roundRect(b.x+b.w/2-tw/2-9, by-11, tw+18, 23, 7); ctx.fill();
+    ctx.strokeStyle=(S.near===b||here)?sk.accent:"rgba(255,255,255,.12)";
+    ctx.lineWidth=1.2; ctx.stroke();
+    ctx.fillStyle= (S.near===b||here) ? sk.accent : "rgba(235,225,200,.88)";
+    ctx.fillText(label, b.x+b.w/2, by);
+    /* ikon besar di badan bangunan, menggantikan teks */
+    ctx.font="30px -apple-system,system-ui,sans-serif";
+    ctx.globalAlpha=.5; ctx.fillText(plainIco(b), b.x+b.w/2, b.y+b.h/2); ctx.globalAlpha=1;
+    if(here){
+      ctx.font="700 9.5px -apple-system,system-ui,sans-serif";
+      ctx.fillStyle=sk.accent; ctx.fillText("KAMU DI SINI", b.x+b.w/2, b.y+b.h-14);
+    }
+  }
+
+  function figure(x, y, bob, bodyCol, headCol, face){
+    ctx.fillStyle="rgba(0,0,0,.34)";
+    ctx.beginPath(); ctx.ellipse(x, y+9, 11, 4.5, 0, 0, 6.2832); ctx.fill();
+    /* jubah */
+    ctx.fillStyle=bodyCol;
+    ctx.beginPath();
+    ctx.moveTo(x, y-10+bob);
+    ctx.lineTo(x+9, y+8);
+    ctx.lineTo(x-9, y+8);
+    ctx.closePath(); ctx.fill();
+    /* kepala */
+    ctx.fillStyle=headCol;
+    ctx.beginPath(); ctx.arc(x+face*1.2, y-14+bob, 7, 0, 6.2832); ctx.fill();
+  }
+
+  function drawPlayer(sk){
+    var bob = reducedMotion.matches?0:Math.sin(S.walk)*1.8;
+    ctx.save();ctx.translate(S.px,S.py);ctx.scale(1.65,1.65);ctx.translate(-S.px,-S.py);
+    var img = avatarSprite();
+    figure(S.px, S.py, bob, C.appearance&&C.appearance.female?"#58406a":"#3c4d66", "#bd7957", S.face);
+    ctx.strokeStyle="#211b2d";ctx.lineWidth=4;ctx.lineCap="round";
+    var stride=reducedMotion.matches?0:Math.sin(S.walk)*4;
+    ctx.beginPath();ctx.moveTo(S.px-4,S.py+5);ctx.lineTo(S.px-4+stride,S.py+13);
+    ctx.moveTo(S.px+4,S.py+5);ctx.lineTo(S.px+4-stride,S.py+13);ctx.stroke();
+    if(img && img.complete && img.naturalWidth){
+      /* kepala diganti potret avatar yang dibangun pemain */
+      ctx.save();
+      ctx.beginPath(); ctx.arc(S.px+S.face*1.2, S.py-14.5+bob, 9.5, 0, 6.2832); ctx.clip();
+      ctx.drawImage(img, S.px+S.face*1.2-11.5, S.py-26+bob, 23, 23);
+      ctx.restore();
+      ctx.strokeStyle=sk.accent; ctx.lineWidth=1.4; ctx.globalAlpha=.85;
+      ctx.beginPath(); ctx.arc(S.px+S.face*1.2, S.py-14.5+bob, 9.5, 0, 6.2832); ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+    /* cincin penanda */
+    ctx.strokeStyle=sk.accent; ctx.globalAlpha=.35; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.ellipse(S.px, S.py+9, 15, 6, 0, 0, 6.2832); ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.restore();
+  }
+
+  function drawNPC(n, sk){
+    var bob=reducedMotion.matches?0:Math.sin((n.x+n.y)*0.12)*1.2;
+    var hue=Math.round(20+n.hue*300);
+    figure(n.x, n.y, bob, "hsla("+hue+",22%,38%,.9)", "#c2a37e", 1);
+    /* label hanya saat pemain mendekat — kalau selalu tampil, layar penuh
+       nama yang tak relevan dan menutupi papan nama bangunan */
+    if(n.name && Math.hypot(n.x-S.px, n.y-S.py) < 130){
+      var nlabel=plainText(n.name);
+      ctx.font="600 9.5px -apple-system,system-ui,sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      var tw=ctx.measureText(nlabel).width;
+      ctx.fillStyle="rgba(0,0,0,.55)"; roundRect(n.x-tw/2-6, n.y-33, tw+12, 17, 5); ctx.fill();
+      ctx.fillStyle=sk.accent; ctx.fillText(nlabel, n.x, n.y-24.5);
+    }
+  }
+
+  function drawStick(vw, vh){
+    if(!S.stick) return;
+    var s=S.stick;
+    ctx.save();
+    ctx.globalAlpha=.28; ctx.fillStyle="#000";
+    ctx.beginPath(); ctx.arc(s.ox, s.oy, 46, 0, 6.2832); ctx.fill();
+    ctx.globalAlpha=.5; ctx.strokeStyle=skin().accent; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(s.ox, s.oy, 46, 0, 6.2832); ctx.stroke();
+    ctx.globalAlpha=.85; ctx.fillStyle=skin().accent;
+    ctx.beginPath(); ctx.arc(s.ox+s.dx*30, s.oy+s.dy*30, 17, 0, 6.2832); ctx.fill();
+    ctx.restore();
+  }
+
+  /* ---------------- gelung ---------------- */
+  function visible(){
+    if(!canvas || !canvas.isConnected) return false;
+    if(document.hidden) return false;
+    if(!U.alive()) return false;
+    var v=document.getElementById("viewPeta");
+    if(!v || v.offsetParent===null) return false;
+    /* jangan boros saat modal / sub-halaman menutupi peta */
+    var m=document.getElementById("modal");
+    if(m && m.classList.contains("show")) return false;
+    var mp=document.getElementById("mpage");
+    if(mp && mp.classList.contains("show")) return false;
+    return true;
+  }
+  var watch=0;
+  function loop(t){
+    raf=0;
+    if(!visible()){
+      /* Jangan mati total. Dulu gelung ini cuma `return` ketika ada modal
+         di atas peta — begitu modalnya ditutup tidak ada satu pun yang
+         menyalakannya lagi, jadi peta membeku permanen sampai tab
+         Peta di-render ulang. Sekarang ia menunggu pelan (4/detik,
+         praktis nol biaya) lalu melanjutkan sendiri. */
+      lastT=0; if(cleanupInput) cleanupInput.clear(); hud();
+      if(!watch) watch=setTimeout(function(){ watch=0; if(canvas&&canvas.isConnected) start(); }, 260);
+      return;
+    }
+    var dt = lastT ? Math.min(0.05, (t-lastT)/1000) : 0.016;
+    lastT=t;
+    try{ if(!S||S.city!==cityId()) reset(); step(dt); draw(); hud(); }
+    catch(e){
+      Mantara.errors.push({evt:"kotajalan:loop", msg:e.message, stack:e.stack});
+      stop(); return;   /* satu modul rusak tidak boleh membakar baterai */
+    }
+    raf=requestAnimationFrame(loop);
+  }
+  function start(){ if(!raf){ lastT=0; raf=requestAnimationFrame(loop); } }
+  function stop(){
+    if(raf){ cancelAnimationFrame(raf); raf=0; }
+    if(watch){ clearTimeout(watch); watch=0; }
+    lastT=0;
+  }
+
+  /* ---------------- HUD tombol masuk ---------------- */
+  function hud(){
+    var el=document.getElementById("kjEnter"); if(!el) return;
+    if(S && S.near){
+      if(el.dataset.for!==S.near.id){
+        el.dataset.for=S.near.id;
+        el.innerHTML="<span class='kj-ico'>"+plainIco(S.near)+"</span><span><b>Masuk "+U.esc(plainText(S.near.name))+"</b>"
+          +"<span class='kj-sub'>"+U.esc(plainText(S.near.desc))+"</span></span><span class='kj-go'>▸</span>";
+      }
+      el.classList.add("on");
+    } else {
+      el.classList.remove("on"); el.dataset.for="";
+    }
+  }
+
+  window.kjEnterNow = function(){
+    if(!S || !S.near) return;
+    var b=S.near;
+    if(cleanupInput) cleanupInput.clear();
+    try{ if(typeof gotoSubloc==="function") gotoSubloc(b.id); }catch(e){}
+    try{ if(typeof openSublocPage==="function") openSublocPage(b.id); }catch(e){}
+  };
+
+  /* ---------------- masukan ---------------- */
+  function toWorld(ev){
+    var r=canvas.getBoundingClientRect();
+    var lx=ev.clientX-r.left, ly=ev.clientY-r.top;
+    return {x: lx/ZOOM + S.cam.x, y: ly/ZOOM + S.cam.y, lx:lx, ly:ly};
+  }
+  function bindInput(){
+    var stickId=null, tapStart=null;
+
+    /* Dulu pointerdown di kuadran kiri-bawah LANGSUNG diklaim sebagai stik,
+       jadi ketukan pada bangunan yang kebetulan ada di sana tidak pernah
+       jadi ketukan — pemain menekan gedungnya dan seolah tak terjadi apa-apa.
+       Sekarang tiap sentuhan mulai sebagai KANDIDAT KETUKAN; ia baru
+       menjadi stik setelah jarinya benar-benar digeser >9px. */
+    var STICK_ARM = 9;
+
+    canvas.addEventListener("pointerdown", function(ev){
+      if(!S||!visible()) return;
+      if(tapStart||ev.button>0) return;
+      canvas.focus({preventScroll:true});
+      var p=toWorld(ev);
+      var vw=canvas.clientWidth, vh=canvas.clientHeight;
+      tapStart={x:p.lx, y:p.ly, t:performance.now(), wx:p.x, wy:p.y,
+                id:ev.pointerId, zone:(p.lx < vw*0.5 && p.ly > vh*0.45)};
+      try{ canvas.setPointerCapture(ev.pointerId); }catch(e){}
+      ev.preventDefault();
+    }, {passive:false});
+
+    canvas.addEventListener("pointermove", function(ev){
+      if(!S) return;
+      var p=toWorld(ev);
+      /* naikkan jadi stik begitu jarinya digeser cukup jauh di zona stik */
+      if(!S.stick && tapStart && tapStart.id===ev.pointerId && tapStart.zone){
+        if(Math.hypot(p.lx-tapStart.x, p.ly-tapStart.y) > STICK_ARM){
+          stickId=ev.pointerId;
+          S.stick={ox:tapStart.x, oy:tapStart.y, dx:0, dy:0};
+          S.target=null;
+        }
+      }
+      if(stickId===ev.pointerId && S.stick){
+        var dx=p.lx-S.stick.ox, dy=p.ly-S.stick.oy;
+        var m=Math.hypot(dx,dy)||1, k=Math.min(1, m/42);
+        S.stick.dx=dx/m*k; S.stick.dy=dy/m*k;
+        ev.preventDefault();
+      }
+    }, {passive:false});
+
+    function release(ev){
+      if(!S) return;
+      if(stickId===ev.pointerId){ stickId=null; S.stick=null; tapStart=null; return; }
+      if(tapStart && tapStart.id===ev.pointerId){
+        var p=toWorld(ev);
+        var moved=Math.hypot(p.lx-tapStart.x, p.ly-tapStart.y);
+        var quick=performance.now()-tapStart.t < 700;
+        if(moved<16 && quick){
+          /* ketuk bangunan -> jalan ke pintunya; ketuk tanah -> jalan ke sana */
+          var hit=null;
+          for(var i=0;i<S.bl.length;i++){
+            var b=S.bl[i];
+            if(p.x>b.x && p.x<b.x+b.w && p.y>b.y && p.y<b.y+b.h){ hit=b; break; }
+          }
+          /* ketuk NPC yang punya relasi -> buka profilnya */
+          if(!hit){
+            for(var k=0;k<S.npc.length;k++){
+              var n=S.npc[k];
+              if(n.rel && Math.hypot(p.x-n.x, p.y-n.y)<22){
+                try{ if(typeof openRelActionMenu==="function"){ tapStart=null; openRelActionMenu(n.rel.id); return; } }catch(e){}
+              }
+            }
+          }
+          if(hit){
+            /* sudah berdiri di depannya -> ketukan kedua langsung masuk,
+               tidak perlu menunggu jalan lagi */
+            if(Math.hypot(S.px-hit.stand.x, S.py-hit.stand.y) < 44){
+              tapStart=null; S.near=hit; kjEnterNow(); return;
+            }
+            navigate(hit.stand);
+            S.ping={x:hit.stand.x, y:hit.stand.y, t:1};
+            U.toast("Menuju "+plainText(hit.name)+"…");
+          } else {
+            navigate(p);
+            S.ping={x:p.x, y:p.y, t:1};
+          }
+        }
+        tapStart=null;
+      }
+    }
+    canvas.addEventListener("pointerup", release);
+    canvas.addEventListener("pointercancel", clearInput);
+    canvas.addEventListener("lostpointercapture", function(){if(stickId!==null||tapStart)clearInput();});
+
+    /* papan ketik, untuk yang mencoba di desktop */
+    var keys={};
+    function keyVec(){
+      var dx=(keys.d||keys.ArrowRight?1:0)-(keys.a||keys.ArrowLeft?1:0);
+      var dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0);
+      if(!dx&&!dy) return null;
+      var m=Math.hypot(dx,dy); return {dx:dx/m, dy:dy/m};
+    }
+    function sync(){
+      var v=keyVec();
+      if(v) S.stick={ox:60,oy:canvas.clientHeight-60,dx:v.dx,dy:v.dy,kb:true};
+      else if(S.stick && S.stick.kb) S.stick=null;
+
+    }
+    function clearInput(){ keys={}; stickId=null; tapStart=null; if(S){S.stick=null;S.target=null;S.route=[];} }
+    function keydown(e){
+      if(!S||!visible()||document.activeElement!==canvas||e.ctrlKey||e.metaKey||e.altKey) return;
+      var key=e.key.length===1?e.key.toLowerCase():e.key;
+      if(key==="Enter"||key===" "){if(S.near){e.preventDefault();kjEnterNow();}return;}
+      if(!/^(w|a|s|d|ArrowUp|ArrowDown|ArrowLeft|ArrowRight)$/.test(key))return;
+      e.preventDefault(); keys[key]=1; sync();
+    }
+    function keyup(e){var key=e.key.length===1?e.key.toLowerCase():e.key;delete keys[key];if(S)sync();}
+    window.addEventListener("keydown",keydown);
+    window.addEventListener("keyup",keyup);
+    window.addEventListener("blur",clearInput);
+    canvas.addEventListener("blur",clearInput);
+    cleanupInput=function(){window.removeEventListener("keydown",keydown);window.removeEventListener("keyup",keyup);window.removeEventListener("blur",clearInput);clearInput();};
+    cleanupInput.clear=clearInput;
+  }
+
+  /* ---------------- pemasangan ke tab Peta ---------------- */
+  function panelHTML(){
+    var city=cityObj(); if(!city) return "";
+    return ""
+      + "<div class='sechead'>🏙️ Jalanan " + U.esc(plainText(city.name)) + "</div>"
+      + "<div class='kj-toolbar'><span>JELAJAH KOTA</span><label>Tujuan <select id='kjDestination' onchange='kjNavigate(this.value)'><option value=''>Pilih lokasi…</option>"
+      + city.sublocs.map(function(b){return "<option value='"+U.esc(b.id)+"'>"+U.esc(plainText(b.name))+"</option>";}).join("") + "</select></label></div>"
+      + "<div class='kj-wrap'>"
+      +   "<canvas id='kjCanvas' tabindex='0' aria-describedby='kjHelp' class='kj-canvas' aria-label='Peta kota yang bisa dijalani'></canvas>"
+
+      +   "<button type='button' id='kjEnter' class='kj-enter' onclick='kjEnterNow()'></button>"
+      + "</div><p id='kjHelp' class='kj-help'>Ketuk lokasi untuk berjalan · Seret kiri bawah untuk kendali bebas.<br>Keyboard: fokuskan peta, lalu WASD / panah · Enter untuk masuk.</p>";
+  }
+
+  function mount(){
+    var host=document.getElementById("viewPeta");
+    if(!host || !U.alive()) { stop(); return; }
+    if(host.querySelector(".kj-wrap")) { /* sudah ada */ }
+    else host.insertAdjacentHTML("afterbegin", panelHTML());
+
+    var cv=document.getElementById("kjCanvas");
+    if(!cv) { stop(); return; }
+    var fresh = (cv!==canvas);
+    if(fresh){stop();if(cleanupInput)cleanupInput();}
+    canvas=cv; ctx=canvas.getContext("2d");
+    if(fresh) bindInput();
+    if(!S || S.city!==cityId()) reset();
+    start();
+  }
+
+  M.on("boot", function(){
+    if(document.getElementById("kjStyle")) return;
+    var st=document.createElement("style"); st.id="kjStyle";
+    st.textContent =
+      ".kj-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 6px;color:var(--gold);font-size:10px;letter-spacing:.08em}"
+     +".kj-toolbar label{display:flex;align-items:center;gap:8px;min-width:0}.kj-toolbar select{min-height:44px;max-width:190px;width:100%;background:#211b29;color:#f3e6cb;border:1px solid #66516d;border-radius:10px;padding:8px;font:inherit;font-size:12px}"
+     +".kj-help{font-size:11px;line-height:1.7;color:#b9acbd;padding:0 8px 12px;margin:0}.kj-canvas:focus-visible{outline:3px solid #c8a1ef;outline-offset:-3px}"
+     +"@media(prefers-reduced-motion:reduce){.kj-enter{transition:none!important;transform:none!important}}"
+     +
+      ".kj-wrap{position:relative;margin:0 4px 14px;border-radius:14px;overflow:hidden;"
+     +"border:1px solid var(--line);background:#15110c;box-shadow:inset 0 0 30px rgba(0,0,0,.5)}"
+     +".kj-canvas{display:block;width:100%;height:clamp(320px,58vh,560px);touch-action:none;cursor:grab}"
+     +".kj-enter{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:center;gap:9px;"
+     +"min-height:52px;padding:9px 12px;border-radius:13px;border:1px solid var(--gold);"
+     +"background:linear-gradient(160deg,rgba(60,45,20,.96),rgba(28,21,13,.96));color:var(--parchment);"
+     +"font-family:inherit;text-align:left;cursor:pointer;opacity:0;visibility:hidden;transform:translateY(10px);"
+     +"transition:opacity .18s,transform .18s,visibility .18s;box-shadow:0 8px 22px rgba(0,0,0,.5)}"
+     +".kj-enter.on{opacity:1;visibility:visible;transform:translateY(0)}"
+     +".kj-enter .kj-ico{font-size:21px;flex:0 0 auto}"
+     +".kj-enter b{display:block;font-size:13px;color:var(--gold-bright)}"
+     +".kj-enter .kj-sub{display:block;font-size:9.5px;color:var(--ink-soft);filter:brightness(1.7);"
+     +"margin-top:2px;line-height:1.35}"
+     +".kj-enter .kj-go{margin-left:auto;font-size:17px;color:var(--gold)}"
+     +"@media (max-height:700px){.kj-canvas{height:310px}}";
+    document.head.appendChild(st);
+  });
+
+  /* renderPeta dibungkus DI SINI (satu titik sadap, aturan 44-bus-hooks) */
+  M.on("boot", function(){
+    if(typeof renderPeta!=="function") return;
+    var _rp = renderPeta;
+    window.renderPeta = renderPeta = function(){
+      var r=_rp.apply(this, arguments);
+      try{ mount(); }catch(e){ Mantara.errors.push({evt:"kotajalan:mount", msg:e.message}); }
+      return r;
+    };
+  }, -80);
+
+  /* tata letak ikut berubah saat pindah kota / ganti karakter */
+  M.on("year:end",  function(){ if(S && S.city!==cityId()) S=null; });
+  M.on("char:born", function(){ S=null; avatarImg=null; avatarKey=""; });
+  M.on("char:died", function(){ stop(); if(cleanupInput)cleanupInput.clear(); S=null; });
+  M.on("save:read", function(){ S=null; avatarImg=null; avatarKey=""; if(canvas&&canvas.isConnected)start(); });
+
+  /* hemat baterai */
+  document.addEventListener("visibilitychange", function(){ if(document.hidden){stop();if(cleanupInput)cleanupInput.clear();} else if(canvas) start(); });
+
+  return {mount:mount, stop:stop, state:function(){ return S; }, reset:function(){ S=null; }};
+});
 
 </script>
 </body>

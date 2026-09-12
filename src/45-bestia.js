@@ -151,11 +151,17 @@ Mantara.module("bestia", function(M){
     var tahap = TAHAP[p.level-1] || "?";
     U.anim("win", {text:"TINGKAT "+p.level});
     U.music("triumph");
-    var buka = "";
-    if(p.level===m.ride)      buka = " — kini bisa <b>ditunggangi</b>!";
-    else if(p.level===3)      buka = " — kini <b>ikut bertarung</b> bersamamu!";
-    else if(p.level===m.fly)  buka = " — kini bisa <b>TERBANG</b>!";
-    else if(p.level===5)      buka = " — kini bergelar <b>"+m.gelar+"</b>, dan akan diingat wangsamu.";
+    /* QA v25: dulu rantai else-if ini menelan kemampuan yang terbuka
+       bersamaan. Naga & phoenix (ride:3) yang mencapai tingkat 3 hanya
+       diberi tahu "bisa ditunggangi" — padahal ia juga mulai ikut bertarung.
+       Tingkat 2 mereka bahkan tidak mengumumkan apa pun. Sekarang semua
+       yang terbuka pada tingkat itu disebutkan. */
+    var buka_ = [];
+    if(p.level===m.ride)  buka_.push("bisa <b>ditunggangi</b>");
+    if(p.level===3)       buka_.push("<b>ikut bertarung</b> bersamamu");
+    if(p.level===m.fly)   buka_.push("bisa <b>TERBANG</b>");
+    if(p.level===5)       buka_.push("bergelar <b>"+m.gelar+"</b> dan akan diingat wangsamu");
+    var buka = buka_.length ? (" — kini " + buka_.join(", ") + "!") : "";
     U.log("🐾 "+def.ico+" "+p.name+" tumbuh jadi "+tahap+buka, "e-epic");
     if(p.level===5){ p.gelar = m.gelar; if(!C._bestiaLegends) C._bestiaLegends=[]; }
   }

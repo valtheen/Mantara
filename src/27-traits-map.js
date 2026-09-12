@@ -80,7 +80,10 @@ window.openTraitsPage=function(){
       const el=document.querySelector("#viewHidup .charcard .cinfo");
       if(el&&!el.querySelector(".trait-chips")){
         const chips=C.traits.map(id=>{const t=traitOf(id);return t?`${t.ico} ${t.name}`:"";}).join(" · ");
-        el.insertAdjacentHTML("beforeend",`<div class="cage trait-chips" onclick="openTraitsPage()" style="color:var(--gold);cursor:pointer">${chips} ›</div>`);
+        /* QA v25: dulu barisnya cuma setinggi 13px — jauh di bawah ambang
+           sentuh 44px, sulit ditekan di ponsel. Sekarang dibuat tombol
+           sungguhan dengan tinggi minimum & area sentuh layak. */
+        el.insertAdjacentHTML("beforeend",`<button type="button" class="cage trait-chips" onclick="openTraitsPage()" aria-label="Lihat semua perangai" style="display:flex;align-items:center;justify-content:flex-start;gap:4px;width:100%;min-height:44px;padding:6px 8px;margin-top:2px;background:none;border:0;text-align:left;color:var(--gold);cursor:pointer;font:inherit">${chips} ›</button>`);
       }
     }catch(e){}
   };

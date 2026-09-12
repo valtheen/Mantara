@@ -402,7 +402,7 @@ window.jobOpenListings=function(){
     let h=pgNote("Tiap profesi punya jenjang pangkat, gaya & keahlian sendiri. Pindah karir me-reset jenjangmu.");
     const groups=[["⚔️ Jalur Tempur","combat"],["🔮 Jalur Arcane","arcane"],["🎭 Jalur Sosial","social"],["🌾 Jalur Kriya","labor"]];
     groups.forEach(g=>{
-      const list=CAREERS.filter(c=>(!c.arcane||C.isMage)&&c.id!==C.career&&(typeof jobClassOf==="function"?jobClassOf(c.id)===g[1]:true));
+      const list=CAREERS.filter(c=>(!c.arcane||C.isMage)&&!c.rare&&c.id!==C.career&&(typeof jobClassOf==="function"?jobClassOf(c.id)===g[1]:true));
       if(!list.length)return;
       h+=pgSec(g[0]);
       list.forEach(c=>{

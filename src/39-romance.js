@@ -279,7 +279,20 @@
   window.openRomance=function(relId){
     if(typeof pushPage!=="function") return;
     pushPage({title:"Hubungan", render:function(){
-      var r=relById(relId); if(!r) return pgNote("Hubungan berakhir.");
+      /* QA v25: dulu ini menghasilkan halaman kosong tanpa jalan keluar
+         selain panah kembali — misalnya kalau pasangan wafat sementara
+         halamannya masih terbuka. Sekarang keadaan kosongnya menjelaskan
+         apa yang terjadi dan menawarkan langkah berikutnya. */
+      var r=relById(relId);
+      if(!r){
+        return "<div style='text-align:center;padding:26px 18px'>"
+          +"<div style='font-size:34px;opacity:.55'>🕯️</div>"
+          +"<div style='font-size:14px;font-weight:700;margin-top:8px'>Hubungan ini sudah berakhir</div>"
+          +"<div style='font-size:11.5px;color:var(--ink-soft);filter:brightness(1.7);margin-top:6px;line-height:1.7'>"
+          +"Ia tidak lagi ada dalam hidupmu — wafat, pergi, atau kalian berpisah.</div>"
+          +"<button class='mchoice' style='margin-top:16px' onclick=\"try{popPage();}catch(e){};try{switchTab('Relasi');}catch(e){}\">"
+          +"↩ Kembali ke Relasi</button></div>";
+      }
       ensureRom(r); var st=stageOf(r);
       var chemLbl=r.chemistry>=70?"Menyala 🔥":r.chemistry>=45?"Hangat":"Datar";
       var h="<div class='pg-hero' style='text-align:center;padding:14px 12px;margin:2px 0 10px;background:linear-gradient(155deg,#2a1420,#16110c);border:1px solid #6e2a4a;border-radius:14px'>"

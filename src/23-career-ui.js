@@ -240,7 +240,8 @@ function renderKarir(){
     html+=`<div class="sechead">📋 Lowongan Kerja</div>
       <p style="font-size:11px;color:var(--ink-soft);filter:brightness(1.6);margin:0 4px 10px;line-height:1.5;">Tiap profesi punya jenjang pangkat & <b>keahlian profesinya sendiri</b> untuk dilatih. Stat & ijazah membuka lowongan lebih baik.</p>
       <div class="tiles">`;
-    CAREERS.filter(c=>!c.arcane||C.isMage).forEach(c=>{
+    /* v25: Jalan Langka (c.rare) tidak pernah tampil di daftar biasa. */
+    CAREERS.filter(c=>(!c.arcane||C.isMage)&&!c.rare).forEach(c=>{
       const ok=c.req(C);
       html+=`<div class="tile ${ok?'':'locked'} ${c.arcane?'arcane':''}" ${ok?`onclick="applyCareer('${c.id}');renderKarir()"`:''}>
         <span class="ti">${c.ico}</span><span class="tn">${c.name}${c.shady?' 🕶️':''}</span>
@@ -285,7 +286,7 @@ window.jobAskPromotion=function(){
   }
 };
 window.jobOpenListings=function(){
-  const eligible=CAREERS.filter(c=>(!c.arcane||C.isMage)&&c.id!==C.career);
+  const eligible=CAREERS.filter(c=>(!c.arcane||C.isMage)&&!c.rare&&c.id!==C.career);
   openChoice({ico:"📋",prompt:"<b>Lowongan Kerja</b><br><span style='font-size:11px;color:var(--ink-soft);filter:brightness(1.6)'>Pindah karir me-reset jenjang & keahlian profesi.</span>",
     choices:eligible.map(c=>{
       const ok=c.req(C);

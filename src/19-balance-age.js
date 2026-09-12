@@ -41,8 +41,15 @@
     if(C.age<13 && C.stats.health<35)C.stats.health=35;
     else if(C.age<18 && C.stats.health<15)C.stats.health=15;
 
-    // (d) KEMATIAN USIA TUA realistis & bertahap (mulai relevan ~65+)
-    if(C.age>=65){
+    // (d) KEMATIAN USIA TUA — hanya dipakai kalau tidak ada sistem vitalitas.
+    //
+    // QA v25: lemparan ini memakai umur DATAR, tanpa melihat kesehatan,
+    // kekayaan, atau pilihan hidup. Karena ia berjalan berdampingan dengan
+    // sistem vitalitas v24, dialah yang praktis menentukan umur semua orang —
+    // dan itulah sebabnya median umur melarat (67) hampir sama dengan median
+    // umur kaya-raya (74). Sekarang ia menepi kalau 40-v24-balance memasang
+    // bendera kepemilikannya. Tetap ada sebagai jaring pengaman.
+    if(C.age>=65 && !window.__mantaraOldAgeOwner){
       let p=(C.age-65)*0.012;          // 65→0% naik ke ~30% di usia 90
       if(C.age>=85)p+=0.05;
       if(C.stats.health<25)p+=0.10;    // sakit mempercepat

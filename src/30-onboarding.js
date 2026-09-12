@@ -424,7 +424,34 @@ function afterLoad(){
 }
 if(typeof loadSlot==="function"){var _tutLS=loadSlot;loadSlot=function(){var r=_tutLS.apply(this,arguments);try{afterLoad();}catch(e){}return r;};}
 if(typeof loadGame==="function"){var _tutLG=loadGame;loadGame=function(){var r=_tutLG.apply(this,arguments);try{afterLoad();}catch(e){}return r;};}
-if(typeof restart==="function"){var _tutRS=restart;restart=function(){try{hideGuide();}catch(e){}return _tutRS.apply(this,arguments);};}
+if(typeof restart==="function"){var _tutRS=restart;restart=function(){try{hideAllTut();}catch(e){}return _tutRS.apply(this,arguments);};}
+
+/* QA v25: kalau pemain mati saat popup "Tahap Hidup" atau kartu tur masih
+   terbuka, keduanya menumpuk di atas layar epitaf — dan bertahan sampai
+   layar mulai baru. Ditemukan lewat uji otomatis (die() pada usia 27:
+   teks "Masa Bayi (0-5)" ikut muncul di batu nisan).
+   Sekarang kematian menutup semua lapisan panduan. */
+function hideAllTut(){
+  try{hideGuide();}catch(e){}
+  try{ active=false; if(ov)ov.classList.remove("show"); }catch(e){}
+}
+window.__mantaraHideTut=hideAllTut;
+
+/* Semua lapisan yang boleh menutupi batu nisan disapu di satu tempat.
+   Selain panduan, modal kejadian juga ikut: die() sering dipanggil DARI
+   dalam resolusi pilihan (mis. "Aktivitas berakibat fatal"), sehingga
+   modalnya masih terbuka saat layar kematian dilukis di belakangnya. */
+function clearOverlaysForDeath(){
+  hideAllTut();
+  try{ if(typeof mpCloseAll==="function") mpCloseAll(); }catch(e){}
+  try{
+    var m=document.getElementById("modal");
+    if(m) m.classList.remove("show");
+    if(typeof pendingChoice!=="undefined") pendingChoice=null;
+  }catch(e){}
+  try{ for(var i=0;i<8;i++){ if(typeof popPage==="function") popPage(); else break; } }catch(e){}
+}
+if(typeof die==="function"){var _tutDie=die;window.die=die=function(){try{clearOverlaysForDeath();}catch(e){}return _tutDie.apply(this,arguments);};}
 
 // tiap tahun berlalu -> cek tahap hidup baru (di-defer agar membungkus patch lain)
 function hookYear(){
